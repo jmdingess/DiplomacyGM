@@ -19,6 +19,7 @@ class Board:
         self.year = 0
         self.board_id = 0
         self.orders_enabled: bool = True
+        self.validate_orders: bool = False
 
     # TODO: we could have this as a dict ready on the variant
     def get_player(self, name: str) -> Player:
