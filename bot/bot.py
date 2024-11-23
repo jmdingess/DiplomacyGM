@@ -129,6 +129,11 @@ async def view_orders(ctx: discord.ext.commands.Context) -> None:
     await _handle_command(command.view_orders, ctx)
 
 
+@bot.command(brief="Validates submitted orders")
+async def validate_orders(ctx: discord.ext.commands.Context) -> None:
+    await _handle_command(command.validate_orders, ctx)
+
+
 @bot.command(brief="Adjudicates the game and outputs the moves and results maps.")
 async def adjudicate(ctx: discord.ext.commands.Context) -> None:
     await _handle_command(command.adjudicate, ctx)

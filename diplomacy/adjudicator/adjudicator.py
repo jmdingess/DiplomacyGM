@@ -25,6 +25,7 @@ from diplomacy.persistence.order import (
     Build,
     Disband,
 )
+from diplomacy.persistence.player import Player
 from diplomacy.persistence.province import Location, Coast, Province, ProvinceType
 from diplomacy.persistence.unit import UnitType, Unit
 
@@ -60,15 +61,25 @@ def get_source_province_from_unit(unit: Unit) -> Province:
     return unit.province
 
 
-def convoy_is_possible(start: Province, end: Province, check_fleet_orders=False) -> bool:
+def convoy_is_possible(
+    start: Province, end: Province, player_restriction: None | Player, order_to_match: None | ConvoyTransport = None
+) -> bool:
     """
     Breadth-first search to figure out if start -> end is possible passing over fleets
 
     :param start: Start province
     :param end: End province
-    :param check_fleet_orders: if True, check that the fleets along the way are actually convoying the unit
+    :param player_restriction: checks that the fleets for the given player (or all players, if None)
+                                along the way are actually convoying the unit
+    :param order_to_match: None implies start -> end; if specified, compares to this instead
     :return: True if there are fleets connecting start -> end
     """
+    order_source = start
+    order_end = end
+    if order_to_match is not None:
+        order_source = order_to_match.source.province
+        order_end = order_to_match.destination
+
     visited: set[str] = set()
     to_visit = collections.deque()
     to_visit.append(start)
@@ -86,27 +97,26 @@ def convoy_is_possible(start: Province, end: Province, check_fleet_orders=False)
                 continue
             if adjacent_province.unit is None or adjacent_province.unit.unit_type != UnitType.FLEET:
                 continue
-            if check_fleet_orders:
+            if player_restriction is None or adjacent_province.unit.player == player_restriction:
                 fleet_order = adjacent_province.unit.order
                 if fleet_order is None:
                     continue
                 if not isinstance(fleet_order, ConvoyTransport):
                     continue
-                if fleet_order.source.province is not start or fleet_order.destination is not end:
+                if fleet_order.source.province is not order_source or fleet_order.destination is not order_end:
                     continue
             to_visit.append(adjacent_province)
 
     return False
 
 
-def order_is_valid(location: Location, order: Order, strict_convoys_supports=False) -> tuple[bool, str | None]:
+def order_is_valid(location: Location, order: Order, player_restriction: Player | None) -> tuple[bool, str | None]:
     """
     Checks if order from given location is valid for configured board
 
     :param location: Province or Coast the order originates from
     :param order: Order to check
-    :param strict_convoys_supports: Defaults False. Validates only if supported order was also ordered,
-                                    or convoyed unit was convoyed correctly
+    :param player_restriction: if provided, only checks corresponding moves from the given player
     :return: tuple(result, reason)
         - bool result is True if the order is valid, False otherwise
         - str reason is arbitrary if the order is valid, provides reasoning if invalid
@@ -147,14 +157,14 @@ def order_is_valid(location: Location, order: Order, strict_convoys_supports=Fal
             convoy_is_possible(
                 get_base_province_from_location(location),
                 destination_province,
-                check_fleet_orders=strict_convoys_supports,
+                player_restriction,
             ),
             f"No valid convoy path from {location.name} to {order.destination.name}",
         )
     elif isinstance(order, ConvoyTransport):
         if unit.unit_type != UnitType.FLEET:
             return False, "Only fleets can convoy"
-        if strict_convoys_supports:
+        if player_restriction is None or order.source.player == player_restriction:
             corresponding_order_is_move = isinstance(order.source.order, Move) or isinstance(
                 order.source.order, ConvoyMove
             )
@@ -162,18 +172,19 @@ def order_is_valid(location: Location, order: Order, strict_convoys_supports=Fal
                 order.source.order.destination
             ) != get_base_province_from_location(order.destination):
                 return False, f"Convoyed unit {order.source} did not make corresponding order"
-        valid_move, reason = order_is_valid(
-            order.source.province, ConvoyMove(order.destination), strict_convoys_supports
-        )
+        valid_move, reason = order_is_valid(order.source.province, ConvoyMove(order.destination), player_restriction)
         if not valid_move:
             return valid_move, reason
         # Check we are actually part of the convoy chain
+        current_province = get_base_province_from_location(location)
         destination_province = get_base_province_from_location(order.destination)
-        if not convoy_is_possible(order.source.province, destination_province, check_fleet_orders=strict_convoys_supports):
+        if not convoy_is_possible(order.source.province, current_province, player_restriction):
             return False, f"No valid convoy path from {order.source.location().name} to {location.name}"
+        if not convoy_is_possible(current_province, destination_province, player_restriction):
+            return False, f"No valid convoy path from {location.name} to {order.destination.name}"
         return True, None
     elif isinstance(order, Support):
-        move_valid, _ = order_is_valid(location, Move(order.destination), strict_convoys_supports)
+        move_valid, _ = order_is_valid(location, Move(order.destination), player_restriction)
         if not move_valid:
             return False, f"Cannot support somewhere you can't move to"
 
@@ -181,16 +192,16 @@ def order_is_valid(location: Location, order: Order, strict_convoys_supports=Fal
         source_to_destination_valid = is_support_hold
         if not source_to_destination_valid:
             source_to_destination_valid, _ = order_is_valid(
-                order.source.province, Move(order.destination), strict_convoys_supports
+                order.source.province, Move(order.destination), player_restriction
             )
         if not source_to_destination_valid:
             source_to_destination_valid, _ = order_is_valid(
-                order.source.province, ConvoyMove(order.destination), strict_convoys_supports
+                order.source.province, ConvoyMove(order.destination), player_restriction
             )
         if not source_to_destination_valid:
             return False, "Supported unit can't reach destination"
 
-        if strict_convoys_supports:
+        if player_restriction is None or player_restriction == order.source.player:
             corresponding_order_is_move = isinstance(order.source.order, Move) or isinstance(
                 order.source.order, ConvoyMove
             )
@@ -308,7 +319,7 @@ class RetreatsAdjudicator(Adjudicator):
             unit.player.units.remove(unit)
             self._board.units.remove(unit)
             unit.province.dislodged_unit = None
-        
+
         for unit in self._board.units:
             unit.order = None
 
@@ -324,14 +335,12 @@ class MovesAdjudicator(Adjudicator):
             # Replace invalid orders with holds
             # Importantly, this includes supports for which the corresponding unit didn't make the same move
             # Same for convoys
-            valid, reason = order_is_valid(unit.location(), unit.order, strict_convoys_supports=True)
+            valid, reason = order_is_valid(unit.location(), unit.order, None)
             if not valid:
                 logger.debug(f"Order for {unit} is invalid because {reason}")
                 if isinstance(unit.order, Move):
                     logger.debug("Retrying move order as ConvoyMove")
-                    valid, reason = order_is_valid(
-                        unit.location(), ConvoyMove(unit.order.destination), strict_convoys_supports=True
-                    )
+                    valid, reason = order_is_valid(unit.location(), ConvoyMove(unit.order.destination), None)
                     if valid:
                         unit.order = ConvoyMove(unit.order.destination)
                         continue
@@ -403,7 +412,7 @@ class MovesAdjudicator(Adjudicator):
             if order.type == OrderType.HOLD and order.resolution == Resolution.SUCCEEDS:
                 if not order.destination_province.has_supply_center or self._board.phase.name.startswith("Fall"):
                     self._board.change_owner(order.destination_province, order.country)
-        
+
         for province in self._board.provinces:
             if province.corer:
                 if province.half_core == province.corer:
@@ -507,7 +516,11 @@ class MovesAdjudicator(Adjudicator):
                             opponent_strength = 1
                         else:
                             # A -> B, B -> C, C -> B, if B succeeds then C can't effect A
-                            orders_to_overcome = {order for order in orders_to_overcome if order.source_province != attacked_order.destination_province}
+                            orders_to_overcome = {
+                                order
+                                for order in orders_to_overcome
+                                if order.source_province != attacked_order.destination_province
+                            }
                     else:
                         # the units don't bounce because at least one of them is convoyed
                         if (

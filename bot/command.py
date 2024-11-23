@@ -9,8 +9,10 @@ import bot.perms as perms
 from bot.parse_edit_state import parse_edit_state
 from bot.parse_order import parse_order, parse_remove_order
 from bot.utils import is_gm_channel, get_orders, is_admin
+from diplomacy.adjudicator.adjudicator import order_is_valid
 from diplomacy.persistence.db.database import get_connection
 from diplomacy.persistence.manager import Manager
+from diplomacy.persistence.order import Move, ConvoyMove
 from diplomacy.persistence.player import Player
 
 logger = logging.getLogger(__name__)
@@ -156,6 +158,31 @@ def view_orders(player: Player | None, ctx: commands.Context, manager: Manager) 
     else:
         # file_name = manager.draw_moves_map(ctx.guild.id, player)
         return order_text, None
+
+
+@perms.player("validate submitted orders")
+def validate_orders(player: Player | None, ctx: commands.Context, manager: Manager) -> tuple[str, str | None]:
+    players = [player] if player is not None else manager.get_board(ctx.guild.id).players
+    output = ""
+    for current_player in players:
+        problems = []
+        for unit in current_player.units:
+            if unit.order is not None:
+                valid, reason = order_is_valid(unit.province, unit.order, current_player)
+                if isinstance(unit.order, Move) and not valid:
+                    valid, new_reason = order_is_valid(
+                        unit.province, ConvoyMove(unit.order.destination), current_player
+                    )
+                    reason = f"{reason}, and {new_reason[0].lower()}{new_reason[1:]}"
+                if not valid:
+                    problems.append(f"{unit} {unit.order}; {reason}")
+        if player is None:
+            output += f"\n**__{current_player.name}__**\n"
+        if problems:
+            output += "\n".join(problems)
+        else:
+            output += "All orders valid"
+    return output, None
 
 
 @perms.gm("adjudicate")
