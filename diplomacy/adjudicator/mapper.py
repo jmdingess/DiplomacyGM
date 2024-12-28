@@ -162,7 +162,7 @@ class Mapper:
             # moves are just convoyed moves that have no convoys
             return self._draw_convoyed_move(unit, coordinate)
         elif isinstance(order, ConvoyMove):
-            logger.warning("Convoy move is depricated; use move instead")
+            logger.warning("Convoy move is deprecated; use move instead")
             return self._draw_convoyed_move(unit, coordinate)
         elif isinstance(order, Support):
             return self._draw_support(unit, coordinate)
@@ -267,7 +267,7 @@ class Mapper:
                 options += self._path_helper(source, destination, possibility, new_checked)
         return list(map((lambda t: (current.get_unit().location(),) + t), options))
 
-    def _draw_path(self, d: str, marker_end="arrow", stroke_color="black"):
+    def _draw_path(self, d: str, marker_end="arrow", stroke_color="black") -> etree.Element:
         order_path = utils.create_element(
             "path",
             {
@@ -297,7 +297,7 @@ class Mapper:
 
         return min_subsets
 
-    def _draw_convoyed_move(self, unit: Unit, coordinate: tuple[float, float]):
+    def _draw_convoyed_move(self, unit: Unit, coordinate: tuple[float, float]) -> etree.Element:
         valid_convoys = self._get_all_paths(unit)
         # TODO: make this a setting
         if False:
@@ -611,13 +611,17 @@ class Mapper:
     def _draw_retreat_options(self, unit: Unit, svg):
         root = svg.getroot()
         if not unit.retreat_options:
-           self._draw_force_disband(unit.province.retreat_unit_coordinate, svg)
+            self._draw_force_disband(unit.province.retreat_unit_coordinate, svg)
         # if we're drawing possible retreat locs, why show it as dislodged at all?
         # else:
         #     self._draw_disband(unit.location().retreat_unit_coordinate, svg)
 
         for retreat_province in unit.retreat_options:
-            root.append(self._draw_retreat_move(RetreatMove(retreat_province), unit.province.retreat_unit_coordinate, use_moves_svg=False))
+            root.append(
+                self._draw_retreat_move(
+                    RetreatMove(retreat_province), unit.province.retreat_unit_coordinate, use_moves_svg=False
+                )
+            )
 
     def _initialize_scoreboard_locations(self) -> None:
         all_power_banners_element = get_svg_element(self.board_svg.getroot(), svgcfg.POWER_BANNERS_LAYER_ID)

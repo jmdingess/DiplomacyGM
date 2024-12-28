@@ -5,16 +5,16 @@ to_rename = [
     ["Arkangelsk coast", "Arkhangelsk coast"],
     ["Cartogena", "Cartagena"],
     ["Cartogena coast", "Cartagena coast"],
-    ["Philippene Sea", "Philippine Sea"]
+    ["Philippene Sea", "Philippine Sea"],
 ]
 
-with open("assets/imperial_diplomacy.svg", 'r') as f:
+with open("assets/imperial_diplomacy.svg", "r") as f:
     txt = f.read()
 
 for find, replace in to_rename:
     txt = txt.replace(find, replace)
 
-with open("assets/imperial_diplomacy.svg", 'w') as f:
+with open("assets/imperial_diplomacy.svg", "w") as f:
     f.write(txt)
 
 SQL_format = """
@@ -31,7 +31,7 @@ db_usages = [
     ["units", "location"],
     ["units", "order_source"],
     ["units", "order_destination"],
-    ["builds", "location"]
+    ["builds", "location"],
 ]
 
 SQL_txt = "BEGIN TRANSACTION;"
@@ -39,8 +39,8 @@ SQL_txt = "BEGIN TRANSACTION;"
 for table, column in db_usages:
     for find, replace in to_rename:
         SQL_txt += SQL_format.format(table_name=table, column_name=column, replace=replace, search=find)
-    
+
 SQL_txt += "\nCOMMIT;\n"
 
-with open("SQL/Rename.out.sql", 'w') as f:
+with open("SQL/Rename.out.sql", "w") as f:
     f.write(SQL_txt)

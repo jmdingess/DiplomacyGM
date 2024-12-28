@@ -1,6 +1,6 @@
 import logging
 
-from diplomacy.adjudicator.adjudicator import make_adjudicator
+from diplomacy.adjudicator.adjudicator import make_adjudicator, MovesAdjudicator
 from diplomacy.adjudicator.mapper import Mapper
 from diplomacy.map_parser.vector.vector import oneTrueParser
 from diplomacy.persistence import phase
@@ -18,7 +18,7 @@ class Manager:
         self._database = database.get_connection()
         self._boards: dict[int, Board] = self._database.get_boards()
         # TODO: have multiple for each variant?
-        # do it like this so that the parser can cache data between board initilizations
+        # do it like this so that the parser can cache data between board initializations
 
     def list_servers(self) -> set[int]:
         return set(self._boards.keys())
@@ -56,6 +56,8 @@ class Manager:
         self._boards[server_id] = new_board
         self._database.save_board(server_id, new_board)
         mapper = Mapper(new_board)
+        if isinstance(adjudicator, MovesAdjudicator):
+            pass
         return mapper.draw_current_map()
 
     def rollback(self, server_id: int) -> tuple[str, str]:
