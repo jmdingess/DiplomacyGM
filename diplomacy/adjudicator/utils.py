@@ -12,6 +12,7 @@ from diplomacy.persistence.province import Location
 
 from diplomacy.map_parser.vector.config_player import player_data
 
+
 def add_arrow_definition_to_svg(svg: ElementTree) -> None:
     defs: Element = svg.find("{http://www.w3.org/2000/svg}defs")
     if defs is None:
@@ -50,8 +51,7 @@ def add_arrow_definition_to_svg(svg: ElementTree) -> None:
     )
     red_arrow_path: Element = create_element(
         "path",
-        {"d": "M 0,0 L 3,1.5 L 0,3 z",
-         "fill": "red"},
+        {"d": "M 0,0 L 3,1.5 L 0,3 z", "fill": "red"},
     )
     red_arrow_marker.append(red_arrow_path)
     defs.append(red_arrow_marker)
@@ -78,26 +78,9 @@ def add_arrow_definition_to_svg(svg: ElementTree) -> None:
     data = player_data.copy()
     data["None"] = ["ffffff"]
     for mapping in itertools.product(data, data):
-        gradient_def: Element = create_element(
-            "linearGradient",
-            {
-                "id": f"{mapping[0]}_{mapping[1]}"
-            }
-        )
-        first: Element = create_element(
-            "stop",
-            {
-                "offset": "50%",
-                "stop-color": f"#{data[mapping[0]][0]}"
-            }
-        )
-        second: Element = create_element(
-            "stop",
-            {
-                "offset": "50%",
-                "stop-color": f"#{data[mapping[1]][0]}"
-            }
-        )
+        gradient_def: Element = create_element("linearGradient", {"id": f"{mapping[0]}_{mapping[1]}"})
+        first: Element = create_element("stop", {"offset": "50%", "stop-color": f"#{data[mapping[0]][0]}"})
+        second: Element = create_element("stop", {"offset": "50%", "stop-color": f"#{data[mapping[1]][0]}"})
         gradient_def.append(first)
         gradient_def.append(second)
         defs.append(gradient_def)
@@ -118,17 +101,19 @@ def create_element(tag: str, attributes: dict[str, any]) -> etree.Element:
     attributes_str = {key: str(val) for key, val in attributes.items()}
     return etree.Element(tag, attributes_str)
 
-# returns equivelent point within the map
-def normalize(point: tuple[float, float]):
-    return (point[0] % MAP_WIDTH, point[1])
+
+# returns equivalent point within the map
+def normalize(point: tuple[float, float] | list[float, float]) -> tuple[float, float]:
+    return point[0] % MAP_WIDTH, point[1]
+
 
 # returns closest point in a set
 # will wrap horizontally
-def get_closest_loc(possiblities: tuple[tuple[float, float]], coord: tuple[float, float]):
-    possiblities = list(possiblities)
+def get_closest_loc(possibilities: set[tuple[float, float]], coord: tuple[float, float]) -> list[float, float]:
+    possibilities = list(possibilities)
     crossed_pos = []
     crossed = []
-    for p in possiblities:
+    for p in possibilities:
         x = p[0]
         cx = coord[0]
         if abs(x - cx) > MAP_WIDTH / 2:
@@ -145,7 +130,7 @@ def get_closest_loc(possiblities: tuple[tuple[float, float]], coord: tuple[float
     crossed_pos = np.array(crossed_pos)
 
     dists = crossed_pos - coord
-    #penalty for crossing map is 500 px
+    # penalty for crossing map is 500 px
     short_ind = np.argmin(np.linalg.norm(dists, axis=1) + 500 * crossed)
     return crossed_pos[short_ind].tolist()
 

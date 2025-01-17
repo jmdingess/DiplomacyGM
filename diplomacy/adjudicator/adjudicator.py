@@ -229,6 +229,9 @@ class Adjudicator:
         self._board = board
         self.failed_or_invalid_units: set[MapperInformation] = set()
 
+    def get_board(self):
+        return self._board
+
     @abc.abstractmethod
     def run(self) -> Board:
         pass
@@ -280,24 +283,25 @@ class RetreatsAdjudicator(Adjudicator):
     def __init__(self, board: Board):
         super().__init__(board)
 
-    def run(self) -> Board:
-        retreats_by_destination: dict[str, set[Unit]] = dict()
-        units_to_delete: set[Unit] = set()
+        self.retreats_by_destination: dict[str, set[Unit]] = dict()
+        self.units_to_delete: set[Unit] = set()
+
         for unit in self._board.units:
             if unit != unit.province.dislodged_unit:
                 continue
 
-            if isinstance(unit.order, RetreatMove) and order_is_valid(unit.province, unit.order)[0]:
+            if isinstance(unit.order, RetreatMove) and order_is_valid(unit.province, unit.order, None)[0]:
                 destination_province = get_base_province_from_location(unit.order.destination)
-                if destination_province.name not in retreats_by_destination:
-                    retreats_by_destination[destination_province.name] = set()
-                retreats_by_destination[destination_province.name].add(unit)
+                if destination_province.name not in self.retreats_by_destination:
+                    self.retreats_by_destination[destination_province.name] = set()
+                self.retreats_by_destination[destination_province.name].add(unit)
             else:
-                units_to_delete.add(unit)
+                self.units_to_delete.add(unit)
 
-        for retreating_units in retreats_by_destination.values():
+    def run(self) -> Board:
+        for retreating_units in self.retreats_by_destination.values():
             if len(retreating_units) != 1:
-                units_to_delete.update(retreating_units)
+                self.units_to_delete.update(retreating_units)
                 continue
 
             (unit,) = retreating_units
@@ -315,7 +319,7 @@ class RetreatsAdjudicator(Adjudicator):
             if not destination_province.has_supply_center or self._board.phase.name.startswith("Fall"):
                 self._board.change_owner(destination_province, unit.player)
 
-        for unit in units_to_delete:
+        for unit in self.units_to_delete:
             unit.player.units.remove(unit)
             self._board.units.remove(unit)
             unit.province.dislodged_unit = None

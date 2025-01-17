@@ -8,6 +8,8 @@ import numpy as np
 from lxml import etree
 
 from diplomacy.adjudicator import utils
+from diplomacy.adjudicator.adjudicator import Adjudicator, BuildsAdjudicator, RetreatsAdjudicator, MovesAdjudicator
+from diplomacy.adjudicator.defs import AdjudicableOrder, OrderType
 from diplomacy.map_parser.vector import config_svg as svgcfg
 
 from diplomacy.map_parser.vector.utils import get_element_color, get_svg_element, get_unit_coordinates
@@ -47,8 +49,10 @@ class Mapper:
         units_layer: Element = get_svg_element(self.board_svg, svgcfg.UNITS_LAYER_ID)
         self.board_svg.getroot().remove(units_layer)
 
-        # TODO: Switch to passing the SVG directly, as that's simpiler (self.svg = draw_units(svg)?)
-        self._draw_units()
+        # TODO: Switch to passing the SVG directly, as that's simpler (self.svg = draw_units(svg)?)
+        for unit in self.board.units:
+            self._draw_unit(unit)
+
         self._color_provinces()
         self._color_centers()
         self.draw_side_panel(self.board_svg)
@@ -59,11 +63,52 @@ class Mapper:
 
         self.highlight_retreating_units(self.state_svg)
 
-    def draw_moves_map(self, current_phase: phase.Phase, player_restriction: Player | None) -> str:
+    def draw_moves_map(self, adjudicator: Adjudicator, player_restriction: Player | None) -> str:
         self._reset_moves_map()
-        self.player_restriction = player_restriction
-        if not phase.is_builds(current_phase):
-            for unit in self.board.units:
+
+        if isinstance(adjudicator, BuildsAdjudicator):
+            players: set[Player]
+            if player_restriction is None:
+                players = self.board.players
+            else:
+                players = {player_restriction}
+            for player in players:
+                for build_order in player.build_orders:
+                    self._draw_player_order(player, build_order)
+        elif isinstance(adjudicator, RetreatsAdjudicator):
+            for units_per_destination in adjudicator.retreats_by_destination.values():
+                for unit in units_per_destination:
+                    if player_restriction and unit.player != player_restriction:
+                        continue
+                    if not isinstance(unit.order, RetreatMove):
+                        # This should not be possible
+                        adjudicator.units_to_delete.add(unit)
+                        continue
+
+                    closest_locations = set()
+                    for endpoint in unit.order.destination.all_locs:
+                        closest_location = utils.normalize(utils.get_closest_loc(unit.location().all_rets, endpoint))
+                        if closest_location in closest_locations:
+                            continue
+                        closest_locations.add(closest_location)
+                        self._draw_retreat_move(unit.order, closest_location)
+
+            for unit in adjudicator.units_to_delete:
+                if player_restriction and unit.player != player_restriction:
+                    continue
+                # TODO: draw disband
+                pass
+        elif isinstance(adjudicator, MovesAdjudicator):
+            for mapper_info in adjudicator.failed_or_invalid_units:
+                if mapper_info.order is None:
+                    self._draw_hold(mapper_info.location.primary_unit_coordinate)
+            for adjudicable_order in adjudicator.orders:
+                if adjudicable_order.type == OrderType.HOLD:
+                    self._draw_hold(adjudicable_order.current_province.primary_unit_coordinate)
+
+        else:
+            raise ValueError("Unrecognized adjudicator")
+            for unit in adjudicator:
                 if player_restriction and unit.player != player_restriction:
                     continue
                 if phase.is_retreats(current_phase) and unit.province.dislodged_unit != unit:
@@ -99,15 +144,6 @@ class Mapper:
                             l.append(val)
                 except Exception as err:
                     logger.error(f"Drawing move failed for {unit}", exc_info=err)
-        else:
-            players: set[Player]
-            if player_restriction is None:
-                players = self.board.players
-            else:
-                players = {player_restriction}
-            for player in players:
-                for build_order in player.build_orders:
-                    self._draw_player_order(player, build_order)
 
         self.draw_side_panel(self._moves_svg)
         svg_file_name = f"{self.board.phase.name}_moves_map.svg"
@@ -223,7 +259,7 @@ class Mapper:
         )
         element.append(drawn_order)
 
-    def _draw_retreat_move(self, order: RetreatMove, coordinate: tuple[float, float], use_moves_svg=True) -> None:
+    def _draw_retreat_move(self, order: RetreatMove, coordinate: tuple[float, float]) -> None:
         destination = utils.loc_to_point(order.destination, coordinate)
         if order.destination.get_unit():
             destination = utils.pull_coordinate(coordinate, destination)
@@ -242,7 +278,7 @@ class Mapper:
 
     def _path_helper(
         self, source: Province, destination: Province, current: Province, already_checked=()
-    ) -> list[tuple[Province]]:
+    ) -> list[tuple[Location, Province]]:
         if current in already_checked:
             return []
         options = []
@@ -539,7 +575,9 @@ class Mapper:
             #     print(f"\t{path}")
             #     utils.color_element(path, color)
             for elem in center_element.getchildren():
-                if "{http://www.inkscape.org/namespaces/inkscape}label" in elem.attrib and elem.attrib["{http://www.inkscape.org/namespaces/inkscape}label"] in ["Halfcore Marker", "Core Marker"]:
+                if "{http://www.inkscape.org/namespaces/inkscape}label" in elem.attrib and elem.attrib[
+                    "{http://www.inkscape.org/namespaces/inkscape}label"
+                ] in ["Halfcore Marker", "Core Marker"]:
                     # Handling capitals is easy bc it's all marked
                     # TODO: Maybe make it split vertically?
                     # that might be hard to do
@@ -555,8 +593,6 @@ class Mapper:
                     else:
                         utils.color_element(elem, core_color)
 
-
-
     def _get_province_from_element_by_label(self, element: Element) -> Province:
         province_name = element.get("{http://www.inkscape.org/namespaces/inkscape}label")
         if province_name is None:
@@ -565,10 +601,6 @@ class Mapper:
         if province is None:
             raise ValueError(f"Could not find province for label {province_name}")
         return province
-
-    def _draw_units(self) -> None:
-        for unit in self.board.units:
-            self._draw_unit(unit)
 
     def _draw_unit(self, unit: Unit, use_moves_svg=False):
         unit_element = self._get_element_for_unit_type(unit.unit_type)
@@ -617,11 +649,7 @@ class Mapper:
         #     self._draw_disband(unit.location().retreat_unit_coordinate, svg)
 
         for retreat_province in unit.retreat_options:
-            root.append(
-                self._draw_retreat_move(
-                    RetreatMove(retreat_province), unit.province.retreat_unit_coordinate, use_moves_svg=False
-                )
-            )
+            root.append(self._draw_retreat_move(RetreatMove(retreat_province), unit.province.retreat_unit_coordinate))
 
     def _initialize_scoreboard_locations(self) -> None:
         all_power_banners_element = get_svg_element(self.board_svg.getroot(), svgcfg.POWER_BANNERS_LAYER_ID)
