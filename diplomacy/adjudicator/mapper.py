@@ -9,7 +9,8 @@ from lxml import etree
 
 from diplomacy.adjudicator import utils
 from diplomacy.adjudicator.adjudicator import Adjudicator, BuildsAdjudicator, RetreatsAdjudicator, MovesAdjudicator
-from diplomacy.adjudicator.defs import AdjudicableOrder, OrderType
+from diplomacy.adjudicator.defs import AdjudicableOrder, OrderType, Resolution
+from diplomacy.adjudicator.utils import match_start_to_end, pull_coordinate
 from diplomacy.map_parser.vector import config_svg as svgcfg
 
 from diplomacy.map_parser.vector.utils import get_element_color, get_svg_element, get_unit_coordinates
@@ -84,66 +85,26 @@ class Mapper:
                         # This should not be possible
                         adjudicator.units_to_delete.add(unit)
                         continue
-
-                    closest_locations = set()
-                    for endpoint in unit.order.destination.all_locs:
-                        closest_location = utils.normalize(utils.get_closest_loc(unit.location().all_rets, endpoint))
-                        if closest_location in closest_locations:
-                            continue
-                        closest_locations.add(closest_location)
-                        self._draw_retreat_move(unit.order, closest_location)
+                    color = "black"
+                    if len(units_per_destination) != 1:
+                        color = "red"
+                    self._draw_move(unit.province.all_rets, unit.order.destination.all_locs, [], color)
 
             for unit in adjudicator.units_to_delete:
                 if player_restriction and unit.player != player_restriction:
                     continue
-                # TODO: draw disband
-                pass
+                for coord in unit.location().all_rets:
+                    self._draw_disband(coord, self._moves_svg)
         elif isinstance(adjudicator, MovesAdjudicator):
-            for mapper_info in adjudicator.failed_or_invalid_units:
-                if mapper_info.order is None:
-                    self._draw_hold(mapper_info.location.primary_unit_coordinate)
-            for adjudicable_order in adjudicator.orders:
-                if adjudicable_order.type == OrderType.HOLD:
-                    self._draw_hold(adjudicable_order.current_province.primary_unit_coordinate)
+            for location, order in adjudicator.failed_or_invalid_units.items():
+                self._draw_order(order)
 
+            for order in adjudicator.orders:
+                if order.current_province.name in adjudicator.failed_or_invalid_units:
+                    continue
+                self._draw_order(order)
         else:
             raise ValueError("Unrecognized adjudicator")
-            for unit in adjudicator:
-                if player_restriction and unit.player != player_restriction:
-                    continue
-                if phase.is_retreats(current_phase) and unit.province.dislodged_unit != unit:
-                    continue
-
-                if phase.is_retreats(current_phase):
-                    unit_locs = unit.location().all_rets
-                else:
-                    unit_locs = unit.location().all_locs
-
-                # TODO: Maybe there's a better way to handle convoys?
-                if isinstance(unit.order, (RetreatMove, Move, Support)):
-                    new_locs = []
-                    for endpoint in unit.order.destination.all_locs:
-                        new_locs += [utils.normalize(utils.get_closest_loc(unit_locs, endpoint))]
-                    unit_locs = new_locs
-                try:
-                    for loc in unit_locs:
-                        val = self._draw_order(unit, loc, current_phase)
-                        if val is not None:
-                            # if something returns, that means it could potentially go across the edge
-                            # copy it 3 times (-1, 0, +1)
-                            lval = copy.deepcopy(val)
-                            rval = copy.deepcopy(val)
-                            lval.attrib["transform"] = f"translate({-svgcfg.MAP_WIDTH}, 0)"
-                            rval.attrib["transform"] = f"translate({svgcfg.MAP_WIDTH}, 0)"
-                            t = self._moves_svg.getroot()
-
-                            l = get_svg_element(t, OUTPUTLAYER)
-
-                            l.append(lval)
-                            l.append(rval)
-                            l.append(val)
-                except Exception as err:
-                    logger.error(f"Drawing move failed for {unit}", exc_info=err)
 
         self.draw_side_panel(self._moves_svg)
         svg_file_name = f"{self.board.phase.name}_moves_map.svg"
@@ -188,32 +149,55 @@ class Mapper:
     def _reset_moves_map(self):
         self._moves_svg = copy.deepcopy(self.board_svg)
 
-    def _draw_order(self, unit: Unit, coordinate: tuple[float, float], current_phase: phase.Phase) -> None:
-        order = unit.order
-        if isinstance(order, Hold):
-            self._draw_hold(coordinate)
-        elif isinstance(order, Core):
-            self._draw_core(coordinate)
-        elif isinstance(order, Move):
-            # moves are just convoyed moves that have no convoys
-            return self._draw_convoyed_move(unit, coordinate)
-        elif isinstance(order, ConvoyMove):
-            logger.warning("Convoy move is deprecated; use move instead")
-            return self._draw_convoyed_move(unit, coordinate)
-        elif isinstance(order, Support):
-            return self._draw_support(unit, coordinate)
-        elif isinstance(order, ConvoyTransport):
-            self._draw_convoy(order, coordinate)
-        elif isinstance(order, RetreatMove):
-            return self._draw_retreat_move(order, coordinate)
-        elif isinstance(order, RetreatDisband):
-            self._draw_force_disband(coordinate, self._moves_svg)
+    def _draw_order(self, order: AdjudicableOrder) -> None:
+        if order.type == OrderType.HOLD:
+            color = "black" if order.resolution == Resolution.SUCCEEDS else "red"
+            for coord in order.raw_location.all_locs:
+                self._draw_hold(coord, color)
+        elif order.type == OrderType.CORE:
+            for coord in order.raw_location.all_locs:
+                self._draw_core(coord)
+        elif order.type == OrderType.MOVE:
+            self._draw_move(
+                order.raw_location.all_locs,
+                order.raw_destination.all_locs,
+                [convoy.raw_location.all_locs for convoy in order.convoys],
+                "black" if order.resolution == Resolution.SUCCEEDS else "red",
+            )
+        elif order.type == OrderType.SUPPORT:
+            self._draw_support(order)
+        elif order.type == OrderType.CONVOY:
+            for coord in order.raw_location.all_locs:
+                self._draw_convoy(coord)
         else:
-            if phase.is_moves(current_phase):
-                self._draw_hold(coordinate)
-            else:
-                self._draw_force_disband(coordinate, self._moves_svg)
-            logger.debug(f"None order found: hold drawn. Coordinates: {coordinate}")
+            raise ValueError(f"Invalid order type {order.type}")
+
+    # def _draw_order(self, unit: Unit, coordinate: tuple[float, float], current_phase: phase.Phase) -> None:
+    #     order = unit.order
+    #     if isinstance(order, Hold):
+    #         self._draw_hold(coordinate)
+    #     elif isinstance(order, Core):
+    #         self._draw_core(coordinate)
+    #     elif isinstance(order, Move):
+    #         # moves are just convoyed moves that have no convoys
+    #         return self._draw_convoyed_move(unit, coordinate)
+    #     elif isinstance(order, ConvoyMove):
+    #         logger.warning("Convoy move is deprecated; use move instead")
+    #         return self._draw_convoyed_move(unit, coordinate)
+    #     elif isinstance(order, Support):
+    #         return self._draw_support(unit, coordinate)
+    #     elif isinstance(order, ConvoyTransport):
+    #         self._draw_convoy(order, coordinate)
+    #     elif isinstance(order, RetreatMove):
+    #         return self._draw_retreat_move(order, coordinate)
+    #     elif isinstance(order, RetreatDisband):
+    #         self._draw_force_disband(coordinate, self._moves_svg)
+    #     else:
+    #         if phase.is_moves(current_phase):
+    #             self._draw_hold(coordinate)
+    #         else:
+    #             self._draw_force_disband(coordinate, self._moves_svg)
+    #         logger.debug(f"None order found: hold drawn. Coordinates: {coordinate}")
 
     def _draw_player_order(self, player: Player, order: PlayerOrder):
         if order.location.primary_unit_coordinate is None:
@@ -227,7 +211,7 @@ class Mapper:
         else:
             logger.error(f"Could not draw player order {order}")
 
-    def _draw_hold(self, coordinate: tuple[float, float]) -> None:
+    def _draw_hold(self, coordinate: tuple[float, float], color: str = "black") -> None:
         element = self._moves_svg.getroot()
         drawn_order = utils.create_element(
             "circle",
@@ -236,7 +220,7 @@ class Mapper:
                 "cy": coordinate[1],
                 "r": svgcfg.RADIUS,
                 "fill": "none",
-                "stroke": "black",
+                "stroke": color,
                 "stroke-width": svgcfg.STROKE_WIDTH,
             },
         )
@@ -259,49 +243,67 @@ class Mapper:
         )
         element.append(drawn_order)
 
-    def _draw_retreat_move(self, order: RetreatMove, coordinate: tuple[float, float]) -> None:
-        destination = utils.loc_to_point(order.destination, coordinate)
-        if order.destination.get_unit():
-            destination = utils.pull_coordinate(coordinate, destination)
-        order_path = utils.create_element(
-            "path",
-            {
-                "d": f"M {coordinate[0]},{coordinate[1]} L {destination[0]},{destination[1]}",
-                "fill": "none",
-                "stroke": "red",
-                "stroke-width": svgcfg.STROKE_WIDTH,
-                "stroke-linecap": "round",
-                "marker-end": "url(#redarrow)",
-            },
+    def _draw_move(
+        self,
+        start_points: set[tuple[float, float]],
+        end_points: set[tuple[float, float]],
+        convoy_nodes: list[set[tuple[float, float]]],
+        color: str,
+    ) -> None:
+        start_to_end_matching = match_start_to_end(start_points, end_points)
+
+        for start, end in start_to_end_matching.items():
+            # TODO handle map wrap
+            if not convoy_nodes:
+                adjusted_start = pull_coordinate(end, start)
+                adjusted_end = pull_coordinate(start, end)
+                path = self._draw_path(
+                    f"M {adjusted_start[0]} {adjusted_start[1]} L {adjusted_end[0]} {adjusted_end[1]}",
+                    marker_end="arrow" if color != "red" else "redarrow",
+                    stroke_color=color,
+                )
+                get_svg_element(self._moves_svg.getroot(), OUTPUTLAYER).append(path)
+                return
+
+            # TODO do something if we have convoy nodes
+            for node_coords in convoy_nodes:
+
+
+    def _draw_retreat_move(self, destination: Location, coordinate: tuple[float, float]) -> None:
+        destination_coords = utils.loc_to_point(destination, coordinate)
+        if destination.get_unit():
+            destination_coords = utils.pull_coordinate(coordinate, destination_coords)
+        order_path = self._draw_path(
+            f"M {coordinate[0]},{coordinate[1]} L {destination_coords[0]},{destination_coords[1]}", "redarrow", "red"
         )
         return order_path
 
-    def _path_helper(
-        self, source: Province, destination: Province, current: Province, already_checked=()
-    ) -> list[tuple[Location, Province]]:
-        if current in already_checked:
-            return []
-        options = []
-        new_checked = already_checked + (current,)
-        for possibility in current.adjacent:
-            if possibility == destination:
-                return [
-                    (
-                        current.get_unit().location(),
-                        destination,
-                    )
-                ]
-            if (
-                possibility.type == ProvinceType.SEA
-                and possibility.unit is not None
-                and (self.player_restriction is None or possibility.unit.player == self.player_restriction)
-                and possibility.unit.unit_type == UnitType.FLEET
-                and isinstance(possibility.unit.order, ConvoyTransport)
-                and possibility.unit.order.source.province is source
-                and possibility.unit.order.destination is destination
-            ):
-                options += self._path_helper(source, destination, possibility, new_checked)
-        return list(map((lambda t: (current.get_unit().location(),) + t), options))
+    # def _path_helper(
+    #     self, source: Province, destination: Province, current: Province, already_checked=()
+    # ) -> list[tuple[Location, Province]]:
+    #     if current in already_checked:
+    #         return []
+    #     options = []
+    #     new_checked = already_checked + (current,)
+    #     for possibility in current.adjacent:
+    #         if possibility == destination:
+    #             return [
+    #                 (
+    #                     current.get_unit().location(),
+    #                     destination,
+    #                 )
+    #             ]
+    #         if (
+    #             possibility.type == ProvinceType.SEA
+    #             and possibility.unit is not None
+    #             and (self.player_restriction is None or possibility.unit.player == self.player_restriction)
+    #             and possibility.unit.unit_type == UnitType.FLEET
+    #             and isinstance(possibility.unit.order, ConvoyTransport)
+    #             and possibility.unit.order.source.province is source
+    #             and possibility.unit.order.destination is destination
+    #         ):
+    #             options += self._path_helper(source, destination, possibility, new_checked)
+    #     return list(map((lambda t: (current.get_unit().location(),) + t), options))
 
     def _draw_path(self, d: str, marker_end="arrow", stroke_color="black") -> etree.Element:
         order_path = utils.create_element(
@@ -317,113 +319,129 @@ class Mapper:
         )
         return order_path
 
-    def _get_all_paths(self, unit: Unit) -> list[tuple[Province]]:
-        paths = self._path_helper(unit.province, unit.order.destination, unit.province)
-        if paths == []:
-            return [(unit.province, unit.order.destination)]
-        return paths
+    # def _get_all_paths(self, unit: Unit) -> list[tuple[Province]]:
+    #     paths = self._path_helper(unit.province, unit.order.destination, unit.province)
+    #     if paths == []:
+    #         return [(unit.province, unit.order.destination)]
+    #     return paths
 
-    # removes unnesseary convoys, for instance [A->B->C & A->C] -> [A->C]
-    def get_shortest_paths(self, args: list[tuple[Province]]) -> list[tuple[Location]]:
-        args.sort(key=len)
-        min_subsets = []
-        for s in args:
-            if not any(set(min_subset).issubset(s) for min_subset in min_subsets):
-                min_subsets.append(s)
+    # removes unnecessary convoys, for instance [A->B->C & A->C] -> [A->C]
+    # def get_shortest_paths(self, args: list[tuple[Province]]) -> list[tuple[Location]]:
+    #     args.sort(key=len)
+    #     min_subsets = []
+    #     for s in args:
+    #         if not any(set(min_subset).issubset(s) for min_subset in min_subsets):
+    #             min_subsets.append(s)
+    #
+    #     return min_subsets
 
-        return min_subsets
+    # def _draw_convoyed_move(self, unit: Unit, coordinate: tuple[float, float]) -> etree.Element:
+    #     valid_convoys = self._get_all_paths(unit)
+    #     # TODO: make this a setting
+    #     if False:
+    #         if len(valid_convoys):
+    #             valid_convoys = valid_convoys[0:1]
+    #     valid_convoys = self.get_shortest_paths(valid_convoys)
+    #     for path in valid_convoys:
+    #         p = [coordinate]
+    #         start = coordinate
+    #         for loc in path[1:]:
+    #             p += [utils.loc_to_point(loc, start)]
+    #             start = p[-1]
+    #
+    #         if path[-1].get_unit():
+    #             p[-1] = utils.pull_coordinate(p[-2], p[-1])
+    #
+    #         p = np.array(p)
+    #
+    #         def f(point: tuple[float, float]):
+    #             return " ".join(map(str, point))
+    #
+    #         def norm(point: tuple[float, float]) -> tuple[float, float]:
+    #             return point / ((np.sum(point**2)) ** 0.5)
+    #
+    #         # given surrounding points, generate a control point
+    #         def g(point: tuple[tuple[float, float], tuple[float, float], tuple[float, float]]):
+    #             centered = point[::2] - point[1]
+    #
+    #             # TODO: possible div / 0 if the two convoyed points are in a straight line with the convoyer on one side
+    #             vec = norm(centered[0]) - norm(centered[1])
+    #             return norm(vec) * 30 + point[1]
+    #
+    #         # this is a bit weird, because the loop is in-between two values
+    #         # (S LO)(OP LO)(OP E)
+    #         s = f"M {f(p[0])} C {f(p[1])}, "
+    #         for x in range(1, len(p) - 1):
+    #             s += f"{f(g(p[x-1:x+2]))}, {f(p[x])} S "
+    #
+    #         s += f"{f(p[-2])}, {f(p[-1])}"
+    #         return self._draw_path(s)
 
-    def _draw_convoyed_move(self, unit: Unit, coordinate: tuple[float, float]) -> etree.Element:
-        valid_convoys = self._get_all_paths(unit)
-        # TODO: make this a setting
-        if False:
-            if len(valid_convoys):
-                valid_convoys = valid_convoys[0:1]
-        valid_convoys = self.get_shortest_paths(valid_convoys)
-        for path in valid_convoys:
-            p = [coordinate]
-            start = coordinate
-            for loc in path[1:]:
-                p += [utils.loc_to_point(loc, start)]
-                start = p[-1]
+    # def _draw_support(self, unit: Unit, coordinate: tuple[float, float]) -> None:
+    #     order: Support = unit.order
+    #     x1 = coordinate[0]
+    #     y1 = coordinate[1]
+    #     v2 = utils.loc_to_point(order.source.location(), coordinate)
+    #     x2, y2 = v2
+    #     v3 = utils.loc_to_point(order.destination, v2)
+    #     x3, y3 = v3
+    #     marker_start = ""
+    #     if order.destination.get_unit():
+    #         if order.source.location() == order.destination:
+    #             (x3, y3) = utils.pull_coordinate((x1, y1), (x3, y3), svgcfg.RADIUS)
+    #         else:
+    #             (x3, y3) = utils.pull_coordinate((x2, y2), (x3, y3))
+    #         if isinstance(order.destination.get_unit().order, (ConvoyTransport, Support)):
+    #             for coord in order.destination.all_locs:
+    #                 self._draw_hold(coord)
+    #         # if two units are support-holding each other
+    #         destorder = order.destination.get_unit().order
+    #
+    #         if (
+    #             isinstance(order.destination.get_unit().order, Support)
+    #             and destorder.source.location() == destorder.destination == unit.location()
+    #             and order.source.location() == order.destination
+    #         ):
+    #             # This check is so we only do it once, so it doesn't overlay
+    #             # it doesn't matter which one is the origin & which is the dest
+    #             if id(order.destination.get_unit()) > id(unit):
+    #                 marker_start = "url(#ball)"
+    #                 # doesn't matter that v3 has been pulled, as it's still collinear
+    #                 (x1, y1) = (x2, y2) = utils.pull_coordinate((x3, y3), (x1, y1), svgcfg.RADIUS)
+    #             else:
+    #                 return
+    #     drawn_order = utils.create_element(
+    #         "path",
+    #         {
+    #             "d": f"M {x1},{y1} Q {x2},{y2} {x3},{y3}",
+    #             "fill": "none",
+    #             "stroke": "black",
+    #             "stroke-dasharray": "5 5",
+    #             "stroke-width": svgcfg.STROKE_WIDTH,
+    #             "stroke-linecap": "round",
+    #             "marker-start": marker_start,
+    #             "marker-end": f"url(#{'ball' if order.source.location() == order.destination else 'arrow'})",
+    #         },
+    #     )
+    #     return drawn_order
 
-            if path[-1].get_unit():
-                p[-1] = utils.pull_coordinate(p[-2], p[-1])
+    def _draw_support(self, order: AdjudicableOrder):
+        if order.source_province != order.destination_province:
+            drawn_order = utils.create_element(
+                "path",
+                {
+                    "d": f"M {order.raw_location.primary_unit_coordinate[0]},{order.raw_location.primary_unit_coordinate[1]} Q {order.source_province.primary_unit_coordinate[0]},{order.source_province.primary_unit_coordinate[1]} {order.raw_destination.primary_unit_coordinate[0]},{order.raw_destination.primary_unit_coordinate[1]}",
+                    "fill": "none",
+                    "stroke": "black",
+                    "stroke-dasharray": "5 5",
+                    "stroke-width": svgcfg.STROKE_WIDTH,
+                    "stroke-linecap": "round",
+                    "marker-end": f"url(#arrow)",
+                },
+            )
+            get_svg_element(self._moves_svg.getroot(), OUTPUTLAYER).append(drawn_order)
 
-            p = np.array(p)
-
-            def f(point: tuple[float, float]):
-                return " ".join(map(str, point))
-
-            def norm(point: tuple[float, float]) -> tuple[float, float]:
-                return point / ((np.sum(point**2)) ** 0.5)
-
-            # given surrounding points, generate a control point
-            def g(point: tuple[tuple[float, float], tuple[float, float], tuple[float, float]]):
-                centered = point[::2] - point[1]
-
-                # TODO: possible div / 0 if the two convoyed points are in a straight line with the convoyer on one side
-                vec = norm(centered[0]) - norm(centered[1])
-                return norm(vec) * 30 + point[1]
-
-            # this is a bit wierd, because the loop is in-between two values
-            # (S LO)(OP LO)(OP E)
-            s = f"M {f(p[0])} C {f(p[1])}, "
-            for x in range(1, len(p) - 1):
-                s += f"{f(g(p[x-1:x+2]))}, {f(p[x])} S "
-
-            s += f"{f(p[-2])}, {f(p[-1])}"
-            return self._draw_path(s)
-
-    def _draw_support(self, unit: Unit, coordinate: tuple[float, float]) -> None:
-        order: Support = unit.order
-        x1 = coordinate[0]
-        y1 = coordinate[1]
-        v2 = utils.loc_to_point(order.source.location(), coordinate)
-        x2, y2 = v2
-        v3 = utils.loc_to_point(order.destination, v2)
-        x3, y3 = v3
-        marker_start = ""
-        if order.destination.get_unit():
-            if order.source.location() == order.destination:
-                (x3, y3) = utils.pull_coordinate((x1, y1), (x3, y3), svgcfg.RADIUS)
-            else:
-                (x3, y3) = utils.pull_coordinate((x2, y2), (x3, y3))
-            if isinstance(order.destination.get_unit().order, (ConvoyTransport, Support)):
-                for coord in order.destination.all_locs:
-                    self._draw_hold(coord)
-            # if two units are support-holding each other
-            destorder = order.destination.get_unit().order
-
-            if (
-                isinstance(order.destination.get_unit().order, Support)
-                and destorder.source.location() == destorder.destination == unit.location()
-                and order.source.location() == order.destination
-            ):
-                # This check is so we only do it once, so it doesn't overlay
-                # it doesn't matter which one is the origin & which is the dest
-                if id(order.destination.get_unit()) > id(unit):
-                    marker_start = "url(#ball)"
-                    # doesn't matter that v3 has been pulled, as it's still collinear
-                    (x1, y1) = (x2, y2) = utils.pull_coordinate((x3, y3), (x1, y1), svgcfg.RADIUS)
-                else:
-                    return
-        drawn_order = utils.create_element(
-            "path",
-            {
-                "d": f"M {x1},{y1} Q {x2},{y2} {x3},{y3}",
-                "fill": "none",
-                "stroke": "black",
-                "stroke-dasharray": "5 5",
-                "stroke-width": svgcfg.STROKE_WIDTH,
-                "stroke-linecap": "round",
-                "marker-start": marker_start,
-                "marker-end": f"url(#{'ball' if order.source.location() == order.destination else 'arrow'})",
-            },
-        )
-        return drawn_order
-
-    def _draw_convoy(self, order: ConvoyTransport, coordinate: tuple[float, float]) -> None:
+    def _draw_convoy(self, coordinate: tuple[float, float]) -> None:
         element = self._moves_svg.getroot()
         drawn_order = utils.create_element(
             "circle",
@@ -561,19 +579,6 @@ class Mapper:
                 half_color = province.half_core.color
             else:
                 half_color = core_color
-            # color = "#ffffff"
-            # if province.core:
-            #     color = province.core.color
-            # elif province.half_core:
-            #     # TODO: I tried to put "repeating-linear-gradient(white, {province.half_core.color})" here but that
-            #     #  doesn't work. Doing this in SVG requires making a new pattern in defs which means doing a separate
-            #     #  pattern for every single color, which would suck
-            #     #  https://stackoverflow.com/questions/27511153/fill-svg-element-with-a-repeating-linear-gradient-color
-            #     # ...it doesn't have to be stripes, that was just my first idea. We could figure something else out.
-            #     pass
-            # for path in center_element.getchildren():
-            #     print(f"\t{path}")
-            #     utils.color_element(path, color)
             for elem in center_element.getchildren():
                 if "{http://www.inkscape.org/namespaces/inkscape}label" in elem.attrib and elem.attrib[
                     "{http://www.inkscape.org/namespaces/inkscape}label"
@@ -644,12 +649,9 @@ class Mapper:
         root = svg.getroot()
         if not unit.retreat_options:
             self._draw_force_disband(unit.province.retreat_unit_coordinate, svg)
-        # if we're drawing possible retreat locs, why show it as dislodged at all?
-        # else:
-        #     self._draw_disband(unit.location().retreat_unit_coordinate, svg)
 
         for retreat_province in unit.retreat_options:
-            root.append(self._draw_retreat_move(RetreatMove(retreat_province), unit.province.retreat_unit_coordinate))
+            root.append(self._draw_retreat_move(retreat_province, unit.province.retreat_unit_coordinate))
 
     def _initialize_scoreboard_locations(self) -> None:
         all_power_banners_element = get_svg_element(self.board_svg.getroot(), svgcfg.POWER_BANNERS_LAYER_ID)

@@ -1,16 +1,15 @@
+import copy
+import itertools
 import math
 import re
-import itertools
-
-from lxml import etree
 from xml.etree.ElementTree import ElementTree, Element
 
 import numpy as np
-
-from diplomacy.map_parser.vector.config_svg import MAP_WIDTH, RADIUS
-from diplomacy.persistence.province import Location
+from lxml import etree
 
 from diplomacy.map_parser.vector.config_player import player_data
+from diplomacy.map_parser.vector.config_svg import MAP_WIDTH, RADIUS
+from diplomacy.persistence.province import Location, Province, Coast
 
 
 def add_arrow_definition_to_svg(svg: ElementTree) -> None:
@@ -109,37 +108,59 @@ def normalize(point: tuple[float, float] | list[float, float]) -> tuple[float, f
 
 # returns closest point in a set
 # will wrap horizontally
-def get_closest_loc(possibilities: set[tuple[float, float]], coord: tuple[float, float]) -> list[float, float]:
+def sort_by_distance_to_coord(
+    possibilities: set[tuple[float, float]], coord: tuple[float, float]
+) -> list[list[float, float]]:
     possibilities = list(possibilities)
-    crossed_pos = []
-    crossed = []
-    for p in possibilities:
-        x = p[0]
-        cx = coord[0]
-        if abs(x - cx) > MAP_WIDTH / 2:
-            crossed += [1]
-            if x > cx:
-                x -= MAP_WIDTH
+    possibilities_fixed = []
+    crossed_map = []
+    for possible_coord in possibilities:
+        current_x = possible_coord[0]
+        goal_x = coord[0]
+        if abs(current_x - goal_x) > MAP_WIDTH / 2:
+            if current_x > goal_x:
+                current_x -= MAP_WIDTH
             else:
-                x += MAP_WIDTH
+                current_x += MAP_WIDTH
+            crossed_map.append(True)
         else:
-            crossed += [0]
-        crossed_pos += [(x, p[1])]
+            crossed_map.append(False)
+        possibilities_fixed += [(current_x, possible_coord[1])]
 
-    crossed = np.array(crossed)
-    crossed_pos = np.array(crossed_pos)
+    crossed_map = np.array(crossed_map)
+    possibilities_fixed = np.array(possibilities_fixed)
 
-    dists = crossed_pos - coord
+    dists = np.linalg.norm(possibilities_fixed - coord, axis=1)
     # penalty for crossing map is 500 px
-    short_ind = np.argmin(np.linalg.norm(dists, axis=1) + 500 * crossed)
-    return crossed_pos[short_ind].tolist()
+    sorted_indices = np.argsort(dists + 500 * crossed_map)
+    return possibilities_fixed[sorted_indices].tolist()
+
+
+# Note; it may return coords off the map if the closest is on the other side of the map
+def get_closest_coord(possibilities: set[tuple[float, float]], coord: tuple[float, float]) -> tuple[float, float]:
+    closest_coord = sort_by_distance_to_coord(possibilities, coord)[0]
+    return closest_coord[0], closest_coord[1]  # Entirely just so we can return a tuple not a list
+
+
+# This could be improved, but should be good enough for any sane map
+# (no one is going to have like ~4 possible coords for provinces)
+def match_start_to_end(
+    start_points: set[tuple[float, float]], endpoints: set[tuple[float, float]]
+) -> dict[tuple[float, float], tuple[float, float]]:
+    endpoints = copy.copy(endpoints)
+    mapping = {}
+    for start in start_points:
+        closest_endpoint = get_closest_coord(endpoints, start)
+        mapping[start] = closest_endpoint
+        endpoints.remove(normalize(closest_endpoint))
+    return mapping
 
 
 def loc_to_point(loc: Location, current: tuple[float, float], use_retreats=False):
     if not use_retreats:
-        return get_closest_loc(loc.all_locs, current)
+        return get_closest_coord(loc.all_locs, current)
     else:
-        return get_closest_loc(loc.all_rets, current)
+        return get_closest_coord(loc.all_rets, current)
 
 
 def pull_coordinate(
@@ -163,3 +184,20 @@ def pull_coordinate(
 
     scale = pull / distance
     return cx + dx * scale, cy + dy * scale
+
+
+def order_convoys(start: Location, convoy_nodes: set[Province], end: Location) -> list[list[tuple[float, float]]]:
+    layers = []
+    current_layer = [start]
+    next_layer = []
+    for node in convoy_nodes:
+        for current in current_layer:
+            if isinstance(current, Province):
+                if node in current.adjacent:
+                    next_layer.append(node)
+                    break
+            elif isinstance(current, Coast):
+                if node in current.adjacent_seas:
+                    next_layer.append(node)
+                    break
+    pass

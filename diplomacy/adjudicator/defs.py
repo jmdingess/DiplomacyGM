@@ -35,6 +35,7 @@ class AdjudicableOrder:
         self.country = unit.player
         self.is_army = unit.unit_type == UnitType.ARMY
         self.current_province = unit.province
+        self.raw_location = unit.location()
 
         self.supports: set[AdjudicableOrder] = set()
         self.convoys: set[AdjudicableOrder] = set()

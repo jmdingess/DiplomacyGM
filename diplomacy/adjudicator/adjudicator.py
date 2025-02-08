@@ -178,9 +178,9 @@ def order_is_valid(location: Location, order: Order, player_restriction: Player 
         # Check we are actually part of the convoy chain
         current_province = get_base_province_from_location(location)
         destination_province = get_base_province_from_location(order.destination)
-        if not convoy_is_possible(order.source.province, current_province, player_restriction):
+        if not convoy_is_possible(order.source.province, current_province, player_restriction, order):
             return False, f"No valid convoy path from {order.source.location().name} to {location.name}"
-        if not convoy_is_possible(current_province, destination_province, player_restriction):
+        if not convoy_is_possible(current_province, destination_province, player_restriction, order):
             return False, f"No valid convoy path from {location.name} to {order.destination.name}"
         return True, None
     elif isinstance(order, Support):
@@ -216,18 +216,11 @@ def order_is_valid(location: Location, order: Order, player_restriction: Player 
     return False, f"Unknown move type: {order.__class__.__name__}"
 
 
-class MapperInformation:
-    def __init__(self, unit: Unit):
-        self.location = unit.location()
-        self.order = unit.order
-
-
 class Adjudicator:
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, board: Board):
         self._board = board
-        self.failed_or_invalid_units: set[MapperInformation] = set()
 
     def get_board(self):
         return self._board
@@ -335,6 +328,7 @@ class MovesAdjudicator(Adjudicator):
     def __init__(self, board: Board):
         super().__init__(board)
 
+        self.failed_or_invalid_units: dict[str, AdjudicableOrder] = {}
         for unit in board.units:
             # Replace invalid orders with holds
             # Importantly, this includes supports for which the corresponding unit didn't make the same move
@@ -349,8 +343,18 @@ class MovesAdjudicator(Adjudicator):
                         unit.order = ConvoyMove(unit.order.destination)
                         continue
 
-                self.failed_or_invalid_units.add(MapperInformation(unit))
+                failed_order: AdjudicableOrder = None
+                if unit.order is not None:
+                    failed_order = AdjudicableOrder(unit)
+
                 unit.order = Hold()
+
+                if failed_order is None:
+                    failed_order = AdjudicableOrder(unit)
+
+                failed_order.resolution = Resolution.FAILS
+                failed_order.state = ResolutionState.RESOLVED
+                self.failed_or_invalid_units[unit.province.name] = failed_order
 
         self.orders = {AdjudicableOrder(unit) for unit in board.units}
         self.orders_by_province = {order.current_province.name: order for order in self.orders}

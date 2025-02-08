@@ -156,6 +156,7 @@ class Coast(Location):
     def get_adjacent_coasts(self) -> set[Coast]:
         # TODO: (BETA) this will generate false positives (e.g. mini province keeping 2 big province coasts apart)
         adjacent_coasts: set[Coast] = set()
+        self.provinc
         for province2 in self.province.adjacent:
             for coast2 in province2.coasts:
                 if self.adjacent_seas & coast2.adjacent_seas:

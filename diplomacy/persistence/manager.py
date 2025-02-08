@@ -3,7 +3,6 @@ import logging
 from diplomacy.adjudicator.adjudicator import make_adjudicator, MovesAdjudicator
 from diplomacy.adjudicator.mapper import Mapper
 from diplomacy.map_parser.vector.vector import oneTrueParser
-from diplomacy.persistence import phase
 from diplomacy.persistence.board import Board
 from diplomacy.persistence.db import database
 from diplomacy.persistence.player import Player
