@@ -598,6 +598,8 @@ class GameManagementCog(commands.Cog):
         * set_game_name <game_name>
         * load_state <server_id> <spring, fall, winter}_{moves, retreats, builds> <year>
         * apocalypse {all OR army, fleet, core, province} !!! deletes everything specified !!!
+        * bulk <command> {<player_name> | nothing if you're using delete_units} <list_of_province_names> {use with commands like set_total_owner to use it repeatedly}
+        * bulk_create_units <player_name> {A, F} <list_of_province_names>
         """,
     )
     @perms.gm_only("edit")
