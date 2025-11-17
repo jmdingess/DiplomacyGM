@@ -8,7 +8,8 @@
 ## Extensions
 - `DiploGM.load_extension()`, `DiploGM.reload_extension()` and `DiploGM.unload_extension()` nolonger prepend `bot.cogs.` to extension names when called. This was causing issues, as the base implementation of `reload_extensions` was calling.
 - Added wrapper functions `load_diplogm_extension`, `reload_diplogm_extension` & `unload_diplogm_extension` that preprend the extension directory `bot/cogs/` to extension names passed to them.
-- added logging to `DiploGM.reload_extension()` and `DiploGM.unload_extension()`
+- Added logging to `DiploGM.reload_extension()` and `DiploGM.unload_extension()`
+- Moved superuser list to `config_defaults.toml` and moved `is_superuser` to `perms.py`
 
 1.0.0
 =====

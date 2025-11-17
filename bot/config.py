@@ -35,8 +35,6 @@ DISCORD_TOKEN = all_config["bot"]["discord_token"]
 LOGGING_LEVEL = all_config["bot"]["log_level"]
 COMMAND_PREFIX = all_config["bot"]["command_prefix"]
 
-# EXTENSIONS
-EXTENSIONS_TO_LOAD_ON_STARTUP = all_config["extensions"]["load_on_startup"]
 
 # DEVELOPMENT SERVER HUB
 BOT_DEV_SERVER_ID = all_config["dev_hub"]["id"]
@@ -52,6 +50,12 @@ IMPDIP_SERVER_SUBSTITUTE_LOG_CHANNEL_ID = all_config["hub"]["substitute_log_chan
 IMPDIP_SERVER_WINTER_SCOREBOARD_OUTPUT_CHANNEL_ID = all_config["hub"]["winter_scoreboard_output_channels"]
 ## Roles
 IMPDIP_BOT_WIZARD_ROLE = all_config["hub"]["bot_wizard"]
+
+# PERMISSIONS
+SUPERUSERS = all_config["permissions"]["superusers"]
+
+# EXTENSIONS
+EXTENSIONS_TO_LOAD_ON_STARTUP = all_config["extensions"]["load_on_startup"]
 
 # COLOURS
 EMBED_STANDARD_COLOUR = all_config["colours"]["embed_standard"]

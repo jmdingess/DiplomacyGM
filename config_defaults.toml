@@ -36,6 +36,19 @@ id = 1262215477237645314
 unhandled_errors_channel = 1423396664483381258
 
 
+[permissions]
+superusers = [
+    1217203346511761428,    # eebop
+    332252245259190274,     # Icecream Guy
+    169995316680982528,     # Bumble
+    450636420558618625,     # Flare
+    490633966974533640,     # Elle
+    200279271380353025,     # KingOfPrussia
+    1352388421003251833,    # Chloe
+    285108244714881024,     # aahoughton (elle-approved)
+    134870832651567104,     # Golden Kumquat (elle-approved)
+]
+
 [extensions]
 load_on_startup = [
     "administration",
