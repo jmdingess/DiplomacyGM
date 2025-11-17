@@ -257,29 +257,26 @@ class ScheduleCog(commands.Cog):
             if task["execute_at"] <= now
         }
 
-        for id, task in due.items():
-            channel_id = task["channel_id"]
-            channel = self.bot.get_channel(channel_id)
+        for task_id, task in due.items():
+            channel = self.bot.get_channel(task["channel_id"])
             if not channel:
-                del self.scheduled_tasks[id]
+                del self.scheduled_tasks[task_id]
                 await self.save_scheduled_tasks()
                 continue
-
-            full_command = task["full_command"]
 
             # skip over stale tasks, suspected change of state not worthy of continuing automatic behaviour
             # guard in case bot goes down for extended periods
             delta = now - task["execute_at"]
             if delta > MAX_DELAY:
                 logger.warning(
-                    f"Skipping stale task {id}: Could not handle on time. (missed by '{now-task['execute_at']}') which is greater than maximum allowed time '{MAX_DELAY}'"
+                    f"Skipping stale task {task_id}: Could not handle on time. (missed by '{now-task['execute_at']}') which is greater than maximum allowed time '{MAX_DELAY}'"
                 )
                 await send_message_and_file(
                     channel=channel,
-                    message=f"Skipping stale task {id}: Could not handle on time (Expected: {task['execute_at']})\nTask: {full_command}",
+                    message=f"Skipping stale task {task_id}: Could not handle on time (Expected: {task['execute_at']})\nTask: {task['full_command']}",
                     embed_colour=ERROR_COLOUR,
                 )
-                del self.scheduled_tasks[id]
+                del self.scheduled_tasks[task_id]
                 await self.save_scheduled_tasks()
                 continue
 
@@ -287,10 +284,10 @@ class ScheduleCog(commands.Cog):
             if user is None:
                 await send_message_and_file(
                     channel=channel,
-                    message=f"Skipping task {id}: Could not find invoking user\nTask: {full_command}",
+                    message=f"Skipping task {task_id}: Could not find invoking user\nTask: {task['full_command']}",
                     embed_colour=ERROR_COLOUR,
                 )
-                del self.scheduled_tasks[id]
+                del self.scheduled_tasks[task_id]
                 await self.save_scheduled_tasks()
                 continue
 
