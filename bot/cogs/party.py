@@ -323,6 +323,13 @@ class PartyCog(commands.Cog):
             channel=ctx.channel, title="Global Fishing Leaderboard", message=text
         )
 
+    @commands.command(hidden=True)
+    @perms.superuser_only("shutdown the bot")
+    async def shutdown(self, ctx: commands.Context):
+        await send_message_and_file(
+            channel=ctx.channel, title=f"Why would you want this to me?", message=f""
+        )
+
 
 async def setup(bot):
     cog = PartyCog(bot)
