@@ -32,6 +32,8 @@ _set_game_name_str = "set game name"
 _create_player_str = "create player"
 _delete_player_str = "delete player"
 _load_state_str = "load state"
+_bulk_str = "bulk"
+_bulk_create_units_str = "bulk create units"
 
 # apocalypse (empty map state)
 _apocalypse_str = "apocalypse"
@@ -129,6 +131,10 @@ def _parse_command(command: str, board: Board) -> None:
         _load_state(keywords, board)
     elif command_type == _apocalypse_str:
         _apocalypse(keywords, board)
+    elif command_type == _bulk_str:
+        _bulk(keywords, board)
+    elif command_type == _bulk_create_units_str:
+        _bulk_create_units(keywords, board)
     else:
         raise RuntimeError(f"No command key phrases found")
 
@@ -559,6 +565,43 @@ def _apocalypse(keywords: list[str], board: Board) -> None:
             "UPDATE provinces SET core=?, half_core=? WHERE board_id=? AND phase=?",
             (None, None, board.board_id, board.get_phase_and_year_string()),
         )
+
+
+def _bulk(keywords: list[str], board: Board) -> None:
+
+    player = keywords[1]
+
+    if keywords[0] == _set_core_str:
+        for i in keywords[2:]:
+            _set_province_core([i, player], board)
+        return
+    elif keywords[0] == _set_half_core_str:
+        for i in keywords[2:]:
+            _set_province_half_core([i, player], board)
+        return
+    elif keywords[0] == _set_province_owner_str:
+        for i in keywords[2:]:
+            _set_province_owner([i, player], board)
+        return
+    elif keywords[0] == _set_total_owner_str:
+        for i in keywords[2:]:
+            _set_total_owner([i, player], board)
+        return
+    elif keywords[0] == _delete_unit_str:
+        for i in keywords[1:]:
+            _delete_unit([i], board)
+        return
+
+    raise RuntimeError(
+        "You can't use bulk with this commands"
+    )
+
+
+def _bulk_create_units(keywords: list[str], board: Board) -> None:
+    player = keywords[0]
+    unit_type = keywords[1]
+    for i in keywords[2:]:
+        _create_unit([unit_type, player, i], board)
 
 
 # FIXME: Works but inconsistent with DB Storage NOT PERSISTENT
