@@ -327,7 +327,7 @@ class PartyCog(commands.Cog):
     @perms.superuser_only("shutdown the bot")
     async def shutdown(self, ctx: commands.Context):
         await send_message_and_file(
-            channel=ctx.channel, title=f"Why would you want this to me?", message=f""
+            channel=ctx.channel, title=f"Why would you want to do this to me?", message=f""
         )
 
 
