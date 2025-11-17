@@ -4,12 +4,10 @@ from typing import Any, Awaitable, Callable
 from discord import HTTPException
 from discord.ext import commands
 
+from bot import config
 from bot.config import IMPDIP_SERVER_ID, SUPERUSERS
 from bot.utils import (
-    is_gm,
-    is_gm_channel,
     get_player_by_role,
-    is_moderator,
     is_player_channel,
     get_player_by_channel,
 )
@@ -73,6 +71,7 @@ def require_player_by_context(ctx: commands.Context, description: str):
             )
     return player
 
+# Player
 
 # adds one extra argument, player in a player's channel, which is None if run by a GM in a GM channel
 def player(description: str = "run this command"):
@@ -89,6 +88,7 @@ def player(description: str = "run this command"):
 
     return decorator
 
+# Moderator
 
 async def assert_mod_only(
     ctx: commands.Context, description: str = "run this command"
@@ -121,6 +121,14 @@ async def assert_mod_only(
 def mod_only(description: str = "run this command"):
     return commands.check(lambda ctx: assert_mod_only(ctx, description))
 
+def is_moderator(author: commands.Context.author) -> bool:
+    for role in author.roles:
+        if config.is_mod_role(role.name):
+            return True
+
+    return False
+
+# GM
 
 def assert_gm_only(
     ctx: commands.Context, description: str = "run this command", non_gm_alt: str = ""
@@ -138,6 +146,18 @@ def assert_gm_only(
 def gm_only(description: str = "run this command"):
     return commands.check(lambda ctx: assert_gm_only(ctx, description))
 
+def is_gm_channel(channel: commands.Context.channel) -> bool:
+    return config.is_gm_channel(channel.name) and config.is_gm_category(
+        channel.category.name
+    )
+
+def is_gm(author: commands.Context.author) -> bool:
+    for role in author.roles:
+        if config.is_gm_role(role.name):
+            return True
+    return False
+
+# Superuser
 
 def assert_superuser_only(ctx: commands.Context, description: str = "run this command"):
     if not is_superuser(ctx.message.author):
@@ -153,3 +173,5 @@ def superuser_only(description: str = "run this command"):
 
 def is_superuser(author: commands.Context.author) -> bool:
     return author.id in SUPERUSERS
+
+

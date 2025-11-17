@@ -7,6 +7,7 @@ from discord import app_commands
 from discord.ext import commands
 from discord.utils import find as discord_find
 
+import bot.perms
 from bot import config
 from bot import perms
 from bot import utils
@@ -76,13 +77,13 @@ class SlashSubstituteCog(commands.Cog):
         bot = interaction.client
 
         # TODO: app_commands permissions check decorators
-        if not perms.is_gm(interaction.user):
+        if not bot.perms.is_gm(interaction.user):
             await interaction.response.send_message(
                 "You are not allowed to use `.advertise`!", ephemeral=True
             )
             return
 
-        if not utils.is_gm_channel(interaction.channel):
+        if not bot.perms.is_gm_channel(interaction.channel):
             await interaction.response.send_message(
                 "You are not allowed to use `.advertise` here!", ephemeral=True
             )
@@ -258,13 +259,13 @@ class SlashSubstituteCog(commands.Cog):
             return
 
         # TODO: app_commands permissions check decorators
-        if not perms.is_gm(interaction.user):
+        if not bot.perms.is_gm(interaction.user):
             await interaction.response.send_message(
                 "You are not allowed to use `.substitute`!", ephemeral=True
             )
             return
 
-        if not utils.is_gm_channel(interaction.channel):
+        if not bot.perms.is_gm_channel(interaction.channel):
             await interaction.response.send_message(
                 "You are not allowed to use `.substitute` here!", ephemeral=True
             )

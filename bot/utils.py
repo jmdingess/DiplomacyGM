@@ -15,11 +15,11 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 from bot import config
+from bot.perms import is_gm_channel
 from diplomacy.adjudicator.utils import svg_to_png, png_to_jpg
 from diplomacy.persistence import phase
 from diplomacy.persistence.board import Board
 from diplomacy.persistence.manager import Manager
-from diplomacy.persistence.phase import Phase
 from diplomacy.persistence.player import Player
 from diplomacy.persistence.unit import UnitType
 
@@ -53,27 +53,6 @@ discord_message_limit = 2000
 discord_file_limit = 10 * (2**20)
 discord_embed_description_limit = 4096
 discord_embed_total_limit = 6000
-
-
-def is_moderator(author: commands.Context.author) -> bool:
-    for role in author.roles:
-        if config.is_mod_role(role.name):
-            return True
-
-    return False
-
-
-def is_gm(author: commands.Context.author) -> bool:
-    for role in author.roles:
-        if config.is_gm_role(role.name):
-            return True
-    return False
-
-
-def is_gm_channel(channel: commands.Context.channel) -> bool:
-    return config.is_gm_channel(channel.name) and config.is_gm_category(
-        channel.category.name
-    )
 
 
 def get_player_by_role(

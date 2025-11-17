@@ -22,11 +22,11 @@ from bot.utils import (
     get_orders_log,
     get_player_by_channel,
     get_role_by_player,
-    is_gm,
     log_command,
     send_message_and_file,
     upload_map_to_archive,
 )
+from bot.perms import is_gm
 from diplomacy.persistence import phase
 from diplomacy.persistence.db.database import get_connection
 from diplomacy.persistence.order import Disband, Build
