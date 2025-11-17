@@ -1,6 +1,8 @@
 import logging
 import random
 import time
+
+from bot.perms import is_superuser
 from diplomacy.persistence.manager import Manager
 from scipy.integrate import odeint
 
@@ -8,7 +10,7 @@ from discord.ext import commands
 
 from bot import perms
 from bot.config import ERROR_COLOUR, is_bumble, temporary_bumbles
-from bot.utils import fish_pop_model, log_command, send_message_and_file, is_superuser
+from bot.utils import fish_pop_model, log_command, send_message_and_file
 
 from diplomacy.persistence.db.database import get_connection
 
@@ -63,7 +65,7 @@ class PartyCog(commands.Cog):
         log_command(logger, ctx, f"Sent Message into #{channel.name}")
         await send_message_and_file(
             channel=ctx.channel,
-            title="Sent Message",
+            title=f"Sent Message",
             message=message.jump_url,
         )
 
@@ -276,7 +278,7 @@ class PartyCog(commands.Cog):
             fish_kind = "captured" if board.fish >= 0 else "future"
             fish_message = f"Accidentally let {fish_num} {fish_kind} fish sneak away :("
         else:
-            fish_message = "You find nothing but barren water and overfished seas, maybe let the population recover?"
+            fish_message = f"You find nothing but barren water and overfished seas, maybe let the population recover?"
         fish_message += f"\nIn total, {board.fish} fish have been caught!"
         if random.randrange(0, 5) == 0:
             get_connection().execute_arbitrary_sql(
@@ -324,15 +326,17 @@ class PartyCog(commands.Cog):
         )
 
     @commands.command(hidden=True)
+    @perms.superuser_only("shutdown the bot")
     async def shutdown(self, ctx: commands.Context):
         if is_superuser(ctx.author):
             await send_message_and_file(
-                channel=ctx.channel, title="Please don't shut me down D:", message=""
+                channel=ctx.channel, title=f"Please don't shut me down", message=f""
             )
         else:
             await send_message_and_file(
-                channel=ctx.channel, title="Why would you want to do this to me?", message=""
+                channel=ctx.channel, title=f"Why would you want to do this to me?", message=f""
             )
+
 
 async def setup(bot):
     cog = PartyCog(bot)
