@@ -6,12 +6,12 @@ from lark import Lark, Transformer, UnexpectedEOF, UnexpectedCharacters
 from lark.exceptions import VisitError
 
 from bot.config import ERROR_COLOUR, PARTIAL_ERROR_COLOUR
-from bot.utils import get_unit_type, get_keywords, _manage_coast_signature, send_message_and_file
+from bot.utils import get_unit_type, _manage_coast_signature
 from diplomacy.persistence import order, phase
 from diplomacy.persistence.board import Board
 from diplomacy.persistence.db.database import get_connection
 from diplomacy.persistence.player import Player
-from diplomacy.persistence.province import Province, Location, Coast, ProvinceType
+from diplomacy.persistence.province import Province, Location, Coast
 from diplomacy.persistence.unit import Unit, UnitType
 
 logger = logging.getLogger(__name__)
