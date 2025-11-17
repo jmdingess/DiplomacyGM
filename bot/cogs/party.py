@@ -326,7 +326,6 @@ class PartyCog(commands.Cog):
         )
 
     @commands.command(hidden=True)
-    @perms.superuser_only("shutdown the bot")
     async def shutdown(self, ctx: commands.Context):
         if is_superuser(ctx.author):
             await send_message_and_file(
