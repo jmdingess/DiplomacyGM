@@ -25,7 +25,8 @@ from diplomacy.persistence.manager import Manager
 logger = logging.getLogger(__name__)
 manager = Manager()
 
-_EXTENSION_DIRECTORY = "bot.cogs."
+_EXTENSION_PATH = "bot.cogs."
+_EXTENSION_DIRECTORY = "bot/cogs/"
 
 # List of funny, sarcastic messages
 WELCOME_MESSAGES = [
@@ -76,13 +77,13 @@ class DiploGM(commands.Bot):
             logger.warning(f"Failed to sync commands: {e}", exc_info=True)
 
     async def load_diplogm_extension(self, name: str, *, package: Optional[str] = None):
-        await self.load_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+        await self.load_extension(f"{_EXTENSION_PATH}{name}", package=package)
 
     async def unload_diplogm_extension(self, name: str, *, package: Optional[str] = None):
-        await self.unload_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+        await self.unload_extension(f"{_EXTENSION_PATH}{name}", package=package)
 
     async def reload_diplogm_extension(self, name: str, *, package: Optional[str] = None):
-        await self.reload_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+        await self.reload_extension(f"{_EXTENSION_PATH}{name}", package=package)
 
     @staticmethod
     def get_all_extensions():
