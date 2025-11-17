@@ -28,6 +28,7 @@ Extension management was moved to its own cog to prevent accidental unloading
 - `DiploGM.unload_diplogm_extension` and `DiploGM.reload_diplogm_extension` don't no longer call `load_extionsion` instead of their correct respective functions.
 ## Other Changes
 - Moved superuser list to `config_defaults.toml` and moved `is_superuser` to `perms.py`
+- `ScheduleCog.close()` doesn't generate an error message due to calling `.cancel` on a function which isn't a loop anymore
 
 1.0.0
 =====

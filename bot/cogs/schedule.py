@@ -61,7 +61,6 @@ class ScheduleCog(commands.Cog):
 
     async def close(self):
         self.process_scheduled_tasks.cancel()
-        self.save_scheduled_tasks.cancel()
         with open(self.scheduled_storage, "w") as f:
             for _, task in self.scheduled_tasks.items():
                 task["created_at"] = task["created_at"].isoformat()
