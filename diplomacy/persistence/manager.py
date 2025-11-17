@@ -1,4 +1,5 @@
 import logging
+from threading import Lock
 import time
 import os
 
@@ -14,7 +15,22 @@ from diplomacy.persistence.spec_request import SpecRequest
 logger = logging.getLogger(__name__)
 
 
-class Manager:
+class ManagerMeta(type):
+    """Metaclass to provide Singleton creational logic to Manager"""
+
+    _instances = {}
+    _lock = Lock()
+
+    def __call__(cls):
+        with cls._lock:
+            if cls not in cls._instances:
+                instance = super().__call__()
+                cls._instances[cls] = instance
+
+        return cls._instances[cls]
+
+
+class Manager(metaclass=ManagerMeta):
     """Manager acts as an intermediary between Bot (the Discord API), Board (the board state), the database."""
 
     def __init__(self):
@@ -24,7 +40,7 @@ class Manager:
             self._database.get_spec_requests()
         )
         # TODO: have multiple for each variant?
-        # do it like this so that the parser can cache data between board initilizations
+        # do it like this so that the parser can cache data between board initializations
 
     def list_servers(self) -> set[int]:
         return set(self._boards.keys())
@@ -79,56 +95,95 @@ class Manager:
         self._database.total_delete(self._boards[server_id])
         del self._boards[server_id]
 
-    def draw_moves_map(
+    def draw_map(
         self,
         server_id: int,
-        player_restriction: Player | None,
+        draw_moves: bool = False,
+        player_restriction: Player | None = None,
         color_mode: str | None = None,
-        turn: tuple[str, phase] | None = None
+        turn: tuple[str, phase] | None = None,
+        movement_only: bool = False,
     ) -> tuple[str, str]:
-        start = time.time()
-
         cur_board = self._boards[server_id]
         if turn is None:
             board = cur_board
             season = board.phase
         else:
             board = self._database.get_board(
-                cur_board.board_id, turn[1], int(turn[0]) - cur_board.year_offset, cur_board.fish, cur_board.name, cur_board.datafile
+                cur_board.board_id,
+                turn[1],
+                int(turn[0]) - cur_board.year_offset,
+                cur_board.fish,
+                cur_board.name,
+                cur_board.datafile,
             )
             if board is None:
                 raise RuntimeError(
                     f"There is no {turn[1].name} {turn[0]} board for this server"
                 )
             season = turn[1]
-            if (board.year < cur_board.year
-                or board.year == cur_board.year and season.index < cur_board.phase.index):
+            if (
+                board.year < cur_board.year
+                or board.year == cur_board.year
+                and season.index < cur_board.phase.index
+            ):
                 player_restriction = None
-        svg, file_name = Mapper(
-            board, color_mode=color_mode
-        ).draw_moves_map(season, player_restriction=player_restriction)
-
-        elapsed = time.time() - start
-        logger.info(f"manager.draw_moves_map.{server_id}.{elapsed}s")
+        svg, file_name = self.draw_map_for_board(
+            board,
+            player_restriction=player_restriction,
+            draw_moves=draw_moves,
+            color_mode=color_mode,
+            movement_only=movement_only,
+        )
         return svg, file_name
 
-    def adjudicate(self, server_id: int) -> None:
+    def draw_map_for_board(
+        self,
+        board: Board,
+        player_restriction: Player | None = None,
+        draw_moves: bool = False,
+        color_mode: str | None = None,
+        movement_only: bool = False,
+    ) -> tuple[str, str]:
         start = time.time()
 
+        if draw_moves:
+            svg, file_name = Mapper(board, color_mode=color_mode).draw_moves_map(
+                board.phase,
+                player_restriction=player_restriction,
+                movement_only=movement_only,
+            )
+        else:
+            svg, file_name = Mapper(board, color_mode=color_mode).draw_current_map()
+
+        elapsed = time.time() - start
+        logger.info(f"manager.draw_map_for_board took {elapsed}s")
+        return svg, file_name
+
+    def adjudicate(self, server_id: int, test: bool = False) -> Board:
+        start = time.time()
+
+        board = self._boards[server_id]
+        old_board = self._database.get_board(
+            server_id, board.phase, board.year, board.fish, board.name, board.datafile
+        )
         # mapper = Mapper(self._boards[server_id])
         # mapper.draw_moves_map(None)
-        adjudicator = make_adjudicator(self._boards[server_id])
+        adjudicator = make_adjudicator(old_board)
+        adjudicator.save_orders = not test
         # TODO - use adjudicator.orders() (tells you which ones succeeded and failed) to draw a better moves map
         new_board = adjudicator.run()
         new_board.phase = new_board.phase.next
         if new_board.phase.name == "Spring Moves":
             new_board.year += 1
         logger.info("Adjudicator ran successfully")
-        self._boards[server_id] = new_board
-        self._database.save_board(server_id, new_board)
+        if not test:
+            self._boards[server_id] = new_board
+            self._database.save_board(server_id, new_board)
 
         elapsed = time.time() - start
         logger.info(f"manager.adjudicate.{server_id}.{elapsed}s")
+        return new_board
 
     def draw_fow_current_map(
         self,
@@ -144,35 +199,6 @@ class Manager:
 
         elapsed = time.time() - start
         logger.info(f"manager.draw_fow_current_map.{server_id}.{elapsed}s")
-        return svg, file_name
-
-    def draw_current_map(
-        self,
-        server_id: int,
-        color_mode: str | None = None,
-        turn: tuple[str, phase] | None = None
-    ) -> tuple[str, str]:
-        start = time.time()
-        
-        cur_board = self._boards[server_id]
-        if turn is None:
-            board = cur_board
-            season = board.phase
-        else:
-            board = self._database.get_board(
-                cur_board.board_id, turn[1], int(turn[0]) - 1642, cur_board.fish, cur_board.name, cur_board.datafile
-            )
-            if board is None:
-                raise RuntimeError(
-                    f"There is no {turn[1].name} {turn[0]} board for this server"
-                )
-            season = turn[1]
-        svg, file_name = Mapper(
-            board, color_mode=color_mode
-        ).draw_current_map()
-
-        elapsed = time.time() - start
-        logger.info(f"manager.draw_current_map.{server_id}.{elapsed}s")
         return svg, file_name
 
     def draw_fow_players_moves_map(
@@ -251,7 +277,13 @@ class Manager:
             last_phase_year -= 1
 
         old_board = self._database.get_board(
-            board.board_id, last_phase, last_phase_year, board.fish, board.name, board.datafile, clear_status=True
+            board.board_id,
+            last_phase,
+            last_phase_year,
+            board.fish,
+            board.name,
+            board.datafile,
+            clear_status=True,
         )
         if old_board is None:
             raise ValueError(
@@ -274,7 +306,12 @@ class Manager:
         if board.phase.name == "Spring Moves":
             last_phase_year -= 1
         old_board = self._database.get_board(
-            board.board_id, last_phase, last_phase_year, board.fish, board.name, board.datafile
+            board.board_id,
+            last_phase,
+            last_phase_year,
+            board.fish,
+            board.name,
+            board.datafile,
         )
         return old_board
 

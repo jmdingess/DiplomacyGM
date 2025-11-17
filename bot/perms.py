@@ -1,4 +1,5 @@
-from typing import Callable
+from functools import wraps
+from typing import Any, Awaitable, Callable
 
 from discord import HTTPException
 from discord.ext import commands
@@ -11,10 +12,12 @@ from bot.utils import (
     is_moderator,
     is_player_channel,
     get_player_by_channel,
-    is_admin,
+    is_superuser,
 )
 from diplomacy.persistence.manager import Manager
 from diplomacy.persistence.player import Player
+
+manager = Manager()
 
 
 class CommandPermissionError(commands.CheckFailure):
@@ -23,14 +26,14 @@ class CommandPermissionError(commands.CheckFailure):
         super().__init__(message)
 
 
-def get_player_by_context(ctx: commands.Context, manager: Manager):
+def get_player_by_context(ctx: commands.Context):
     # FIXME cleaner way of doing this
     board = manager.get_board(ctx.guild.id)
     # return if in order channel
     weak_channel_checking = "weak channel checking" in board.data.get("flags", [])
     if board.fow or weak_channel_checking:
         player = get_player_by_channel(
-            ctx.channel, manager, ctx.guild.id, ignore_catagory=weak_channel_checking
+            ctx.channel, manager, ctx.guild.id, ignore_category=weak_channel_checking
         )
     else:
         player = get_player_by_role(ctx.message.author, manager, ctx.guild.id)
@@ -38,16 +41,14 @@ def get_player_by_context(ctx: commands.Context, manager: Manager):
     return player
 
 
-def require_player_by_context(
-    ctx: commands.Context, manager: Manager, description: str
-):
+def require_player_by_context(ctx: commands.Context, description: str):
     # FIXME cleaner way of doing this
     board = manager.get_board(ctx.guild.id)
     # return if in order channel
     weak_channel_checking = "weak channel checking" in board.data.get("flags", [])
     if board.fow or weak_channel_checking:
         player = get_player_by_channel(
-            ctx.channel, manager, ctx.guild.id, ignore_catagory=weak_channel_checking
+            ctx.channel, manager, ctx.guild.id, ignore_category=weak_channel_checking
         )
         if player:
             return player
@@ -76,18 +77,18 @@ def require_player_by_context(
 
 # adds one extra argument, player in a player's channel, which is None if run by a GM in a GM channel
 def player(description: str = "run this command"):
-    def player_check(
-        function: Callable[
-            [Player | None, commands.Context, Manager], tuple[str, str | None]
-        ],
-    ) -> Callable[[commands.Context, Manager], tuple[str, str | None]]:
-        def f(ctx: commands.Context, manager: Manager) -> tuple[str, str | None]:
-            player = require_player_by_context(ctx, manager, description)
-            return function(player, ctx, manager)
+    def decorator(func: Callable[..., Awaitable[Any]]):
+        @wraps(func)
+        async def wrapper(self, ctx: commands.Context, player: Player | None):
+            # manager should live on bot or cog; here I assume cog
+            player = require_player_by_context(ctx, description)
 
-        return f
+            # Inject the resolved player into the *real* function call
+            return await func(self, ctx, player)
 
-    return player_check
+        return wrapper
+
+    return decorator
 
 
 async def assert_mod_only(
@@ -96,7 +97,7 @@ async def assert_mod_only(
     _hub = ctx.bot.get_guild(IMPDIP_SERVER_ID)
     if not _hub:
         raise CommandPermissionError(
-            "Cannot fetch the Imperial Diplomacy Hub server to check moderator permissions."
+            "Cannot fetch the Imperial Diplomacy Hub server moderator permissions."
         )
 
     _member = _hub.get_member(ctx.author.id)
@@ -123,7 +124,7 @@ def mod_only(description: str = "run this command"):
 
 
 def assert_gm_only(
-    ctx: commands.Context, description: str = "run this command", non_gm_alt: str = None
+    ctx: commands.Context, description: str = "run this command", non_gm_alt: str = ""
 ):
     if not is_gm(ctx.message.author):
         raise CommandPermissionError(
@@ -139,14 +140,14 @@ def gm_only(description: str = "run this command"):
     return commands.check(lambda ctx: assert_gm_only(ctx, description))
 
 
-def assert_admin_only(ctx: commands.Context, description: str = "run this command"):
-    if not is_admin(ctx.message.author):
+def assert_superuser_only(ctx: commands.Context, description: str = "run this command"):
+    if not is_superuser(ctx.message.author):
         raise CommandPermissionError(
-            f"You cannot {description} as you are not an admin"
+            f"You cannot {description} as you are not an superuser"
         )
     else:
         return True
 
 
-def admin_only(description: str = "run this command"):
-    return commands.check(lambda ctx: assert_admin_only(ctx, description))
+def superuser_only(description: str = "run this command"):
+    return commands.check(lambda ctx: assert_superuser_only(ctx, description))
