@@ -3,6 +3,13 @@
 # Fun commands
 - added `.shutdown`, posts a message
 
+# Developer Changes
+
+## Extensions
+- `DiploGM.load_extension()`, `DiploGM.reload_extension()` and `DiploGM.unload_extension()` nolonger prepend `bot.cogs.` to extension names when called. This was causing issues, as the base implementation of `reload_extensions` was calling.
+- Added wrapper functions `load_diplogm_extension`, `reload_diplogm_extension` & `unload_diplogm_extension` that preprend the extension directory `bot/cogs/` to extension names passed to them.
+- added logging to `DiploGM.reload_extension()` and `DiploGM.unload_extension()`
+
 1.0.0
 =====
 First versioned release - though there has been many prior releases.

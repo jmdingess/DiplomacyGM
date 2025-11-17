@@ -77,120 +77,85 @@ class DevelopmentCog(commands.Cog):
     @perms.superuser_only("unloaded extension")
     async def extension_unload(self, ctx: commands.Context, extension: str):
         try:
-            await self.bot.unload_extension(extension)
+            await self.bot.unload_diplogm_extension(extension)
         except ExtensionNotFound:
-            await send_message_and_file(
-                channel=ctx.channel,
-                title=f"Extension was not found: {extension}",
-                embed_colour=ERROR_COLOUR,
-            )
-            return
+            status=f"Extension was not found"
+            colour=ERROR_COLOUR
         except ExtensionNotLoaded:
+            status = f"Extension was not loaded"
+            colour=PARTIAL_ERROR_COLOUR
+        else:
+            status = f"Unloaded Extension"
+            colour = None
+        finally:
             await send_message_and_file(
                 channel=ctx.channel,
-                title=f"Extension was not loaded: {extension}",
-                embed_colour=PARTIAL_ERROR_COLOUR,
+                embed_colour=colour,
+                title=f"{status}: {extension}"
             )
-            return
-        await send_message_and_file(
-            channel=ctx.channel, title=f"Unloaded Extension {extension}"
-        )
 
     @commands.command(hidden=True)
     @perms.superuser_only("load extension")
     async def extension_load(self, ctx: commands.Context, extension: str):
         try:
-            await self.bot.load_extension(extension)
+            await self.bot.load_diplogm_extension(extension)
         except ExtensionNotFound:
-            await send_message_and_file(
-                channel=ctx.channel,
-                title=f"Extension was not found: {extension}",
-                embed_colour=ERROR_COLOUR,
-            )
-            return
+            status = "Extension was not found"
+            colour = ERROR_COLOUR
         except ExtensionAlreadyLoaded:
-            await send_message_and_file(
-                channel=ctx.channel,
-                title=f"Extension was already loaded: {extension}",
-                embed_colour=PARTIAL_ERROR_COLOUR,
-            )
-            return
+            status = "Extension was already loaded"
+            colour = PARTIAL_ERROR_COLOUR
         except NoEntryPointError:
-            await send_message_and_file(
-                channel=ctx.channel,
-                title=f"Extension has no setup function: {extension}",
-                embed_colour=ERROR_COLOUR,
-            )
-            return
+            status = "Extension has no setup function"
+            colour = ERROR_COLOUR
         except ExtensionFailed:
+            status = "Extension failed to load"
+            colour = ERROR_COLOUR
+        else:
+            status = "Loaded extension"
+            colour = None
+        finally:
             await send_message_and_file(
                 channel=ctx.channel,
-                title=f"Extension failed to load: {extension}",
-                embed_colour=ERROR_COLOUR,
+                embed_colour=colour,
+                title=f"{status}: {extension}"
             )
-            return
-        await send_message_and_file(
-            channel=ctx.channel, title=f"Loaded Extension {extension}"
-        )
 
     @commands.command(hidden=True)
     @perms.superuser_only("reload extension")
     async def extension_reload(self, ctx: commands.Context, extension: str):
         try:
-            await self.bot.unload_extension(extension)
+            await self.bot.reload_diplogm_extension(extension)
         except ExtensionNotFound:
-            await send_message_and_file(
-                channel=ctx.channel,
-                title=f"Extension was not found: {extension}",
-                embed_colour=ERROR_COLOUR,
-            )
-            return
+            status=f"Extension was not found: {extension}"
+            colour=ERROR_COLOUR
         except ExtensionNotLoaded:
-            await send_message_and_file(
-                channel=ctx.channel,
-                title=f"Extension was not loaded: {extension}",
-                embed_colour=PARTIAL_ERROR_COLOUR,
-            )
-            return
-        try:
-            await self.bot.load_extension(extension)
-        except ExtensionNotFound:
-            await send_message_and_file(
-                channel=ctx.channel,
-                title=f"Extension was not found: {extension}",
-                embed_colour=ERROR_COLOUR,
-            )
-            return
+            status=f"Extension was not loaded: {extension}",
+            colour=PARTIAL_ERROR_COLOUR
         except ExtensionAlreadyLoaded:
-            await send_message_and_file(
-                channel=ctx.channel,
-                title=f"Extension was already loaded: {extension}",
-                embed_colour=PARTIAL_ERROR_COLOUR,
-            )
-            return
+            status=f"Extension was unload but could not be loaded as it was already loaded: {extension}",
+            colour=PARTIAL_ERROR_COLOUR
         except NoEntryPointError:
-            await send_message_and_file(
-                channel=ctx.channel,
-                title=f"Extension has no setup function: {extension}",
-                embed_colour=ERROR_COLOUR,
-            )
-            return
+            status=f"Extension was unloaded but now has no setup function: {extension}",
+            colour=ERROR_COLOUR
         except ExtensionFailed:
+            status=f"Extension failed to load: {extension}",
+            colour=ERROR_COLOUR
+        else:
+            status=f"Reloaded Extension"
+            colour=None
+        finally:
             await send_message_and_file(
                 channel=ctx.channel,
-                title=f"Extension failed to load: {extension}",
-                embed_colour=ERROR_COLOUR,
+                embed_colour=colour,
+                title=f"{status}: {extension}"
             )
-            return
-        await send_message_and_file(
-            channel=ctx.channel, title=f"Reloaded Extension {extension}"
-        )
 
     @commands.command(hidden=True)
     @perms.superuser_only("shutdown the bot")
     async def shutdown_the_bot_yes_i_want_to_do_this(self, ctx: commands.Context):
         await send_message_and_file(
-            channel=ctx.channel, title=f"Why?", message=f"Shutting down"
+            channel=ctx.channel, title=f"Why would you do this to me?", message=f"Shutting down"
         )
         channel = self.bot.get_channel(IMPDIP_SERVER_BOT_STATUS_CHANNEL_ID)
         if channel:
