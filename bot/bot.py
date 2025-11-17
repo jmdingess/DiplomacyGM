@@ -79,10 +79,10 @@ class DiploGM(commands.Bot):
         await self.load_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
 
     async def unload_diplogm_extension(self, name: str, *, package: Optional[str] = None):
-        await self.load_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+        await self.unload_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
 
     async def reload_diplogm_extension(self, name: str, *, package: Optional[str] = None):
-        await self.load_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+        await self.reload_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
 
     @staticmethod
     def get_all_extensions():

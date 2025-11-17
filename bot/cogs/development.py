@@ -30,6 +30,8 @@ manager = Manager()
 class DevelopmentCog(commands.Cog):
     """
     Superuser features primarily used for Development of the bot
+    .su_dashboard
+    .shutdown_the_bot_yes_i_want_to_do_this
     """
 
     bot: DiploGM
@@ -72,84 +74,6 @@ class DevelopmentCog(commands.Cog):
             fields=[("Extensions", extensions_body), ("Loaded Cogs", cogs_body)],
             footer_content=footer,
         )
-
-    @commands.command(hidden=True)
-    @perms.superuser_only("unloaded extension")
-    async def extension_unload(self, ctx: commands.Context, extension: str):
-        try:
-            await self.bot.unload_diplogm_extension(extension)
-        except ExtensionNotFound:
-            status=f"Extension was not found"
-            colour=ERROR_COLOUR
-        except ExtensionNotLoaded:
-            status = f"Extension was not loaded"
-            colour=PARTIAL_ERROR_COLOUR
-        else:
-            status = f"Unloaded Extension"
-            colour = None
-        finally:
-            await send_message_and_file(
-                channel=ctx.channel,
-                embed_colour=colour,
-                title=f"{status}: {extension}"
-            )
-
-    @commands.command(hidden=True)
-    @perms.superuser_only("load extension")
-    async def extension_load(self, ctx: commands.Context, extension: str):
-        try:
-            await self.bot.load_diplogm_extension(extension)
-        except ExtensionNotFound:
-            status = "Extension was not found"
-            colour = ERROR_COLOUR
-        except ExtensionAlreadyLoaded:
-            status = "Extension was already loaded"
-            colour = PARTIAL_ERROR_COLOUR
-        except NoEntryPointError:
-            status = "Extension has no setup function"
-            colour = ERROR_COLOUR
-        except ExtensionFailed:
-            status = "Extension failed to load"
-            colour = ERROR_COLOUR
-        else:
-            status = "Loaded extension"
-            colour = None
-        finally:
-            await send_message_and_file(
-                channel=ctx.channel,
-                embed_colour=colour,
-                title=f"{status}: {extension}"
-            )
-
-    @commands.command(hidden=True)
-    @perms.superuser_only("reload extension")
-    async def extension_reload(self, ctx: commands.Context, extension: str):
-        try:
-            await self.bot.reload_diplogm_extension(extension)
-        except ExtensionNotFound:
-            status=f"Extension was not found: {extension}"
-            colour=ERROR_COLOUR
-        except ExtensionNotLoaded:
-            status=f"Extension was not loaded: {extension}",
-            colour=PARTIAL_ERROR_COLOUR
-        except ExtensionAlreadyLoaded:
-            status=f"Extension was unload but could not be loaded as it was already loaded: {extension}",
-            colour=PARTIAL_ERROR_COLOUR
-        except NoEntryPointError:
-            status=f"Extension was unloaded but now has no setup function: {extension}",
-            colour=ERROR_COLOUR
-        except ExtensionFailed:
-            status=f"Extension failed to load: {extension}",
-            colour=ERROR_COLOUR
-        else:
-            status=f"Reloaded Extension"
-            colour=None
-        finally:
-            await send_message_and_file(
-                channel=ctx.channel,
-                embed_colour=colour,
-                title=f"{status}: {extension}"
-            )
 
     @commands.command(hidden=True)
     @perms.superuser_only("shutdown the bot")
