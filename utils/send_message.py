@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from bot import config
 from bot.perms import is_gm_channel
-from bot.utils import log_command_no_ctx, logger
+from utils import log_command_no_ctx, logger
 from diplomacy.adjudicator.utils import svg_to_png, png_to_jpg
 
 discord_message_limit = 2000

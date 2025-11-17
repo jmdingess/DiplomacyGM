@@ -16,7 +16,7 @@ from bot.config import (
 )
 from bot.bot import DiploGM
 from bot import perms
-from bot.utils import send_message_and_file
+from utils import send_message_and_file
 from diplomacy.persistence.manager import Manager
 
 logger = logging.getLogger(__name__)

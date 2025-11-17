@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import logging
 import os
 import re
@@ -11,12 +10,11 @@ from discord import (
     Thread,
 )
 from discord.ext import commands
-from discord.message import convert_emoji_reaction
 
 from bot import config
 from bot.parse_edit_state import parse_edit_state
 from bot import perms
-from bot.utils import (
+from utils import (
     get_maps_channel,
     get_orders,
     get_orders_log,

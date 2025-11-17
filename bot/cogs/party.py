@@ -10,7 +10,7 @@ from discord.ext import commands
 
 from bot import perms
 from bot.config import ERROR_COLOUR, is_bumble, temporary_bumbles
-from bot.utils import log_command, send_message_and_file
+from utils import log_command, send_message_and_file
 
 from diplomacy.persistence.db.database import get_connection
 

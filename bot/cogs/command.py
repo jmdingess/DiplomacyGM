@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from bot.config import ERROR_COLOUR
 from bot import perms
-from bot.utils import (
+from utils import (
     send_message_and_file,
     get_role_by_player,
     log_command,

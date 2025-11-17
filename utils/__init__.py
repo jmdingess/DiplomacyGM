@@ -1,8 +1,4 @@
-import asyncio
-import os
 import re
-import logging
-from subprocess import PIPE
 
 import discord
 from discord import Guild, Thread
@@ -10,10 +6,8 @@ from discord.abc import GuildChannel
 from discord.ext import commands
 
 from bot import config
-from bot.utils.send_message import send_message_and_file
-from diplomacy.adjudicator.utils import svg_to_png
+from utils.send_message import send_message_and_file
 from diplomacy.persistence import phase
-from diplomacy.persistence.board import Board
 from diplomacy.persistence.manager import Manager
 from diplomacy.persistence.player import Player
 from diplomacy.persistence.unit import UnitType

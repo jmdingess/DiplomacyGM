@@ -7,7 +7,7 @@ from diplomacy.adjudicator.utils import svg_to_png
 from diplomacy.persistence import phase
 from diplomacy.persistence.board import Board
 
-from bot.utils import log_command, send_message_and_file
+from utils import log_command, send_message_and_file
 
 
 async def upload_map_to_archive(ctx: commands.Context, server_id: int, board: Board, map: str, turn: tuple[str, phase] | None = None) -> None:

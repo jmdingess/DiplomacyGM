@@ -8,8 +8,7 @@ from discord.utils import find as discord_find
 
 from bot import config
 from bot import perms
-from bot.utils import log_command, parse_season, send_message_and_file, upload_map_to_archive
-from diplomacy.persistence.db.database import get_connection
+from utils import log_command, parse_season, send_message_and_file, upload_map_to_archive
 from diplomacy.persistence.manager import Manager
 
 logger = logging.getLogger(__name__)

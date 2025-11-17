@@ -3,24 +3,14 @@ import logging
 from discord.ext import commands
 import random
 
-from discord.ext.commands import (
-    ExtensionNotFound,
-    ExtensionNotLoaded,
-    ExtensionAlreadyLoaded,
-    NoEntryPointError,
-    ExtensionFailed,
-)
-
 from bot.config import (
     IMPDIP_SERVER_ID,
     IMPDIP_BOT_WIZARD_ROLE,
-    ERROR_COLOUR,
-    PARTIAL_ERROR_COLOUR,
     IMPDIP_SERVER_BOT_STATUS_CHANNEL_ID,
 )
 from bot.bot import DiploGM
 from bot import perms
-from bot.utils import send_message_and_file
+from utils import send_message_and_file
 from diplomacy.persistence.manager import Manager
 
 logger = logging.getLogger(__name__)

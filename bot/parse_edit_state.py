@@ -3,7 +3,7 @@ import logging
 import string
 
 from bot.config import ERROR_COLOUR, PARTIAL_ERROR_COLOUR
-from bot.utils import get_unit_type, get_keywords
+from utils import get_unit_type, get_keywords
 from diplomacy.adjudicator.mapper import Mapper
 from diplomacy.persistence import phase
 from diplomacy.persistence.board import Board

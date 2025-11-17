@@ -1,12 +1,11 @@
 from functools import wraps
 from typing import Any, Awaitable, Callable
 
-from discord import HTTPException
 from discord.ext import commands
 
 from bot import config
 from bot.config import IMPDIP_SERVER_ID, SUPERUSERS
-from bot.utils import (
+from utils import (
     get_player_by_role,
     is_player_channel,
     get_player_by_channel,

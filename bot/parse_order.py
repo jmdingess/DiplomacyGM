@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 from discord.ext.commands import Paginator
@@ -6,7 +5,7 @@ from lark import Lark, Transformer, UnexpectedEOF, UnexpectedCharacters
 from lark.exceptions import VisitError
 
 from bot.config import ERROR_COLOUR, PARTIAL_ERROR_COLOUR
-from bot.utils import get_unit_type, _manage_coast_signature
+from utils import get_unit_type, _manage_coast_signature
 from diplomacy.persistence import order, phase
 from diplomacy.persistence.board import Board
 from diplomacy.persistence.db.database import get_connection

@@ -19,7 +19,7 @@ from bot.config import (
     EXTENSIONS_TO_LOAD_ON_STARTUP,
 )
 from bot.perms import CommandPermissionError
-from bot.utils import send_message_and_file
+from utils import send_message_and_file
 from diplomacy.persistence.manager import Manager
 
 logger = logging.getLogger(__name__)

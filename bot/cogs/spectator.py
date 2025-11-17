@@ -6,7 +6,7 @@ from discord.utils import find as discord_find
 
 from bot import perms
 from bot.config import ERROR_COLOUR, IMPDIP_SERVER_ID
-from bot.utils import send_message_and_file
+from utils import send_message_and_file
 from diplomacy.persistence.manager import Manager
 
 logger = logging.getLogger(__name__)

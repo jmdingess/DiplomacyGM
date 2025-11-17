@@ -9,9 +9,8 @@ from discord import Message, User
 from bot.bot import DiploGM
 from bot import perms
 from bot.config import ERROR_COLOUR
-from bot.utils import (
+from utils import (
     get_value_from_timestamp,
-    log_command,
     send_message_and_file,
     log_command_no_ctx,
 )

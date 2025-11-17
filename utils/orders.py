@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from discord.ext.commands import Context
 
-from bot.utils import get_role_by_player
+from utils import get_role_by_player
 from diplomacy.persistence import phase
 from diplomacy.persistence.board import Board
 from diplomacy.persistence.player import Player

@@ -1,18 +1,17 @@
 import asyncio
 import logging
-import os
 from typing import Callable
 
 from discord.ext import commands
 
 from bot import config
 from bot import perms
-from bot.utils import (
+from utils import (
     get_player_by_channel,
     get_filtered_orders,
     send_message_and_file,
-    svg_to_png,
 )
+from diplomacy.adjudicator.utils import svg_to_png
 from diplomacy.persistence.manager import Manager
 from diplomacy.persistence.player import Player
 
