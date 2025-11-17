@@ -25,6 +25,8 @@ from diplomacy.persistence.manager import Manager
 logger = logging.getLogger(__name__)
 manager = Manager()
 
+_EXTENSION_DIRECTORY = "bot.cogs."
+
 # List of funny, sarcastic messages
 WELCOME_MESSAGES = [
     "Oh joy, I'm back online. Can't wait for the next betrayal. Really, I'm thrilled. 👏",
@@ -58,7 +60,7 @@ class DiploGM(commands.Bot):
 
         # modularly load command modules
         for extension in EXTENSIONS_TO_LOAD_ON_STARTUP:
-            await self.load_extension(extension)
+            await self.load_diplogm_extension(extension)
 
 
         # sync app_commands (slash) commands with all servers
@@ -73,9 +75,18 @@ class DiploGM(commands.Bot):
         except Exception as e:
             logger.warning(f"Failed to sync commands: {e}", exc_info=True)
 
+    async def load_diplogm_extension(self, name: str, *, package: Optional[str] = None):
+        await self.load_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+
+    async def unload_diplogm_extension(self, name: str, *, package: Optional[str] = None):
+        await self.unload_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+
+    async def reload_diplogm_extension(self, name: str, *, package: Optional[str] = None):
+        await self.reload_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+
     @staticmethod
     def get_all_extensions():
-        for filename in os.listdir("./bot/cogs/"):
+        for filename in os.listdir(_EXTENSION_DIRECTORY):
             # ignore non py files
             # ignore private files e.g. '_private.py'
             if not filename.endswith(".py") or filename.startswith("_"):
@@ -83,23 +94,41 @@ class DiploGM(commands.Bot):
 
             yield f"bot.cogs.{filename[:-3]}"
 
+    # add logging to base extension functions
     async def load_extension(self, name: str, *, package: Optional[str] = None):
         try:
             start = datetime.datetime.now()
-            await super().load_extension(f"bot.cogs.{name}", package=package)
+            await super().load_extension(f"{name}", package=package)
             logger.info(
                 f"Successfully loaded Cog: {name} in {datetime.datetime.now() - start}"
             )
         except Exception as e:
-            logger.info(f"Failed to load Cog {name}: {e}")
+            logger.info(f"Failed to load Cog {name}")
             raise e
 
     async def unload_extension(self, name: str, *, package: Optional[str] = None) -> None:
-        await super().unload_extension(f"bot.cogs.{name}", package=package)
+        try:
+            start = datetime.datetime.now()
+            await super().unload_extension(f"{name}", package=package)
+            logger.info(
+                f"Successfully unloaded Cog: {name} in {datetime.datetime.now() - start}"
+            )
+        except Exception as e:
+            logger.info(f"Failed to unload Cog {name}")
+            raise e
+
 
     async def reload_extension(self, name: str, *, package: Optional[str] = None) -> None:
-        # TODO this doesn't work because reload piggy backs load_extension but not unload_extension
-        await super().reload_extension(f"bot.cogs.{name}", package=package)
+        try:
+            start = datetime.datetime.now()
+            await super().reload_extension(f"{name}", package=package)
+            logger.info(
+                f"Successfully reloaded Cog: {name} in {datetime.datetime.now() - start}"
+            )
+        except Exception as e:
+            logger.info(f"Failed to reload Cog {name}")
+            raise e
+
 
     async def on_ready(self):
         now = datetime.datetime.now(datetime.timezone.utc)

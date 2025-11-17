@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import logging
 import os
 import re
@@ -11,7 +10,6 @@ from discord import (
     Thread,
 )
 from discord.ext import commands
-from discord.message import convert_emoji_reaction
 
 from bot import config
 from bot.parse_edit_state import parse_edit_state
@@ -62,7 +60,7 @@ class GameManagementCog(commands.Cog):
     @perms.gm_only("delete the game")
     async def delete_game(self, ctx: commands.Context) -> None:
         manager.total_delete(ctx.guild.id)
-        log_command(logger, ctx, message=f"Deleted game")
+        log_command(logger, ctx, message="Deleted game")
         await send_message_and_file(channel=ctx.channel, title="Deleted game")
 
     @commands.command(brief="")
@@ -123,7 +121,7 @@ class GameManagementCog(commands.Cog):
                 player_roles.add(r)
 
         if len(player_roles) == 0:
-            log_command(logger, ctx, message=f"No player role found")
+            log_command(logger, ctx, message="No player role found")
             await send_message_and_file(
                 channel=ctx.channel,
                 message="No player category found",
@@ -137,7 +135,7 @@ class GameManagementCog(commands.Cog):
                 player_categories.append(c)
 
         if len(player_categories) == 0:
-            log_command(logger, ctx, message=f"No player category found")
+            log_command(logger, ctx, message="No player category found")
             await send_message_and_file(
                 channel=ctx.channel,
                 message="No player category found",
@@ -266,7 +264,7 @@ class GameManagementCog(commands.Cog):
             failed_players_str = "\n- ".join([player.name for player in failed_players])
             await send_message_and_file(
                 channel=ctx.channel,
-                title=f"Failed to find a player for the following:",
+                title="Failed to find a player for the following:",
                 message=f"- {failed_players_str}",
             )
 
@@ -345,7 +343,7 @@ class GameManagementCog(commands.Cog):
             log_command(
                 logger,
                 ctx,
-                message=f"Failed for an unknown reason",
+                message="Failed for an unknown reason",
                 level=logging.ERROR,
             )
             await send_message_and_file(
@@ -359,7 +357,7 @@ class GameManagementCog(commands.Cog):
             log_command(
                 logger,
                 ctx,
-                message=f"Could not find orders log channel",
+                message="Could not find orders log channel",
                 level=logging.WARN,
             )
             await send_message_and_file(
@@ -374,11 +372,13 @@ class GameManagementCog(commands.Cog):
             title=f"{board.phase.name} {board.get_year_str()}",
             fields=order_text,
         )
-        log_command(logger, ctx, message=f"Successfully published orders")
+        log_command(logger, ctx, message="Successfully published orders")
         await send_message_and_file(
             channel=ctx.channel,
             title=f"Sent Orders to {log.jump_url}",
         )
+
+        return
 
         # HACK: Lifted from .ping_players
         # Should really work its way into a util function
@@ -545,7 +545,7 @@ class GameManagementCog(commands.Cog):
             await self.unlock_orders(ctx)
 
         # AUTOMATIC SCOREBOARD OUTPUT FOR DATA SPREADSHEET
-        if phase.is_builds(new_board.phase) and (guild.id != config.BOT_DEV_SERVER_ID or guild.name.startswith("Imperial Diplomacy")) and not test_adjudicate:
+        if phase.is_builds(new_board.phase) and (guild.id != config.BOT_DEV_SERVER_ID and guild.name.startswith("Imperial Diplomacy")) and not test_adjudicate:
             channel = self.bot.get_channel(config.IMPDIP_SERVER_WINTER_SCOREBOARD_OUTPUT_CHANNEL_ID)
             if not channel:
                 await send_message_and_file(channel=ctx.channel, message="Couldn't automatically send off the Winter Scoreboard data", embed_colour=config.ERROR_COLOUR)
@@ -657,7 +657,7 @@ class GameManagementCog(commands.Cog):
 
         if spectator_role == None:
             await send_message_and_file(
-                channel=ctx.channel, message=f"Missing spectator role"
+                channel=ctx.channel, message="Missing spectator role"
             )
             return
 
@@ -695,7 +695,7 @@ class GameManagementCog(commands.Cog):
     async def publicize(self, ctx: commands.Context) -> None:
         if not is_gm(ctx.message.author):
             raise PermissionError(
-                f"You cannot publicize a void because you are not a GM."
+                "You cannot publicize a void because you are not a GM."
             )
 
         channel = ctx.channel
