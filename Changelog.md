@@ -2,7 +2,7 @@
 =====
 I broke `.adjudicate`... just not that bad.
 
-Released: 
+Released: 2025/11/17
 
 Contributors to this release:
 - Chloe
