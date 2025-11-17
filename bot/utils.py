@@ -55,20 +55,6 @@ discord_embed_description_limit = 4096
 discord_embed_total_limit = 6000
 
 
-def is_superuser(author: commands.Context.author) -> bool:
-    return author.id in [
-        1217203346511761428,  # eebop
-        332252245259190274,  # Icecream Guy
-        169995316680982528,  # Bumble
-        450636420558618625,  # Flare
-        490633966974533640,  # Elle
-        200279271380353025,  # KingOfPrussia
-        1352388421003251833,  # Chloe
-        285108244714881024,  # aahoughton (elle-approved)
-        134870832651567104, # Golden Kumquat (elle-approved)
-    ]
-
-
 def is_moderator(author: commands.Context.author) -> bool:
     for role in author.roles:
         if config.is_mod_role(role.name):

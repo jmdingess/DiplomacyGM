@@ -1,6 +1,8 @@
 import logging
 import random
 import time
+
+from bot.perms import is_superuser
 from diplomacy.persistence.manager import Manager
 from scipy.integrate import odeint
 
@@ -322,6 +324,18 @@ class PartyCog(commands.Cog):
         await send_message_and_file(
             channel=ctx.channel, title="Global Fishing Leaderboard", message=text
         )
+
+    @commands.command(hidden=True)
+    @perms.superuser_only("shutdown the bot")
+    async def shutdown(self, ctx: commands.Context):
+        if is_superuser(ctx.author):
+            await send_message_and_file(
+                channel=ctx.channel, title=f"Please don't shut me down", message=f""
+            )
+        else:
+            await send_message_and_file(
+                channel=ctx.channel, title=f"Why would you want to do this to me?", message=f""
+            )
 
 
 async def setup(bot):
