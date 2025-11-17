@@ -8,7 +8,7 @@ from discord.ext import commands
 
 from bot import perms
 from bot.config import ERROR_COLOUR, is_bumble, temporary_bumbles
-from bot.utils import fish_pop_model, log_command, send_message_and_file
+from bot.utils import fish_pop_model, log_command, send_message_and_file, is_superuser
 
 from diplomacy.persistence.db.database import get_connection
 
@@ -63,7 +63,7 @@ class PartyCog(commands.Cog):
         log_command(logger, ctx, f"Sent Message into #{channel.name}")
         await send_message_and_file(
             channel=ctx.channel,
-            title=f"Sent Message",
+            title="Sent Message",
             message=message.jump_url,
         )
 
@@ -276,7 +276,7 @@ class PartyCog(commands.Cog):
             fish_kind = "captured" if board.fish >= 0 else "future"
             fish_message = f"Accidentally let {fish_num} {fish_kind} fish sneak away :("
         else:
-            fish_message = f"You find nothing but barren water and overfished seas, maybe let the population recover?"
+            fish_message = "You find nothing but barren water and overfished seas, maybe let the population recover?"
         fish_message += f"\nIn total, {board.fish} fish have been caught!"
         if random.randrange(0, 5) == 0:
             get_connection().execute_arbitrary_sql(
@@ -323,6 +323,16 @@ class PartyCog(commands.Cog):
             channel=ctx.channel, title="Global Fishing Leaderboard", message=text
         )
 
+    @commands.command(hidden=True)
+    async def shutdown(self, ctx: commands.Context):
+        if is_superuser(ctx.author):
+            await send_message_and_file(
+                channel=ctx.channel, title="Please don't shut me down D:", message=""
+            )
+        else:
+            await send_message_and_file(
+                channel=ctx.channel, title="Why would you want to do this to me?", message=""
+            )
 
 async def setup(bot):
     cog = PartyCog(bot)

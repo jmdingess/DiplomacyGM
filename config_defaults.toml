@@ -22,12 +22,8 @@ id = 1201167737163104376
 status_channel = 1284336328657600572
 substitute_ticket_channel = 1294689571103309944
 substitute_advertise_channel = 1201263909622010037
-substitute_log_channels = [
-    1282421565174059053  # currently a threadchannel (#gm-hangout->'Reputation Tracker')
-]
-winter_scoreboard_output_channels = [
-    1439377486055215246  # currently a threadchannel
-]
+substitute_log_channels = 1282421565174059053  # currently a threadchannel (#gm-hangout->'Reputation Tracker')
+winter_scoreboard_output_channel = 1439377486055215246  # currently a threadchannel
 # Role ids
 bot_wizard = 1424487941857611837
 
@@ -41,6 +37,7 @@ load_on_startup = [
     "administration",
     "command",
     "development",
+    "extension_management",
     "fog_of_war",
     "game_management",
     "moderation",
