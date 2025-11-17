@@ -4,7 +4,7 @@ from typing import Any, Awaitable, Callable
 from discord import HTTPException
 from discord.ext import commands
 
-from bot.config import IMPDIP_SERVER_ID
+from bot.config import IMPDIP_SERVER_ID, SUPERUSERS
 from bot.utils import (
     is_gm,
     is_gm_channel,
@@ -12,7 +12,6 @@ from bot.utils import (
     is_moderator,
     is_player_channel,
     get_player_by_channel,
-    is_superuser,
 )
 from diplomacy.persistence.manager import Manager
 from diplomacy.persistence.player import Player
@@ -151,3 +150,6 @@ def assert_superuser_only(ctx: commands.Context, description: str = "run this co
 
 def superuser_only(description: str = "run this command"):
     return commands.check(lambda ctx: assert_superuser_only(ctx, description))
+
+def is_superuser(author: commands.Context.author) -> bool:
+    return author.id in SUPERUSERS

@@ -73,7 +73,10 @@ Player commands can only be called in "orders" category in channels named "franc
 
 When you make commits, add your changes to `Changelog.md`.
 
-It is suggested to split into the following sections but use your own judgement:
+Please ensure version numbers are correct and underlined with `=` characters at the start of each version's release notes in the changelog. The bot uses them to detect the versions and its release notes.
+Please also ensure each set of release notes has a `Released: <DATE>` near the start.
+
+Then, it is suggested to split into the following sections but use your own judgement:
 - A section each set of major changes/features.
 - Changes only affecting GMs
 - Changes only affecting Developers and/or superusers
@@ -92,8 +95,6 @@ Additional labels for pre-release and build metadata are available as extensions
 ```
 For our purposes our API counts as our forward facing commands: any method to interact with our systems by non-superusers.
 
-Please ensure version numbers are correct as the bot uses them
-
 # Releasing a new version
 To release a new version you must:
 - Be a superuser.
@@ -101,19 +102,19 @@ To release a new version you must:
 - Have VPS access.
 
 To release a new version:
-1. Change the version in this file to be underlined with `=` signs and remove the `#` prefix. This is what the bot uses to detect released versions.
+1. Ensure the changelog has the release notes for the new version. 
 2. Ensure the dev branch has been suitably tested.
 3. Create a PR to merge `dev` into `main`. (you can do this ahead of time).
 
-    N.B. This will require approval from 2 contributors
+    1. This will require approval from 2 contributors
+    2. Please ensure the dev branch has been suitably tested.
 4. Create a version tag with the semantic version eg `1.0.0` NOT `v1.0.0`
 5. On the server use `cd /opt/DiplomacyGM` followed by `git fetch && git checkout <Version>` eg `git fetch && git checkout 1.0.0`
      
-    N.B. This drops local changes to unstaged tracked files (Not the database or config.toml)
+    1. This drops local changes to unstaged tracked files (Not the database or config.toml)
 6. Run the bot command `.shutdown_the_bot_yes_i_want_to_do_this` to shutdown the bot 
 7. On the server run `sudo systemctl restart DiploGM.service`
 8. Monitor the Bot and ensure it restarts correctly.
-9. Post the changelog into the [changelog channel](https://discord.com/channels/1262215477237645314/1439702852393111562) in the Developer Hub server. 
 
 ## HotFixes
 On occasion, it may be required to push a change out faster than this process allows. If this is the case the version and changes should be documented after the fact. A full process for this is not currently documented.
