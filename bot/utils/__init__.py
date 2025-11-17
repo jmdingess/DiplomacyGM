@@ -201,11 +201,6 @@ def get_unit_type(command: str) -> UnitType | None:
     return None
 
 
-def fish_pop_model(Fish, t, growth_rate, carrying_capacity):
-    dFishdt = growth_rate * Fish * (1 - Fish / carrying_capacity)
-    return dFishdt
-
-
 def parse_season(
     arguments: list[str], default_year: str
 ) -> tuple[str, phase.Phase] | None:

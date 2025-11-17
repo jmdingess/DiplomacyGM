@@ -10,7 +10,7 @@ from discord.ext import commands
 
 from bot import perms
 from bot.config import ERROR_COLOUR, is_bumble, temporary_bumbles
-from bot.utils import fish_pop_model, log_command, send_message_and_file
+from bot.utils import log_command, send_message_and_file
 
 from diplomacy.persistence.db.database import get_connection
 
@@ -31,6 +31,10 @@ try:
         WOC_ADVICE.extend(f.readlines())
 except FileNotFoundError:
     pass
+
+def fish_pop_model(Fish, t, growth_rate, carrying_capacity):
+    dFishdt = growth_rate * Fish * (1 - Fish / carrying_capacity)
+    return dFishdt
 
 
 class PartyCog(commands.Cog):
