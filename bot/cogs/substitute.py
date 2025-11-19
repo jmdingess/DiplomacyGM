@@ -154,7 +154,7 @@ class SubstituteCog(commands.Cog):
     {interested_sub_ping}
     Period: {sub_period}
     Game: {guild.name}
-    Phase: {board.phase.name} {board.get_year_str()}
+    Phase: {board.turn}
     Power: {power.name}
     SC Count: {len(power.centers)}
     VSCC: {round(power.score() * 100, 2)}%
@@ -291,7 +291,7 @@ class SubstituteCog(commands.Cog):
             + f"- Guild ID: {guild.id}\n"
             + f"In: {in_user.mention}[{in_user.name}]\n"
             + f"Out: {out_user.mention}[{out_user.name}]\n"
-            + f"Phase: {board.phase.name} {board.get_year_str()}\n"
+            + f"Phase: {board.turn}\n"
             + f"Reason: {reason}"
         )
         await send_message_and_file(channel=logc, message=out)

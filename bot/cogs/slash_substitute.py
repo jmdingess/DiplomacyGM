@@ -167,7 +167,7 @@ class SlashSubstituteCog(commands.Cog):
         out = (
             f"Period: {timestamp_msg}\n"
             f"Game: {guild.name}\n"
-            f"Phase: {board.phase.name} {board.get_year_str()}\n"
+            f"Phase: {board.turn}\n"
             f"Power: {power_role.name}\n"
             f"SC Count: {len(player.centers)}\n"
             f"VSCC: {round(player.score() * 100, 2)}%\n"
@@ -423,13 +423,12 @@ class SlashSubstituteCog(commands.Cog):
 
         # OUTPUT TO REPUTATION TRACKER
         board = manager.get_board(guild.id)
-        phase = f"{board.phase.name} {board.get_year_str()}"
         out = (
             f"Game: {guild.name}\n"
             f"- GuildID: {guild.id}\n"
             f"In: {incoming_user.mention}[{incoming_user.name}]\n"
             f"Out: {outgoing_user.mention if outgoing_user else '(null)'}[{outgoing_username}]\n"
-            f"Phase: {phase}\n"
+            f"Phase: {board.turn}\n"
             f"Reason: {reason}"
         )
 
