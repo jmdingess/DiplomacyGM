@@ -1,8 +1,9 @@
 import logging
-from threading import Lock
 import time
 import os
+from typing import Optional
 
+from bot.core.singleton import SingletonMeta
 from diplomacy.adjudicator.adjudicator import make_adjudicator
 from diplomacy.adjudicator.mapper import Mapper
 from diplomacy.map_parser.vector.vector import get_parser
@@ -15,27 +16,12 @@ from diplomacy.persistence.spec_request import SpecRequest
 logger = logging.getLogger(__name__)
 
 
-class ManagerMeta(type):
-    """Metaclass to provide Singleton creational logic to Manager"""
-
-    _instances = {}
-    _lock = Lock()
-
-    def __call__(cls):
-        with cls._lock:
-            if cls not in cls._instances:
-                instance = super().__call__()
-                cls._instances[cls] = instance
-
-        return cls._instances[cls]
-
-
-class Manager(metaclass=ManagerMeta):
+class Manager(metaclass=SingletonMeta):
     """Manager acts as an intermediary between Bot (the Discord API), Board (the board state), the database."""
 
-    def __init__(self):
+    def __init__(self, board_ids: Optional[list[int]]=None):
         self._database = database.get_connection()
-        self._boards: dict[int, Board] = self._database.get_boards()
+        self._boards: dict[int, Board] = self._database.get_boards(board_ids)
         self._spec_requests: dict[int, list[SpecRequest]] = (
             self._database.get_spec_requests()
         )
@@ -83,10 +69,14 @@ class Manager(metaclass=ManagerMeta):
         self._spec_requests[server_id].append(obj)
         self._database.save_spec_request(obj)
 
-        return f"Approved request Logged!"
+        return "Approved request Logged!"
 
     def get_board(self, server_id: int) -> Board:
-        board = self._boards.get(server_id)
+        try:
+            board = self._boards.get(server_id)
+        except KeyError:
+            board = self._database.get_latest_board(server_id)
+
         if not board:
             raise RuntimeError("There is no existing game this this server.")
         return board

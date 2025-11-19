@@ -1,13 +1,14 @@
-from typing import Optional
-
 import aiohttp.client_exceptions
 import datetime
 import inspect
+import importlib
 import logging
 import os
 import random
 import traceback
+from typing import Optional
 
+from diplomacy.core.base_listener import BaseListener
 import discord
 from discord.ext import commands
 
@@ -18,15 +19,18 @@ from bot.config import (
     IMPDIP_SERVER_BOT_STATUS_CHANNEL_ID,
     EXTENSIONS_TO_LOAD_ON_STARTUP,
 )
-from bot.perms import CommandPermissionError
+from bot.core.eventbus import EventBus
+from bot.errors import CommandPermissionError
 from bot.utils import send_message_and_file
 from diplomacy.persistence.manager import Manager
 
 logger = logging.getLogger(__name__)
-manager = Manager()
 
 _EXTENSION_PATH = "bot.cogs."
 _EXTENSION_DIRECTORY = "bot/cogs/"
+
+_LISTENER_PATH = "diplomacy.listeners."
+_LISTENER_DIRECTORY = "diplomacy/listeners/"
 
 # List of funny, sarcastic messages
 WELCOME_MESSAGES = [
@@ -52,12 +56,18 @@ class DiploGM(commands.Bot):
         self.creation_time = datetime.datetime.now(datetime.timezone.utc)
         self.last_command_time = None
 
-        self.manager = Manager()
 
     async def setup_hook(self) -> None:
         # bind command invocation handling methods
         self.before_invoke(self.before_any_command)
         self.after_invoke(self.after_any_command)
+
+        current_servers = [g.id async for g in self.fetch_guilds()]
+        self.manager = Manager(board_ids=current_servers)
+
+        self.eventbus = EventBus()
+        for module_path in DiploGM.get_all_listeners():
+            await self.load_listener(self.eventbus, module_path)
 
         # modularly load command modules
         for extension in EXTENSIONS_TO_LOAD_ON_STARTUP:
@@ -130,6 +140,37 @@ class DiploGM(commands.Bot):
             logger.info(f"Failed to reload Cog {name}")
             raise e
 
+    @staticmethod
+    def get_all_listeners():
+        for filename in os.listdir(_LISTENER_DIRECTORY):
+            if not filename.endswith(".py") or filename.startswith("_"):
+                continue
+
+            yield f"{_LISTENER_PATH}{filename[:-3]}"
+
+    async def load_listener(self, bus: EventBus, module_path: str):
+        try:
+            module = importlib.import_module(module_path)
+        except Exception as e:
+            logger.error(f"Failed to import {module_path}: {e}")
+            return
+
+        for attr in module.__dir__():
+            cls = getattr(module, attr)
+            if not isinstance(cls, type):
+                continue
+
+            if not (cls is not BaseListener and issubclass(cls, BaseListener)):
+                continue
+
+            try:
+                listener = cls(self)
+                listener.setup(bus)
+                logger.info(f"Loaded event listener: {cls.__name__}")
+            except Exception as e:
+                logger.error(f"Failed to load event listener: {cls.__name__}: {e.__class__.__name__} - {str(e)}")
+
+    # TODO: Functionality to unload/reload listeners
 
     async def on_ready(self):
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -255,12 +296,12 @@ class DiploGM(commands.Bot):
         if isinstance(original, discord.Forbidden):
             await send_message_and_file(
                 channel=ctx.channel,
-                message=f"I do not have the correct permissions to do this.\n"
-                f"I might not be setup correctly.\n"
-                f"If this is unexpected please contact a GM or reach out in: "
-                f"https://discord.com/channels/1201167737163104376/1286027175048253573"
-                f" or "
-                f"https://discord.com/channels/1201167737163104376/1280587781638459528",
+                message="I do not have the correct permissions to do this.\n"
+                "I might not be setup correctly.\n"
+                "If this is unexpected please contact a GM or reach out in: "
+                "https://discord.com/channels/1201167737163104376/1286027175048253573"
+                " or "
+                "https://discord.com/channels/1201167737163104376/1280587781638459528",
                 embed_colour=ERROR_COLOUR,
             )
             return
@@ -306,7 +347,7 @@ class DiploGM(commands.Bot):
             ),
         ):
             out = (
-                f"Please wait a few (10 to 30) seconds and try again.\n"
+                "Please wait a few (10 to 30) seconds and try again.\n"
                 "Sorry for the inconvenience. :D\n\n"
                 "-# If after repeated attempts it still breaks, please report this to a bot dev using a feedback channel"
             )
@@ -319,9 +360,9 @@ class DiploGM(commands.Bot):
 
         # Final Case: Not handled cleanly
         unhandled_out = (
-            f"```python\n"
+            "```python\n"
             + "\n".join(traceback.format_exception(original, limit=3))
-            + f"```"
+            + "```"
         )
 
         # Out to Bot Dev Server
@@ -337,21 +378,21 @@ class DiploGM(commands.Bot):
             ) + unhandled_out
             await send_message_and_file(
                 channel=bot_error_channel,
-                title=f"UNHANDLED ERROR",
+                title="UNHANDLED ERROR",
                 message=unhandled_out_dev,
             )
 
         # Out to Invoking Channel
         unhandled_out = (
-            f"Please report this to a bot dev in using a feedback channel: "
-            f"https://discord.com/channels/1201167737163104376/1286027175048253573"
-            f" or "
-            f"https://discord.com/channels/1201167737163104376/1280587781638459528"
-            f"\n"
+            "Please report this to a bot dev in using a feedback channel: "
+            "https://discord.com/channels/1201167737163104376/1286027175048253573"
+            " or "
+            "https://discord.com/channels/1201167737163104376/1280587781638459528"
+            "\n"
         ) + unhandled_out
         await send_message_and_file(
             channel=ctx.channel,
-            title=f"ERROR: >.< How did we get here...",
+            title="ERROR: >.< How did we get here...",
             message=unhandled_out,
             embed_colour=ERROR_COLOUR,
         )
