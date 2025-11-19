@@ -1,7 +1,6 @@
 from functools import wraps
 from typing import Any, Awaitable, Callable
 
-from discord import HTTPException
 from discord.ext import commands
 
 from bot.config import IMPDIP_SERVER_ID, SUPERUSERS
@@ -17,12 +16,6 @@ from diplomacy.persistence.manager import Manager
 from diplomacy.persistence.player import Player
 
 manager = Manager()
-
-
-class CommandPermissionError(commands.CheckFailure):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(message)
 
 
 def get_player_by_context(ctx: commands.Context):
