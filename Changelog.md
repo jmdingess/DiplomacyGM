@@ -1,3 +1,42 @@
+1.2.0
+=====
+The wheels on the bus go round and round... round and round... round and round...
+
+Also the formatter got hungry again :(
+
+Released:
+
+Contributors to this release:
+- aahoughton
+
+# GM Changes
+- Reverted previous attempt to remove inland fleets by auto appending "coast" when using command `.edit create_unit` for fleets that resulted in failure to create units on Sea Provinces
+
+# Developer Changes
+- Optimised `Manager` initialisation by only loading games for which DiploGM is currently managing (managing a game defined as being a member of the server)
+  - Required definition of Manager to occur within `DiploGM.setup_hook`, which must be the first location that `Manager` is called for this functionality
+  - This functionality can be reversed at any time by setting the `board_ids` argument in `Manager(board_ids=current_servers)` to `None`
+- Created `./bot/core/` directory
+  - Created `eventbus.py` to facilitate Event-Driven communication within the codebase
+- Created `./diplomacy/core/` directory
+  - Created `events.py` to hold Diplomacy Event type definitions (contents minimal)
+  - Created `base_listener.py` to define an abstract class for listening and processing of raised Diplomacy Events over the EventBus
+- Renamed `ManagerMeta` to `SingletonMeta` and moved to `./bot/core` so that the structure can be reused for other classes
+  - Introduced `force_new` boolean argument to create fresh instances (for example when writing tests) 
+- Added `get_latest_board()` to `database.py`
+  - Added a catch if `Manager.get_board()` fails (no board is currently loaded for that game), `get_latest_board()` attempts to find one on the database. 
+- Moved `CommandPermissionError` into new file `errors.py`
+
+## Event Bus
+Event Bus is initialised in `setup_hook` as a publish-subscribe observer pattern connector of BaseListener types
+It can be accessed within the code base using `bot.eventbus.publish(event)` only Listeners should use the subscribe model
+
+## Event Listeners
+An abstract listener is located in `diplomacy/core/base_listener.py`
+
+Custom listeners are currently setup to be created in `diplomacy/listeners` and should feature a type that subclasses the abstract listener, listeners are primarily setup to handle one event, though can be setup to handle multiple if truly desired
+An example listener is located in `diplomacy/listeners/event_counter.py`, 
+
 1.1.0
 =====
 I broke `.adjudicate`... just not that bad.

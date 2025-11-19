@@ -136,7 +136,7 @@ def _parse_command(command: str, board: Board) -> None:
     elif command_type == _bulk_create_units_str:
         _bulk_create_units(keywords, board)
     else:
-        raise RuntimeError(f"No command key phrases found")
+        raise RuntimeError("No command key phrases found")
 
 
 def _set_phase(keywords: list[str], board: Board) -> None:
@@ -242,9 +242,9 @@ def _create_unit(keywords: list[str], board: Board) -> None:
 
     player = board.get_player(keywords[1])
     province, coast = board.get_province_and_coast(" ".join(keywords[2:]))
-    if unit_type == UnitType.FLEET and coast is None:
-        coast_name = f"{province} coast"
-        province, coast = board.get_province_and_coast(coast_name)
+    # if unit_type == UnitType.FLEET and coast is None:
+    #     coast_name = f"{province} coast"
+    #     province, coast = board.get_province_and_coast(coast_name)
 
     unit = board.create_unit(unit_type, player, province, coast, None)
     get_connection().execute_arbitrary_sql(
@@ -274,7 +274,7 @@ def _create_dislodged_unit(keywords: list[str], board: Board) -> None:
         )
         if not all(retreat_options):
             raise ValueError(
-                f"Could not find at least one province in retreat options."
+                "Could not find at least one province in retreat options."
             )
         unit = board.create_unit(unit_type, player, province, coast, retreat_options)
         get_connection().execute_arbitrary_sql(
@@ -371,7 +371,7 @@ def _dislodge_unit(keywords: list[str], board: Board) -> None:
         )
         if not all(retreat_options):
             raise ValueError(
-                f"Could not find at least one province in retreat options."
+                "Could not find at least one province in retreat options."
             )
         dislodged_unit = board.create_unit(
             unit.unit_type, unit.player, unit.province, unit.coast, retreat_options

@@ -7,6 +7,7 @@ from discord.utils import find as discord_find
 
 from bot import config
 from bot import perms
+from bot.errors import CommandPermissionError
 from bot.utils import get_player_by_name, send_message_and_file
 from diplomacy.persistence.manager import Manager
 from diplomacy.persistence.player import Player
@@ -82,7 +83,7 @@ class SubstituteCog(commands.Cog):
 
         _hub = ctx.bot.get_guild(config.IMPDIP_SERVER_ID)
         if not _hub:
-            raise perms.CommandPermissionError(
+            raise CommandPermissionError(
                 "Can't advertise as can't access the Imperial Diplomacy Hub Server."
             )
 
@@ -148,7 +149,7 @@ class SubstituteCog(commands.Cog):
             )
             return
 
-        title = f"Substitute Advertisement"
+        title = "Substitute Advertisement"
         out = f"""
     {interested_sub_ping}
     Period: {sub_period}
@@ -357,7 +358,7 @@ class SubstituteCog(commands.Cog):
                 await send_message_and_file(
                     channel=ctx.channel,
                     title="Error",
-                    message=f"Incoming player has previously spectated a power that cannot be found...",
+                    message="Incoming player has previously spectated a power that cannot be found...",
                     embed_colour=config.ERROR_COLOUR,
                 )
             elif prev_spec.role_id != power_role.id:
