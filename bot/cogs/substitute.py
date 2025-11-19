@@ -6,6 +6,7 @@ from discord.ext import commands
 from discord.utils import find as discord_find
 
 from bot import config
+from bot import perms
 from bot.errors import CommandPermissionError
 from bot.utils import get_player_by_name, send_message_and_file
 from diplomacy.persistence.manager import Manager
