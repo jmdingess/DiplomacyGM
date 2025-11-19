@@ -4,6 +4,7 @@ from typing import Any, Awaitable, Callable
 from discord.ext import commands
 
 from bot.config import IMPDIP_SERVER_ID, SUPERUSERS
+from bot.errors import CommandPermissionError
 from bot.utils import (
     is_gm,
     is_gm_channel,
