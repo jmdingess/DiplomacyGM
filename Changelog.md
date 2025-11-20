@@ -7,6 +7,9 @@ Contributors
 - Chloe
 - Golden Kumquat
 
+# Player Bugfixes
+- fixed `/substitute` 
+
 
 # GM Changes
 - Depreciated `.vm true` and `.vc true`
@@ -40,6 +43,7 @@ This is an attempt to document all the changes that are part of this.
 - Added `assets/*_adjacencies.txt`, `*.pclprof` & `logs/*` and removed `assets/`
 - depreciated `get_latest_board()`
 - `Phase` has been replaced with `Turn`
+- `IMPDIP_SERVER_SUBSTITUTE_LOG_CHANNEL_ID` is no longer a list ( this was breaking `/substitute`)
 
 1.2.1
 =====

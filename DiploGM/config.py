@@ -46,7 +46,7 @@ IMPDIP_SERVER_ID = all_config["hub"]["id"]
 IMPDIP_SERVER_BOT_STATUS_CHANNEL_ID = all_config["hub"]["status_channel"]
 IMPDIP_SERVER_SUBSTITUTE_TICKET_CHANNEL_ID = all_config["hub"]["substitute_ticket_channel"]
 IMPDIP_SERVER_SUBSTITUTE_ADVERTISE_CHANNEL_ID = all_config["hub"]["substitute_advertise_channel"]
-IMPDIP_SERVER_SUBSTITUTE_LOG_CHANNEL_ID = all_config["hub"]["substitute_log_channels"]
+IMPDIP_SERVER_SUBSTITUTE_LOG_CHANNEL_ID = all_config["hub"]["substitute_log_channel"]
 IMPDIP_SERVER_WINTER_SCOREBOARD_OUTPUT_CHANNEL_ID = all_config["hub"]["winter_scoreboard_output_channel"]
 ## Roles
 IMPDIP_BOT_WIZARD_ROLE = all_config["hub"]["bot_wizard"]
