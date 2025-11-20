@@ -29,8 +29,8 @@ logger = logging.getLogger(__name__)
 _EXTENSION_PATH = "DiploGM.cogs."
 _EXTENSION_DIRECTORY = "DiploGM/cogs/"
 
-_LISTENER_PATH = "DiploGM.diplomacy.listeners."
-_LISTENER_DIRECTORY = "DiploGM/diplomacy/listeners/"
+_LISTENER_PATH = "DiploGM.events.listeners."
+_LISTENER_DIRECTORY = "DiploGM/events/listeners/"
 
 # List of funny, sarcastic messages
 WELCOME_MESSAGES = [

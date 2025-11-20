@@ -34,11 +34,11 @@ class Manager(metaclass=SingletonMeta):
     def create_game(self, server_id: int, gametype: str = "impdip") -> str:
         if self._boards.get(server_id):
             return "A game already exists in this server."
-        if not os.path.isfile(f"config/{gametype}.json"):
+        if not os.path.isdir(f"variants/{gametype}"):
             return f"Game {gametype} does not exist."
 
         logger.info(f"Creating new game in server {server_id}")
-        self._boards[server_id] = get_parser(gametype + ".json").parse()
+        self._boards[server_id] = get_parser(gametype).parse()
         self._boards[server_id].board_id = server_id
         self._database.save_board(server_id, self._boards[server_id])
 

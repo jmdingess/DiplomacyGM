@@ -32,8 +32,12 @@ class Parser:
     def __init__(self, data: str):
         self.datafile = data
 
-        with open(f"config/{data}", "r") as f:
+
+
+        with open(f"variants/{data}/config.json", "r") as f:
             self.data = json.load(f)
+
+        self.data["file"] = f"variants/{data}/{self.data['file']}"
 
         svg_root = etree.parse(self.data["file"])
 
@@ -631,6 +635,8 @@ parsers = {}
 def get_parser(name: str) -> Parser:
     if name not in parsers:
         logger.info(f"Creating new Parser for board named {name}")
+        # Deals with legacy database names
+        name = name.rstrip(".json")
         parsers[name] = Parser(name)
     return parsers[name]
 
