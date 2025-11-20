@@ -16,10 +16,9 @@ from discord.ext.commands import Context
 
 from bot import config
 from diplomacy.adjudicator.utils import svg_to_png, png_to_jpg
-from diplomacy.persistence import phase
 from diplomacy.persistence.board import Board
 from diplomacy.persistence.manager import Manager
-from diplomacy.persistence.phase import Phase
+from diplomacy.persistence.turn import Turn
 from diplomacy.persistence.player import Player
 from diplomacy.persistence.unit import UnitType
 
@@ -468,7 +467,7 @@ def get_orders(
         response = []
     else:
         response = ""
-    if phase.is_builds(board.phase):
+    if board.turn.is_builds():
         for player in sorted(board.players, key=lambda sort_player: sort_player.name):
             if not player_restriction and (
                 len(player.centers) + len(player.units) == 0
@@ -525,7 +524,7 @@ def get_orders(
             ):
                 continue
 
-            if phase.is_retreats(board.phase):
+            if board.turn.is_retreats():
                 in_moves = lambda u: u == u.province.dislodged_unit
             else:
                 in_moves = lambda _: True
@@ -567,7 +566,7 @@ def get_orders(
 
 def get_filtered_orders(board: Board, player_restriction: Player) -> str:
     visible = board.get_visible_provinces(player_restriction)
-    if phase.is_builds(board.phase):
+    if board.turn.is_builds():
         response = ""
         for player in sorted(board.players, key=lambda sort_player: sort_player.name):
             if not player_restriction or player == player_restriction:
@@ -586,7 +585,7 @@ def get_filtered_orders(board: Board, player_restriction: Player) -> str:
         response = ""
 
         for player in board.players:
-            if phase.is_retreats(board.phase):
+            if board.turn.is_retreats():
                 in_moves = lambda u: u == u.province.dislodged_unit
             else:
                 in_moves = lambda _: True
@@ -620,7 +619,7 @@ def fish_pop_model(Fish, t, growth_rate, carrying_capacity):
 
 def parse_season(
     arguments: list[str], default_year: str
-) -> tuple[str, phase.Phase] | None:
+) -> Turn | None:
     year, season, retreat = default_year, None, False
     for s in arguments:
         if s.isnumeric() and int(s) > 1640:
@@ -639,10 +638,9 @@ def parse_season(
     if season is None:
         return None
     if season == "Winter":
-        parsed_phase = phase.get("Winter Builds")
+        return Turn(year, "Winter Builds")
     else:
-        parsed_phase = phase.get(season + " " + ("Retreats" if retreat else "Moves"))
-    return (year, parsed_phase)
+        return Turn(year, season + " " + ("Retreats" if retreat else "Moves"))
 
 def get_value_from_timestamp(timestamp: str) -> int | None:
     if len(timestamp) == 10 and timestamp.isnumeric():
@@ -654,13 +652,10 @@ def get_value_from_timestamp(timestamp: str) -> int | None:
 
     return None
 
-async def upload_map_to_archive(ctx: commands.Context, server_id: int, board: Board, map: str, turn: tuple[str, phase] | None = None) -> None:
+async def upload_map_to_archive(ctx: commands.Context, server_id: int, board: Board, map: str, turn: Turn | None = None) -> None:
     if "maps_sas_token" not in os.environ:
         return
-    if turn is None:
-        turnstr = f"{(board.year + board.year_offset) % 100}{board.phase.shortname}"
-    else:
-        turnstr = f"{int(turn[0]) % 100}{turn[1].shortname}"
+    turnstr = board.turn.get_short_name() if turn is None else turn.get_short_name()
     url = None
     with open("gamelist.tsv", "r") as gamefile:
         for server in gamefile:

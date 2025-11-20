@@ -11,7 +11,7 @@ from lxml import etree
 
 from diplomacy.map_parser.vector.transform import TransGL3
 from diplomacy.map_parser.vector.utils import get_element_color, get_unit_coordinates, get_svg_element, parse_path, initialize_province_resident_data
-from diplomacy.persistence import phase
+from diplomacy.persistence.turn import Turn
 from diplomacy.persistence.board import Board
 from diplomacy.persistence.player import Player
 from diplomacy.persistence.province import Province, ProvinceType, Coast
@@ -148,11 +148,11 @@ class Parser:
                     logger.warning(f"{self.datafile}: Province {coast.name} has no retreat coord. Setting to 0,0 ...")
                     coast.retreat_unit_coordinate = (0, 0)
         
-        initial_phase = phase.initial()
+        initial_turn = Turn(self.year_offset, "Spring Moves", self.year_offset)
         if "adju flags" in self.data and "initial builds" in self.data["adju flags"]:
-            initial_phase = phase._winter_builds
+            initial_turn = initial_turn.get_previous_turn()
 
-        return Board(self.players, provinces, units, initial_phase, self.data, self.datafile, self.fow, self.year_offset)
+        return Board(self.players, provinces, units, initial_turn, self.data, self.datafile, self.fow, self.year_offset)
 
     def read_map(self) -> tuple[set[Province], set[tuple[str, str]]]:
         if self.cache_provinces is None:
