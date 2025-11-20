@@ -8,6 +8,10 @@ Contributors
 - Golden Kumquat
 
 
+# GM Changes
+- Depreciated `.vm true` and `.vc true`
+
+
 # Developer Changes
 so a lot changed....
 

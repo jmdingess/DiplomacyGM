@@ -209,6 +209,11 @@ class PlayerCog(commands.Cog):
             )
             return
 
+        message = None
+        if {"true", "t"} & set(arguments):
+            message = ("`.vm true` and `.vm t` have been deprecated and will soon be disabled.\n"
+                       "Please use `.vm svg` instead")
+
         log_command(
             logger,
             ctx,
@@ -217,6 +222,7 @@ class PlayerCog(commands.Cog):
         await send_message_and_file(
             channel=ctx.channel,
             title=f"{turn}",
+            message=message,
             file=file,
             file_name=file_name,
             convert_svg=convert_svg,
@@ -281,6 +287,13 @@ class PlayerCog(commands.Cog):
                 embed_colour=config.ERROR_COLOUR,
             )
             return
+
+        message = None
+        if {"true", "t"} & set(arguments):
+            message = ("`.vc true` and `.vc t` have been deprecated and will soon be disabled.\n"
+                       "Please use `.vm svg` instead")
+
+
         log_command(
             logger,
             ctx,
@@ -289,6 +302,7 @@ class PlayerCog(commands.Cog):
         await send_message_and_file(
             channel=ctx.channel,
             title=f"{turn}",
+            message=message,
             file=file,
             file_name=file_name,
             convert_svg=convert_svg,
