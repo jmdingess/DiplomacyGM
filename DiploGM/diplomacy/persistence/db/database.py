@@ -116,8 +116,10 @@ class _DatabaseConnection:
         cursor.close()
         return board
 
+
     def get_latest_board(self, server_id: int) -> Optional[Board]:
         """ Such a bad function I hate it, but it should do its purpose """
+        raise DeprecationWarning
 
         cursor = self._connection.cursor()
         board_data = cursor.execute("SELECT * FROM boards WHERE board_id=?", (server_id,)).fetchall()

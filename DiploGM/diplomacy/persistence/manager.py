@@ -72,10 +72,10 @@ class Manager(metaclass=SingletonMeta):
         return f"Approved request Logged!"
 
     def get_board(self, server_id: int) -> Board:
-        try:
-            board = self._boards.get(server_id)
-        except KeyError:
-            board = self._database.get_latest_board(server_id)
+        # try:
+        board = self._boards.get(server_id)
+        # except KeyError:
+            # board = self._database.get_latest_board(server_id)
 
         if not board:
             raise RuntimeError("There is no existing game this this server.")
