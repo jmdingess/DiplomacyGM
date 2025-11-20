@@ -22,4 +22,7 @@ gamelist.tsv
 .env
 venv
 
+*.pclprof
+
+logs/*
 config.toml
