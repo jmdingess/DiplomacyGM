@@ -1,9 +1,9 @@
 import logging
 from typing import List, Type
 
-from DiploGM.core.singleton import SingletonMeta
-from DiploGM.diplomacy.core.base_listener import BaseListener
-from DiploGM.diplomacy.core.events import Event
+from DiploGM.utils.singleton import SingletonMeta
+from DiploGM.events.base_listener import BaseListener
+from DiploGM.events.events import Event
 
 logger = logging.getLogger(__name__)
 

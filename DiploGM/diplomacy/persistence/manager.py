@@ -3,7 +3,7 @@ import time
 import os
 from typing import Optional
 
-from DiploGM.core.singleton import SingletonMeta
+from DiploGM.utils.singleton import SingletonMeta
 from DiploGM.diplomacy.adjudicator.adjudicator import make_adjudicator
 from DiploGM.diplomacy.adjudicator.mapper import Mapper
 from DiploGM.diplomacy.map_parser.vector.vector import get_parser

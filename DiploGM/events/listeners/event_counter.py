@@ -1,7 +1,7 @@
 import logging
 
-from DiploGM.diplomacy.core.base_listener import BaseListener
-from DiploGM.diplomacy.core.events import Event
+from DiploGM.events.base_listener import BaseListener
+from DiploGM.events.events import Event
 
 logger = logging.getLogger(__name__)
 
