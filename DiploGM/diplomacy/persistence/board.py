@@ -2,8 +2,8 @@ import re
 import logging
 import time
 
-from utils import sanitise_name
-from DiploGM.diplomacy.persistence.phase import Phase
+from DiploGM.utils.sanitise import sanitise_name
+from DiploGM.diplomacy.persistence.turn import Turn
 from DiploGM.diplomacy.persistence.player import Player
 from DiploGM.diplomacy.persistence.province import Province, ProvinceType, Coast, Location, get_adjacent_provinces
 from DiploGM.diplomacy.persistence.unit import Unit, UnitType
@@ -13,13 +13,12 @@ logger = logging.getLogger(__name__)
 
 class Board:
     def __init__(
-        self, players: set[Player], provinces: set[Province], units: set[Unit], phase: Phase, data, datafile: str, fow: bool, year_offset: int = 1642
+        self, players: set[Player], provinces: set[Province], units: set[Unit], turn: Turn, data, datafile: str, fow: bool, year_offset: int = 1642
     ):
         self.players: set[Player] = players
         self.provinces: set[Province] = provinces
         self.units: set[Unit] = units
-        self.phase: Phase = phase
-        self.year = 0
+        self.turn: Turn = turn
         self.year_offset = year_offset
         self.board_id = 0
         self.fish = 0
@@ -152,9 +151,6 @@ class Board:
         build_counts = sorted(build_counts, key=lambda counts: counts[1])
         return build_counts
 
-    def get_phase_and_year_string(self):
-        return f"{self.year} {self.phase.name}"
-
     def change_owner(self, province: Province, player: Player):
         if province.has_supply_center:
             if province.owner:
@@ -243,7 +239,7 @@ class Board:
         self.units = set()
 
     def get_year_int(self) -> int:
-        return self.year_offset + self.year
+        return self.turn.year
 
     @staticmethod
     def convert_year_int_to_str(year: int) -> str:
@@ -254,7 +250,10 @@ class Board:
             return str(year)
 
     def get_year_str(self) -> str:
-        return self.convert_year_int_to_str(self.get_year_int())
+        if self.turn.year <= 0:
+            return f"{str(1-self.turn.year)} BC"
+        else:
+            return str(self.turn.year)
         
     def is_chaos(self) -> bool:
         return self.data["players"] == "chaos"

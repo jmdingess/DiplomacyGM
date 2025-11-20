@@ -8,7 +8,7 @@ from discord.utils import find as discord_find
 
 from DiploGM import config
 from DiploGM import perms
-from utils import log_command, parse_season, send_message_and_file, upload_map_to_archive
+from DiploGM.utils import log_command, parse_season, send_message_and_file, upload_map_to_archive
 from DiploGM.diplomacy.persistence.manager import Manager
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class AdminCog(commands.Cog):
             message += f"\n- {server.name}"
             if server.id in guilds_with_games:
                 board = manager.get_board(server.id)
-                message += f" - {board.phase.name} {board.get_year_str()}"
+                message += f" - {board.turn}"
             else:
                 message += f" - no active game"
 
@@ -96,7 +96,7 @@ class AdminCog(commands.Cog):
             if server.id in servers_with_games:
                 servers_with_games.remove(server.id)
                 board = manager.get_board(server.id)
-                board_state = f" - {board.phase.name} {board.get_year_str()}"
+                board_state = f" - {board.turn}"
             else:
                 board_state = f" - no active game"
 
@@ -275,7 +275,7 @@ class AdminCog(commands.Cog):
         board = manager.get_board(server_id)
         season = parse_season(arguments[1:], board.get_year_str())
         file, _ = manager.draw_map(
-            ctx.guild.id,
+            server_id,
             draw_moves=True,
             turn=season,
         )

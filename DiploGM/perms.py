@@ -4,8 +4,9 @@ from typing import Any, Awaitable, Callable
 from discord.ext import commands
 
 from DiploGM import config
+from DiploGM.errors import CommandPermissionError
 from DiploGM.config import IMPDIP_SERVER_ID, SUPERUSERS
-from utils import (
+from DiploGM.utils import (
     get_player_by_role,
     is_player_channel,
     get_player_by_channel,
@@ -14,12 +15,6 @@ from DiploGM.diplomacy.persistence.manager import Manager
 from DiploGM.diplomacy.persistence.player import Player
 
 manager = Manager()
-
-
-class CommandPermissionError(commands.CheckFailure):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(message)
 
 
 def get_player_by_context(ctx: commands.Context):
@@ -172,5 +167,3 @@ def superuser_only(description: str = "run this command"):
 
 def is_superuser(author: commands.Context.author) -> bool:
     return author.id in SUPERUSERS
-
-

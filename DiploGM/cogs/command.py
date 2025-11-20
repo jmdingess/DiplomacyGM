@@ -6,13 +6,13 @@ from discord.ext import commands
 
 from DiploGM.config import ERROR_COLOUR
 from DiploGM import perms
-from utils import (
+from DiploGM.utils import (
     send_message_and_file,
     get_role_by_player,
     log_command,
 )
 from DiploGM.diplomacy.persistence.manager import Manager
-from DiploGM.diplomacy import Player
+from DiploGM.diplomacy.persistence.player import Player
 
 
 logger = logging.getLogger(__name__)
@@ -142,7 +142,7 @@ class CommandCog(commands.Cog):
         log_command(logger, ctx, message="Generated scoreboard")
         await send_message_and_file(
             channel=ctx.channel,
-            title=f"{board.phase.name}" + " " + f"{board.get_year_str()}",
+            title=f"{board.turn}",
             message=response,
         )
 
@@ -159,15 +159,13 @@ class CommandCog(commands.Cog):
         log_command(
             logger,
             ctx,
-            message=f"Displayed info - {board.get_year_str()}|"
-            f"{str(board.phase)}|{str(board.datafile)}|"
+            message=f"Displayed info - {board.turn}|{str(board.datafile)}|"
             f"{'Open' if board.orders_enabled else 'Locked'}",
         )
         await send_message_and_file(
             channel=ctx.channel,
             message=(
-                f"Year: {board.get_year_str()}\n"
-                f"Phase: {str(board.phase)}\n"
+                f"Turn: {board.turn}\n"
                 f"Orders are {'Open' if board.orders_enabled else 'Locked'}\n"
                 f"Game Type: {str(board.datafile)}\n"
                 f"Chaos: {':white_check_mark:' if board.is_chaos() else ':x:'}\n"

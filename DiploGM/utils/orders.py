@@ -2,8 +2,7 @@ from typing import List, Tuple
 
 from discord.ext.commands import Context
 
-from utils import get_role_by_player
-from DiploGM.diplomacy.persistence import phase
+from DiploGM.utils import get_role_by_player
 from DiploGM.diplomacy.persistence.board import Board
 from DiploGM.diplomacy.persistence.player import Player
 
@@ -20,7 +19,7 @@ def get_orders(
         response = []
     else:
         response = ""
-    if phase.is_builds(board.phase):
+    if board.turn.is_builds():
         for player in sorted(board.players, key=lambda sort_player: sort_player.name):
             if not player_restriction and (
                 len(player.centers) + len(player.units) == 0
@@ -77,7 +76,7 @@ def get_orders(
             ):
                 continue
 
-            if phase.is_retreats(board.phase):
+            if board.turn.is_retreats():
                 in_moves = lambda u: u == u.province.dislodged_unit
             else:
                 in_moves = lambda _: True
@@ -119,7 +118,7 @@ def get_orders(
 
 def get_filtered_orders(board: Board, player_restriction: Player) -> str:
     visible = board.get_visible_provinces(player_restriction)
-    if phase.is_builds(board.phase):
+    if board.turn.is_builds():
         response = ""
         for player in sorted(board.players, key=lambda sort_player: sort_player.name):
             if not player_restriction or player == player_restriction:
@@ -138,7 +137,7 @@ def get_filtered_orders(board: Board, player_restriction: Player) -> str:
         response = ""
 
         for player in board.players:
-            if phase.is_retreats(board.phase):
+            if board.turn.is_retreats():
                 in_moves = lambda u: u == u.province.dislodged_unit
             else:
                 in_moves = lambda _: True

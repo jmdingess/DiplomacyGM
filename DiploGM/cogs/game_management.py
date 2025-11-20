@@ -14,7 +14,7 @@ from discord.ext import commands
 from DiploGM import config
 from DiploGM.parse_edit_state import parse_edit_state
 from DiploGM import perms
-from utils import (
+from DiploGM.utils import (
     get_maps_channel,
     get_orders,
     get_orders_log,
@@ -25,7 +25,6 @@ from utils import (
     upload_map_to_archive,
 )
 from DiploGM.perms import is_gm
-from DiploGM.diplomacy.persistence import phase
 from DiploGM.diplomacy.persistence.db.database import get_connection
 from DiploGM.diplomacy.persistence.order import Disband, Build
 from DiploGM.diplomacy.persistence.player import Player
@@ -60,7 +59,7 @@ class GameManagementCog(commands.Cog):
     @perms.gm_only("delete the game")
     async def delete_game(self, ctx: commands.Context) -> None:
         manager.total_delete(ctx.guild.id)
-        log_command(logger, ctx, message=f"Deleted game")
+        log_command(logger, ctx, message="Deleted game")
         await send_message_and_file(channel=ctx.channel, title="Deleted game")
 
     @commands.command(brief="")
@@ -181,7 +180,7 @@ class GameManagementCog(commands.Cog):
                     # HACK: ping role in case of no players
                     users.add(role)
 
-                if phase.is_builds(board.phase):
+                if board.turn.is_builds():
                     count = len(player.centers) - len(player.units)
 
                     current = player.waived_orders
@@ -226,7 +225,7 @@ class GameManagementCog(commands.Cog):
                         elif current > count:
                             response = f"Hey {''.join([u.mention for u in users])}, you have {difference} less disband {order_text} than required. Please get this looked at."
                 else:
-                    if phase.is_retreats(board.phase):
+                    if board.turn.is_retreats():
                         in_moves = lambda u: u == u.province.dislodged_unit
                     else:
                         in_moves = lambda _: True
@@ -282,7 +281,7 @@ class GameManagementCog(commands.Cog):
         await send_message_and_file(
             channel=ctx.channel,
             title="Locked orders",
-            message=f"{board.phase.name} {board.get_year_str()}",
+            message=f"{board.turn}",
         )
 
     @commands.command(brief="re-enables orders", aliases=["unlock"])
@@ -294,7 +293,7 @@ class GameManagementCog(commands.Cog):
         await send_message_and_file(
             channel=ctx.channel,
             title="Unlocked orders",
-            message=f"{board.phase.name} {board.get_year_str()}",
+            message=f"{board.turn}",
         )
 
     @commands.command(brief="Clears all players orders.")
@@ -369,7 +368,7 @@ class GameManagementCog(commands.Cog):
 
         log = await send_message_and_file(
             channel=orders_log_channel,
-            title=f"{board.phase.name} {board.get_year_str()}",
+            title=f"{board.turn}",
             fields=order_text,
         )
         log_command(logger, ctx, message=f"Successfully published orders")
@@ -377,6 +376,8 @@ class GameManagementCog(commands.Cog):
             channel=ctx.channel,
             title=f"Sent Orders to {log.jump_url}",
         )
+
+        return
 
         # HACK: Lifted from .ping_players
         # Should really work its way into a util function
@@ -411,8 +412,8 @@ class GameManagementCog(commands.Cog):
                     title="Adjudication Information",
                     message=(
                         f"**Order Log:** {log.jump_url}\n"
-                        f"**From:** {board.phase.name} {board.year + board.year_offset}\n"
-                        f"**To:** {curr_board.phase.name} {curr_board.year + board.year_offset}\n"
+                        f"**From:** {board.turn}\n"
+                        f"**To:** {curr_board.turn}\n"
                         f"**SC Changes:**\n{sc_changes}\n"
                     ),
                 )
@@ -465,13 +466,13 @@ class GameManagementCog(commands.Cog):
         if full_adjudicate:
             await self.lock_orders(ctx)
 
-        old_turn = (board.get_year_int(), board.phase)
+        old_turn = board.turn
         new_board = manager.adjudicate(ctx.guild.id, test=test_adjudicate)
 
         log_command(
             logger,
             ctx,
-            message=f"Adjudication Successful for {board.phase.name} {board.get_year_str()}",
+            message=f"Adjudication Successful for {board.turn}",
         )
         file, file_name = manager.draw_map(
             ctx.guild.id,
@@ -481,7 +482,7 @@ class GameManagementCog(commands.Cog):
             turn=old_turn,
         )
         title = f"{board.name} — " if board.name else ""
-        title += f"{old_turn[1].name} {board.convert_year_int_to_str(old_turn[0])}"
+        title += f"{old_turn}"
         await send_message_and_file(
             channel=ctx.channel,
             title=f"{title} Orders Map",
@@ -510,7 +511,7 @@ class GameManagementCog(commands.Cog):
                 movement_only=True,
             )
             title = f"{board.name} — " if board.name else ""
-            title += f"{old_turn[1].name} {old_turn[0]}"
+            title += f"{old_turn}"
             await send_message_and_file(
                 channel=ctx.channel,
                 title=f"{title} Movement Map",
@@ -543,12 +544,12 @@ class GameManagementCog(commands.Cog):
             await self.unlock_orders(ctx)
 
         # AUTOMATIC SCOREBOARD OUTPUT FOR DATA SPREADSHEET
-        if phase.is_builds(new_board.phase) and (guild.id != config.BOT_DEV_SERVER_ID or guild.name.startswith("Imperial Diplomacy")) and not test_adjudicate:
+        if new_board.turn.is_builds() and (guild.id != config.BOT_DEV_SERVER_ID and guild.name.startswith("Imperial Diplomacy")) and not test_adjudicate:
             channel = self.bot.get_channel(config.IMPDIP_SERVER_WINTER_SCOREBOARD_OUTPUT_CHANNEL_ID)
             if not channel:
                 await send_message_and_file(channel=ctx.channel, message="Couldn't automatically send off the Winter Scoreboard data", embed_colour=config.ERROR_COLOUR)
                 return
-            title = f"### {guild.name} Centre Counts (alphabetical order) | {new_board.phase.name} {new_board.get_year_str()}"
+            title = f"### {guild.name} Centre Counts (alphabetical order) | {new_board.turn}"
 
             players = sorted(new_board.players, key=lambda p: p.name)
             counts = "\n".join(map(lambda p: str(len(p.centers)), players))
@@ -596,6 +597,8 @@ class GameManagementCog(commands.Cog):
         * set_game_name <game_name>
         * load_state <server_id> <spring, fall, winter}_{moves, retreats, builds> <year>
         * apocalypse {all OR army, fleet, core, province} !!! deletes everything specified !!!
+        * bulk <command> {<player_name> | nothing if you're using delete_units} <list_of_province_names> {use with commands like set_total_owner to use it repeatedly}
+        * bulk_create_units <player_name> {A, F} <list_of_province_names>
         """,
     )
     @perms.gm_only("edit")

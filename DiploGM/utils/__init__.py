@@ -1,4 +1,5 @@
 import re
+import logging
 
 import discord
 from discord import Guild, Thread
@@ -6,17 +7,12 @@ from discord.abc import GuildChannel
 from discord.ext import commands
 
 from DiploGM import config
-from utils.send_message import send_message_and_file
-from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.turn import Turn
 from DiploGM.diplomacy.persistence.manager import Manager
 from DiploGM.diplomacy.persistence.player import Player
 from DiploGM.diplomacy.persistence.unit import UnitType
 
-from .logging import log_command, log_command_no_ctx
-from .send_message import send_message_and_file
-from .orders import get_orders, get_filtered_orders
-from .map_archive import upload_map_to_archive
-from .sanitise import sanitise_name
+
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +195,7 @@ def get_unit_type(command: str) -> UnitType | None:
 
 def parse_season(
     arguments: list[str], default_year: str
-) -> tuple[str, phase.Phase] | None:
+) -> Turn | None:
     year, season, retreat = default_year, None, False
     for s in arguments:
         if s.isnumeric() and int(s) > 1640:
@@ -218,10 +214,9 @@ def parse_season(
     if season is None:
         return None
     if season == "Winter":
-        parsed_phase = phase.get("Winter Builds")
+        return Turn(year, "Winter Builds")
     else:
-        parsed_phase = phase.get(season + " " + ("Retreats" if retreat else "Moves"))
-    return (year, parsed_phase)
+        return Turn(year, season + " " + ("Retreats" if retreat else "Moves"))
 
 def get_value_from_timestamp(timestamp: str) -> int | None:
     if len(timestamp) == 10 and timestamp.isnumeric():
@@ -233,3 +228,8 @@ def get_value_from_timestamp(timestamp: str) -> int | None:
 
     return None
 
+from .logging import log_command, log_command_no_ctx
+from .send_message import send_message_and_file
+from .orders import get_orders, get_filtered_orders
+from .map_archive import upload_map_to_archive
+from .sanitise import sanitise_name

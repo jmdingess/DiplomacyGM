@@ -10,7 +10,7 @@ from discord.ext import commands
 
 from DiploGM import perms
 from DiploGM.config import ERROR_COLOUR, is_bumble, temporary_bumbles
-from utils import log_command, send_message_and_file
+from DiploGM.utils import log_command, send_message_and_file
 
 from DiploGM.diplomacy.persistence.db.database import get_connection
 
@@ -69,7 +69,7 @@ class PartyCog(commands.Cog):
         log_command(logger, ctx, f"Sent Message into #{channel.name}")
         await send_message_and_file(
             channel=ctx.channel,
-            title=f"Sent Message",
+            title="Sent Message",
             message=message.jump_url,
         )
 
@@ -282,12 +282,12 @@ class PartyCog(commands.Cog):
             fish_kind = "captured" if board.fish >= 0 else "future"
             fish_message = f"Accidentally let {fish_num} {fish_kind} fish sneak away :("
         else:
-            fish_message = f"You find nothing but barren water and overfished seas, maybe let the population recover?"
+            fish_message = "You find nothing but barren water and overfished seas, maybe let the population recover?"
         fish_message += f"\nIn total, {board.fish} fish have been caught!"
         if random.randrange(0, 5) == 0:
             get_connection().execute_arbitrary_sql(
                 """UPDATE boards SET fish=? WHERE board_id=? AND phase=?""",
-                (board.fish, board.board_id, board.get_phase_and_year_string()),
+                (board.fish, board.board_id, board.turn.get_indexed_name()),
             )
 
         if debumblify:
@@ -330,15 +330,14 @@ class PartyCog(commands.Cog):
         )
 
     @commands.command(hidden=True)
-    @perms.superuser_only("shutdown the bot")
     async def shutdown(self, ctx: commands.Context):
         if is_superuser(ctx.author):
             await send_message_and_file(
-                channel=ctx.channel, title=f"Please don't shut me down", message=f""
+                channel=ctx.channel, title="Please don't shut me down", message=""
             )
         else:
             await send_message_and_file(
-                channel=ctx.channel, title=f"Why would you want to do this to me?", message=f""
+                channel=ctx.channel, title="Why would you want to do this to me?", message=""
             )
 
 

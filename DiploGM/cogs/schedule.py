@@ -9,7 +9,7 @@ from discord import Message, User
 from DiploGM.bot import DiploGM
 from DiploGM import perms
 from DiploGM.config import ERROR_COLOUR
-from utils import (
+from DiploGM.utils import (
     get_value_from_timestamp,
     send_message_and_file,
     log_command_no_ctx,

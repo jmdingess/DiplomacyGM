@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import User
 
 from DiploGM import perms
-from utils import send_message_and_file
+from DiploGM.utils import send_message_and_file
 
 
 class ModerationCog(commands.Cog):

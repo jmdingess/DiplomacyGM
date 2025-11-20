@@ -1,22 +1,23 @@
 import asyncio
 import os
+import logging
 
 from subprocess import PIPE
 from discord.ext import commands
 from DiploGM.diplomacy.adjudicator.utils import svg_to_png
-from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.turn import Turn
 from DiploGM.diplomacy.persistence.board import Board
 
-from utils import log_command, send_message_and_file
+from DiploGM.utils import log_command, send_message_and_file
 
 
-async def upload_map_to_archive(ctx: commands.Context, server_id: int, board: Board, map: str, turn: tuple[str, phase] | None = None) -> None:
+logger = logging.getLogger(__name__)
+
+
+async def upload_map_to_archive(ctx: commands.Context, server_id: int, board: Board, map: str, turn: Turn | None = None) -> None:
     if "maps_sas_token" not in os.environ:
         return
-    if turn is None:
-        turnstr = f"{(board.year + board.year_offset) % 100}{board.phase.shortname}"
-    else:
-        turnstr = f"{int(turn[0]) % 100}{turn[1].shortname}"
+    turnstr = board.turn.get_short_name() if turn is None else turn.get_short_name()
     url = None
     with open("gamelist.tsv", "r") as gamefile:
         for server in gamefile:

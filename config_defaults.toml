@@ -53,6 +53,7 @@ load_on_startup = [
     "command",
     "development",
     "fog_of_war",
+    "extension_management",
     "game_management",
     "moderation",
     "party",

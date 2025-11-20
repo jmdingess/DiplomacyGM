@@ -1,13 +1,14 @@
-from typing import Optional
-
 import aiohttp.client_exceptions
 import datetime
 import inspect
+import importlib
 import logging
 import os
 import random
 import traceback
+from typing import Optional
 
+from DiploGM.diplomacy.core.base_listener import BaseListener
 import discord
 from discord.ext import commands
 
@@ -18,14 +19,18 @@ from DiploGM.config import (
     IMPDIP_SERVER_BOT_STATUS_CHANNEL_ID,
     EXTENSIONS_TO_LOAD_ON_STARTUP,
 )
+from DiploGM.core.eventbus import EventBus
 from DiploGM.perms import CommandPermissionError
-from utils import send_message_and_file
+from DiploGM.utils import send_message_and_file
 from DiploGM.diplomacy.persistence.manager import Manager
 
 logger = logging.getLogger(__name__)
-manager = Manager()
 
-_EXTENSION_DIRECTORY = "DiploGM.cogs."
+_EXTENSION_PATH = "DiploGM.cogs."
+_EXTENSION_DIRECTORY = "DiploGM/cogs/"
+
+_LISTENER_PATH = "DiploGM.diplomacy.listeners."
+_LISTENER_DIRECTORY = "DiploGM/diplomacy/listeners/"
 
 # List of funny, sarcastic messages
 WELCOME_MESSAGES = [
@@ -51,12 +56,18 @@ class DiploGM(commands.Bot):
         self.creation_time = datetime.datetime.now(datetime.timezone.utc)
         self.last_command_time = None
 
-        self.manager = Manager()
 
     async def setup_hook(self) -> None:
         # bind command invocation handling methods
         self.before_invoke(self.before_any_command)
         self.after_invoke(self.after_any_command)
+
+        current_servers = [g.id async for g in self.fetch_guilds()]
+        self.manager = Manager(board_ids=current_servers)
+
+        self.eventbus = EventBus()
+        for module_path in DiploGM.get_all_listeners():
+            await self.load_listener(self.eventbus, module_path)
 
         # modularly load command modules
         for extension in EXTENSIONS_TO_LOAD_ON_STARTUP:
@@ -76,13 +87,13 @@ class DiploGM(commands.Bot):
             logger.warning(f"Failed to sync commands: {e}", exc_info=True)
 
     async def load_diplogm_extension(self, name: str, *, package: Optional[str] = None):
-        await self.load_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+        await self.load_extension(f"{_EXTENSION_PATH}{name}", package=package)
 
     async def unload_diplogm_extension(self, name: str, *, package: Optional[str] = None):
-        await self.unload_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+        await self.unload_extension(f"{_EXTENSION_PATH}{name}", package=package)
 
     async def reload_diplogm_extension(self, name: str, *, package: Optional[str] = None):
-        await self.reload_extension(f"{_EXTENSION_DIRECTORY}{name}", package=package)
+        await self.reload_extension(f"{_EXTENSION_PATH}{name}", package=package)
 
     @staticmethod
     def get_all_extensions():
@@ -129,6 +140,37 @@ class DiploGM(commands.Bot):
             logger.info(f"Failed to reload Cog {name}")
             raise e
 
+    @staticmethod
+    def get_all_listeners():
+        for filename in os.listdir(_LISTENER_DIRECTORY):
+            if not filename.endswith(".py") or filename.startswith("_"):
+                continue
+
+            yield f"{_LISTENER_PATH}{filename[:-3]}"
+
+    async def load_listener(self, bus: EventBus, module_path: str):
+        try:
+            module = importlib.import_module(module_path)
+        except Exception as e:
+            logger.error(f"Failed to import {module_path}: {e}")
+            return
+
+        for attr in module.__dir__():
+            cls = getattr(module, attr)
+            if not isinstance(cls, type):
+                continue
+
+            if not (cls is not BaseListener and issubclass(cls, BaseListener)):
+                continue
+
+            try:
+                listener = cls(self)
+                listener.setup(bus)
+                logger.info(f"Loaded event listener: {cls.__name__}")
+            except Exception as e:
+                logger.error(f"Failed to load event listener: {cls.__name__}: {e.__class__.__name__} - {str(e)}")
+
+    # TODO: Functionality to unload/reload listeners
 
     async def on_ready(self):
         now = datetime.datetime.now(datetime.timezone.utc)

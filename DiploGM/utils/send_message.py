@@ -2,15 +2,18 @@ import datetime
 import io
 import re
 from typing import List, Tuple
+import logging
 
 import discord
 from discord import Message, Embed, Colour
 from discord.ext import commands
 
 from DiploGM import config
-from DiploGM.perms import is_gm_channel
-from utils import log_command_no_ctx, logger
+from .logging import log_command_no_ctx
 from DiploGM.diplomacy.adjudicator.utils import svg_to_png, png_to_jpg
+
+
+logger = logging.getLogger(__name__)
 
 discord_message_limit = 2000
 discord_file_limit = 10 * (2**20)
@@ -150,7 +153,7 @@ async def send_message_and_file(
                     "?",
                     f"jpg is too big ({len(file)})",
                 )
-                if is_gm_channel(channel):
+                if False: #TODO: redo this: is_gm_channel(channel):
                     message = "Try `.vm true` to get an svg"
                 else:
                     message = "Please contact your GM"

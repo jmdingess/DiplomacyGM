@@ -28,7 +28,6 @@
 
         "detect_starting_units": true,
         "unit_type_labeled": false,
-        "unit_type_from_names": true,
 
         "unit_labels": true,
         "province_labels": true,
@@ -157,7 +156,7 @@
                     "WLIS"
             ]
             },
-                "GANT": {
+            "GANT": {
                     "adjacencies": [
                         "DODE",
                         "HALI",
@@ -169,6 +168,48 @@
                         "KYRE",
                         "EMED",
                         "RHO"
+            ]
+            },
+            "KERK": {
+                    "adjacencies": [
+                        "SOTR",
+                        "ALB",
+                        "EPIR",
+                        "IONI",
+                        "GTAR",
+                        "BREN"
+            ]
+            },
+            "SOTR": {
+                    "adjacencies": [
+                        "BARI",
+                        "ADRI",
+                        "DELM",
+                        "PIRU",
+                        "ENCH",
+                        "ALB",
+                        "KERK",
+                        "BREN"
+            ]
+            },
+            "CRIS": {
+                    "adjacencies": [
+                        "CHER",
+                        "CRIM",
+                        "THEO",
+                        "PHAN",
+                        "NAES",
+                        "EBLA",
+                        "CBLA"
+            ]
+            },
+            "NAES": {
+                    "adjacencies": [
+                        "CRIS",
+                        "PHAN",
+                        "KUBN",
+                        "PHAS",
+                        "EBLA"
             ]
             }
         }
@@ -192,7 +233,7 @@
         "Dorians": {
             "color": "bc80bd",
             "vscc": 44,
-            "iscc": 10
+            "iscc": 11
         },
         "Egypt": {
             "color": "5898c6",
@@ -217,7 +258,7 @@
         "Ionia": {
             "color": "98e98f",
             "vscc": 42,
-            "iscc": 11
+            "iscc": 10
         },
         "Lydia": {
             "color": "fccde5",
@@ -227,7 +268,7 @@
         "Phoenicia": {
             "color": "ffff73",
             "vscc": 37,
-            "iscc": 7
+            "iscc": 8
         },
         "Scythia": {
             "color": "4c7e47",
