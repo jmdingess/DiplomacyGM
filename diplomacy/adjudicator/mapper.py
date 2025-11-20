@@ -385,7 +385,7 @@ class Mapper:
             # don't get info
             players = sorted(self.board.players, key=lambda sort_player: sort_player.name)
         else:
-            players = self.board.get_players_by_score()
+            players = self.board.get_players_sorted_by_score()
 
         sc_index = self.board.data["svg config"]["power_sc_index"] if "power_sc_index" in self.board.data["svg config"] else 5
 
@@ -406,7 +406,7 @@ class Mapper:
                         break
         else:
             #FIXME only sorts by points right now
-            for i, player in enumerate(self.board.get_players_by_points()):
+            for i, player in enumerate(self.board.get_players_sorted_by_points()):
                 if i >= len(self.scoreboard_power_locations):
                     break
                 for power_element in all_power_banners_element:

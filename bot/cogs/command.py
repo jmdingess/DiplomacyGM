@@ -94,7 +94,7 @@ class CommandCog(commands.Cog):
             latest_index = -1
             latest_points = float("inf")
 
-            for i, player in enumerate(board.get_players_by_points()):
+            for i, player in enumerate(board.get_players_sorted_by_points()):
                 points = player.points
 
                 if points < latest_points:
@@ -123,7 +123,7 @@ class CommandCog(commands.Cog):
             player_list = (
                 sorted(board.players, key=lambda p: p.name)
                 if alphabetical
-                else board.get_players_by_score()
+                else board.get_players_sorted_by_score()
             )
             for player in player_list:
                 if (
