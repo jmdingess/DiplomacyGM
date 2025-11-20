@@ -563,9 +563,9 @@ class Parser:
     def _get_adjacencies(self, provinces: set[Province]) -> set[tuple[str, str]]:
         adjacencies = set()
         try:
-            f = open(f"config/{self.datafile}_adjacencies.txt", "r")
+            f = open(f"assets/{self.datafile}_adjacencies.txt", "r")
         except FileNotFoundError:
-            f = open(f"config/{self.datafile}_adjacencies.txt", "w")
+            f = open(f"assets/{self.datafile}_adjacencies.txt", "w")
             # Combinations so that we only have (A, B) and not (B, A) or (A, A)
             for province1, province2 in itertools.combinations(provinces, 2):
                 if shapely.distance(province1.geometry, province2.geometry) < self.layers["border_margin_hint"]:

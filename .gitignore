@@ -1,7 +1,6 @@
 
-/assets
-DiploGM/assets/schedule.json
-/config/*.txt
+assets/schedule.json
+assets/*_adjacencies.txt
 *.pyc
 *.iml
 *.xml
