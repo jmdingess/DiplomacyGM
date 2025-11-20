@@ -1,10 +1,23 @@
+1.2.1
+=====
+*Otter jumps off a diving board, throws a fish at aahoughton, performs a perfect front flip into the pool*
+
+Released: 2025/09/20
+
+Contributors to this release:
+- Golden Kumquat
+
+
+# Developer Changes
+- Added missing `CommandPermissionError` import to `perms.py`
+
 1.2.0
 =====
 The wheels on the bus go round and round... round and round... round and round...
 
 Also the formatter got hungry again :(
 
-Released:
+Released: 2025/09/20
 
 Contributors to this release:
 - aahoughton
