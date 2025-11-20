@@ -25,11 +25,11 @@ from utils import (
     upload_map_to_archive,
 )
 from DiploGM.perms import is_gm
-from diplomacy.persistence import phase
-from diplomacy.persistence.db.database import get_connection
-from diplomacy.persistence.order import Disband, Build
-from diplomacy.persistence.player import Player
-from diplomacy.persistence.manager import Manager
+from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.db.database import get_connection
+from DiploGM.diplomacy.persistence.order import Disband, Build
+from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence.manager import Manager
 
 
 logger = logging.getLogger(__name__)

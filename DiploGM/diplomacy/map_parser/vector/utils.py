@@ -2,14 +2,12 @@ import numpy as np
 
 from xml.etree.ElementTree import Element, ElementTree
 
-from diplomacy.map_parser.vector.transform import TransGL3
-from diplomacy.persistence.player import Player
-from diplomacy.persistence.unit import UnitType
+from DiploGM.diplomacy.map_parser.vector.transform import TransGL3
 import logging
 
 from shapely.geometry import Point
 from typing import Callable
-from diplomacy.persistence.province import Province
+from DiploGM.diplomacy.persistence.province import Province
 
 logger = logging.getLogger(__name__)
 

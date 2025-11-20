@@ -1,5 +1,5 @@
-from diplomacy.persistence.board import Board
-from diplomacy.persistence.order import (
+from DiploGM.diplomacy.persistence.board import Board
+from DiploGM.diplomacy.persistence.order import (
     Core,
     Hold,
     Move,
@@ -9,11 +9,11 @@ from diplomacy.persistence.order import (
     Build,
     Disband,
 )
-from diplomacy.persistence.province import Location, Coast, Province, ProvinceType
-from diplomacy.persistence.unit import UnitType, Unit
-from diplomacy.persistence.player import Player
-from diplomacy.persistence.phase import Phase
-from diplomacy.adjudicator.adjudicator import MovesAdjudicator, RetreatsAdjudicator, BuildsAdjudicator, ResolutionState, Resolution
+from DiploGM.diplomacy.persistence.province import Location, Coast, Province, ProvinceType
+from DiploGM.diplomacy.persistence.unit import UnitType, Unit
+from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence.phase import Phase
+from DiploGM.diplomacy.adjudicator.adjudicator import MovesAdjudicator, RetreatsAdjudicator, BuildsAdjudicator, ResolutionState, Resolution
 
 import unittest
 
@@ -313,7 +313,7 @@ class BoardBuilder():
         player = Player(
             name=name,
             color="",
-            win_type =  "classic"
+            win_type =  "classic",
             vscc = 0,
             iscc = 0,
             centers = set(),

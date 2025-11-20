@@ -3,7 +3,7 @@ from PIL import Image
 from scipy import ndimage
 from skimage.segmentation import expand_labels, find_boundaries
 
-from diplomacy.map_parser.raster.config import *
+from DiploGM.diplomacy.map_parser.raster.config import *
 
 
 def read_map_data():

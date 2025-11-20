@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from diplomacy.persistence import order
+from DiploGM.diplomacy.persistence import order
 
 from enum import Enum
 
 if TYPE_CHECKING:
-    from diplomacy.persistence import province
-    from diplomacy.persistence import unit
+    from DiploGM.diplomacy.persistence import province
+    from DiploGM.diplomacy.persistence import unit
 
 
 class VassalType(Enum):

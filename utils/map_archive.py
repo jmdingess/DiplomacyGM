@@ -3,9 +3,9 @@ import os
 
 from subprocess import PIPE
 from discord.ext import commands
-from diplomacy.adjudicator.utils import svg_to_png
-from diplomacy.persistence import phase
-from diplomacy.persistence.board import Board
+from DiploGM.diplomacy.adjudicator.utils import svg_to_png
+from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.board import Board
 
 from utils import log_command, send_message_and_file
 

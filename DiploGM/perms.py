@@ -10,8 +10,8 @@ from utils import (
     is_player_channel,
     get_player_by_channel,
 )
-from diplomacy.persistence.manager import Manager
-from diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence.manager import Manager
+from DiploGM.diplomacy.persistence.player import Player
 
 manager = Manager()
 

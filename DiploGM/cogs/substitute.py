@@ -8,8 +8,8 @@ from discord.utils import find as discord_find
 from DiploGM import config
 from DiploGM import perms
 from utils import get_player_by_name, send_message_and_file
-from diplomacy.persistence.manager import Manager
-from diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence.manager import Manager
+from DiploGM.diplomacy import Player
 
 logger = logging.getLogger(__name__)
 manager = Manager()

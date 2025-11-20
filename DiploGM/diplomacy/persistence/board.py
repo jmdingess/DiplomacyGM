@@ -3,10 +3,10 @@ import logging
 import time
 
 from utils import sanitise_name
-from diplomacy.persistence.phase import Phase
-from diplomacy.persistence.player import Player
-from diplomacy.persistence.province import Province, ProvinceType, Coast, Location, get_adjacent_provinces
-from diplomacy.persistence.unit import Unit, UnitType
+from DiploGM.diplomacy.persistence.phase import Phase
+from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence.province import Province, ProvinceType, Coast, Location, get_adjacent_provinces
+from DiploGM.diplomacy.persistence.unit import Unit, UnitType
 
 logger = logging.getLogger(__name__)
 

@@ -4,14 +4,14 @@ import string
 
 from DiploGM.config import ERROR_COLOUR, PARTIAL_ERROR_COLOUR
 from utils import get_unit_type, get_keywords
-from diplomacy.adjudicator.mapper import Mapper
-from diplomacy.persistence import phase
-from diplomacy.persistence.board import Board
-from diplomacy.persistence.db.database import get_connection
-from diplomacy.persistence.manager import Manager
-from diplomacy.persistence.player import Player
-from diplomacy.persistence.province import Province
-from diplomacy.persistence.unit import Unit, UnitType
+from DiploGM.diplomacy.adjudicator.mapper import Mapper
+from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.board import Board
+from DiploGM.diplomacy.persistence.db.database import get_connection
+from DiploGM.diplomacy.persistence.manager import Manager
+from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence.province import Province
+from DiploGM.diplomacy.persistence.unit import Unit, UnitType
 
 _set_phase_str = "set phase"
 _set_core_str = "set core"

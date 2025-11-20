@@ -1,6 +1,6 @@
 import unittest
 
-from diplomacy.persistence.unit import UnitType
+from DiploGM.diplomacy.persistence.unit import UnitType
 from test.utils import BoardBuilder
 
 class TestCore(unittest.TestCase):

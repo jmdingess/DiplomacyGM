@@ -3,9 +3,9 @@ from typing import List, Tuple
 from discord.ext.commands import Context
 
 from utils import get_role_by_player
-from diplomacy.persistence import phase
-from diplomacy.persistence.board import Board
-from diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.board import Board
+from DiploGM.diplomacy.persistence.player import Player
 
 
 def get_orders(

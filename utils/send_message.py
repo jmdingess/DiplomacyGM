@@ -10,7 +10,7 @@ from discord.ext import commands
 from DiploGM import config
 from DiploGM.perms import is_gm_channel
 from utils import log_command_no_ctx, logger
-from diplomacy.adjudicator.utils import svg_to_png, png_to_jpg
+from DiploGM.diplomacy.adjudicator.utils import svg_to_png, png_to_jpg
 
 discord_message_limit = 2000
 discord_file_limit = 10 * (2**20)

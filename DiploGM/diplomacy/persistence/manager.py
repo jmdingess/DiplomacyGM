@@ -3,14 +3,14 @@ from threading import Lock
 import time
 import os
 
-from diplomacy.adjudicator.adjudicator import make_adjudicator
-from diplomacy.adjudicator.mapper import Mapper
-from diplomacy.map_parser.vector.vector import get_parser
-from diplomacy.persistence import phase
-from diplomacy.persistence.board import Board
-from diplomacy.persistence.db import database
-from diplomacy.persistence.player import Player
-from diplomacy.persistence.spec_request import SpecRequest
+from DiploGM.diplomacy.adjudicator.adjudicator import make_adjudicator
+from DiploGM.diplomacy.adjudicator.mapper import Mapper
+from DiploGM.diplomacy.map_parser.vector.vector import get_parser
+from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.board import Board
+from DiploGM.diplomacy.persistence.db import database
+from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence.spec_request import SpecRequest
 
 logger = logging.getLogger(__name__)
 

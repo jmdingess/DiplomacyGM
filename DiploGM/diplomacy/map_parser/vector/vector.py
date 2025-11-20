@@ -9,13 +9,13 @@ from xml.etree.ElementTree import Element, tostring
 import shapely
 from lxml import etree
 
-from diplomacy.map_parser.vector.transform import TransGL3
-from diplomacy.map_parser.vector.utils import get_element_color, get_unit_coordinates, get_svg_element, parse_path, initialize_province_resident_data
-from diplomacy.persistence import phase
-from diplomacy.persistence.board import Board
-from diplomacy.persistence.player import Player
-from diplomacy.persistence.province import Province, ProvinceType, Coast
-from diplomacy.persistence.unit import Unit, UnitType
+from DiploGM.diplomacy.map_parser.vector.transform import TransGL3
+from DiploGM.diplomacy.map_parser.vector.utils import get_element_color, get_unit_coordinates, get_svg_element, parse_path, initialize_province_resident_data
+from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.board import Board
+from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence.province import Province, ProvinceType, Coast
+from DiploGM.diplomacy.persistence.unit import Unit, UnitType
 
 # TODO: (BETA) all attribute getting should be in utils which we import and call utils.my_unit()
 # TODO: (BETA) consistent in bracket formatting

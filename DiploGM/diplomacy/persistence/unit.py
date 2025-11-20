@@ -4,9 +4,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from diplomacy.persistence import player
-    from diplomacy.persistence import province
-    from diplomacy.persistence import order
+    from DiploGM.diplomacy.persistence import province, player, order
 
 
 # TODO: rename to Type and import as unit.Type

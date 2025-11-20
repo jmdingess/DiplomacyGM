@@ -1,14 +1,13 @@
 import logging
-from os import supports_dir_fd
 import sqlite3
 from collections.abc import Iterable
 
 # TODO: Find a better way to do this
 # maybe use a copy from manager?
-from diplomacy.map_parser.vector.vector import get_parser
-from diplomacy.persistence import phase
-from diplomacy.persistence.board import Board
-from diplomacy.persistence.order import (
+from DiploGM.diplomacy.map_parser.vector.vector import get_parser
+from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.board import Board
+from DiploGM.diplomacy.persistence.order import (
     Core,
     NMR,
     Hold,
@@ -26,11 +25,10 @@ from diplomacy.persistence.order import (
     Disown,
     Defect,
     RebellionMarker,
-    RelationshipOrder,
 )
-from diplomacy.persistence.player import Player
-from diplomacy.persistence.spec_request import SpecRequest
-from diplomacy.persistence.unit import UnitType, Unit
+from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence.spec_request import SpecRequest
+from DiploGM.diplomacy.persistence.unit import UnitType, Unit
 
 logger = logging.getLogger(__name__)
 

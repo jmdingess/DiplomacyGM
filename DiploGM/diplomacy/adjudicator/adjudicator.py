@@ -2,15 +2,15 @@ import abc
 import collections
 import logging
 
-from diplomacy.adjudicator.defs import (
+from DiploGM.diplomacy.adjudicator.defs import (
     ResolutionState,
     Resolution,
     AdjudicableOrder,
     OrderType,
 )
-from diplomacy.persistence import phase
-from diplomacy.persistence.board import Board
-from diplomacy.persistence.order import (
+from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.board import Board
+from DiploGM.diplomacy.persistence.order import (
     Order,
     NMR,
     Hold,
@@ -21,7 +21,6 @@ from diplomacy.persistence.order import (
     ConvoyTransport,
     Support,
     RetreatDisband,
-    ComplexOrder,
     Build,
     Disband,
     Disown,
@@ -32,10 +31,10 @@ from diplomacy.persistence.order import (
     RebellionMarker
 )
 
-from diplomacy.persistence.player import Player, PlayerClass
-from diplomacy.persistence.province import Location, Coast, Province, ProvinceType, get_adjacent_provinces
-from diplomacy.persistence.unit import UnitType, Unit
-from diplomacy.persistence.db import database
+from DiploGM.diplomacy.persistence.player import PlayerClass
+from DiploGM.diplomacy.persistence.province import Location, Coast, Province, ProvinceType, get_adjacent_provinces
+from DiploGM.diplomacy.persistence.unit import UnitType, Unit
+from DiploGM.diplomacy.persistence.db import database
 
 logger = logging.getLogger(__name__)
 

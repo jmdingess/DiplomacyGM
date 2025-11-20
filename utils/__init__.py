@@ -7,10 +7,10 @@ from discord.ext import commands
 
 from DiploGM import config
 from utils.send_message import send_message_and_file
-from diplomacy.persistence import phase
-from diplomacy.persistence.manager import Manager
-from diplomacy.persistence.player import Player
-from diplomacy.persistence.unit import UnitType
+from DiploGM.diplomacy.persistence import phase
+from DiploGM.diplomacy.persistence.manager import Manager
+from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.diplomacy.persistence.unit import UnitType
 
 from .logging import log_command, log_command_no_ctx
 from .send_message import send_message_and_file
