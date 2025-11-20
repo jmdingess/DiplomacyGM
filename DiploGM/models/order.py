@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from DiploGM.diplomacy.persistence.province import Location, Coast
+from DiploGM.models.province import Location, Coast
 
 if TYPE_CHECKING:
-    from DiploGM.diplomacy.persistence.unit import UnitType
+    from DiploGM.models.unit import UnitType
 
 
 class Order:

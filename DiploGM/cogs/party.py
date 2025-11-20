@@ -3,7 +3,7 @@ import random
 import time
 
 from DiploGM.perms import is_superuser
-from DiploGM.diplomacy.persistence.manager import Manager
+from DiploGM.manager import Manager
 from scipy.integrate import odeint
 
 from discord.ext import commands
@@ -12,7 +12,7 @@ from DiploGM import perms
 from DiploGM.config import ERROR_COLOUR, is_bumble, temporary_bumbles
 from DiploGM.utils import log_command, send_message_and_file
 
-from DiploGM.diplomacy.persistence.db.database import get_connection
+from DiploGM.db.database import get_connection
 
 logger = logging.getLogger(__name__)
 manager = Manager()

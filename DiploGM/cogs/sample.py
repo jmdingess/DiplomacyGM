@@ -2,7 +2,7 @@ import logging
 
 from discord.ext import commands
 
-from DiploGM.diplomacy.persistence.manager import Manager
+from DiploGM.manager import Manager
 
 logger = logging.getLogger(__name__)
 manager = Manager()

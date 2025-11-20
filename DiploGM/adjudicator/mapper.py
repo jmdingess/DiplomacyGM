@@ -12,11 +12,11 @@ import math
 # from diplomacy.adjudicator import utils
 # from diplomacy.map_parser.vector import config_svg as svgcfg
 
-from DiploGM.diplomacy.map_parser.vector.utils import get_element_color, get_svg_element, get_unit_coordinates, initialize_province_resident_data
-from DiploGM.diplomacy.persistence import turn
-from DiploGM.diplomacy.persistence.board import Board
-from DiploGM.diplomacy.persistence.db.database import logger
-from DiploGM.diplomacy.persistence.order import (
+from DiploGM.map_parser.vector.utils import get_element_color, get_svg_element, get_unit_coordinates, initialize_province_resident_data
+from DiploGM.models import turn
+from DiploGM.models.board import Board
+from DiploGM.db.database import logger
+from DiploGM.models.order import (
     Hold,
     Core,
     ConvoyTransport,
@@ -29,12 +29,12 @@ from DiploGM.diplomacy.persistence.order import (
     ConvoyMove,
     PlayerOrder,
 )
-from DiploGM.diplomacy.persistence.player import Player
-from DiploGM.diplomacy.persistence.province import ProvinceType, Province, Coast, Location
-from DiploGM.diplomacy.persistence.unit import Unit, UnitType
+from DiploGM.models.player import Player
+from DiploGM.models.province import ProvinceType, Province, Coast, Location
+from DiploGM.models.unit import Unit, UnitType
 
-from DiploGM.diplomacy.map_parser.vector.transform import TransGL3
-from DiploGM.diplomacy.map_parser.vector.vector import Parser
+from DiploGM.map_parser.vector.transform import TransGL3
+from DiploGM.map_parser.vector.vector import Parser
 
 # TODO: Move this (and vector.py's copy to a central file)
 NAMESPACE: dict[str, str] = {

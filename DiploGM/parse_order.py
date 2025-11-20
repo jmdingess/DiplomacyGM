@@ -6,13 +6,13 @@ from lark.exceptions import VisitError
 
 from DiploGM.config import ERROR_COLOUR, PARTIAL_ERROR_COLOUR
 from DiploGM.utils import get_unit_type, _manage_coast_signature
-from DiploGM.diplomacy.persistence import turn
-from DiploGM.diplomacy.persistence import order
-from DiploGM.diplomacy.persistence.board import Board
-from DiploGM.diplomacy.persistence.db.database import get_connection
-from DiploGM.diplomacy.persistence.player import Player
-from DiploGM.diplomacy.persistence.province import Province, Location, Coast
-from DiploGM.diplomacy.persistence.unit import Unit, UnitType
+from DiploGM.models import turn
+from DiploGM.models import order
+from DiploGM.models.board import Board
+from DiploGM.db.database import get_connection
+from DiploGM.models.player import Player
+from DiploGM.models.province import Province, Location, Coast
+from DiploGM.models.unit import Unit, UnitType
 
 logger = logging.getLogger(__name__)
 

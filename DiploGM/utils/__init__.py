@@ -7,10 +7,10 @@ from discord.abc import GuildChannel
 from discord.ext import commands
 
 from DiploGM import config
-from DiploGM.diplomacy.persistence.turn import Turn
-from DiploGM.diplomacy.persistence.manager import Manager
-from DiploGM.diplomacy.persistence.player import Player
-from DiploGM.diplomacy.persistence.unit import UnitType
+from DiploGM.models.turn import Turn
+from DiploGM.manager import Manager
+from DiploGM.models.player import Player
+from DiploGM.models.unit import UnitType
 
 
 

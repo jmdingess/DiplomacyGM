@@ -1,5 +1,5 @@
-from DiploGM.diplomacy.persistence.board import Board
-from DiploGM.diplomacy.persistence.order import (
+from DiploGM.models.board import Board
+from DiploGM.models.order import (
     Core,
     Hold,
     Move,
@@ -9,11 +9,11 @@ from DiploGM.diplomacy.persistence.order import (
     Build,
     Disband,
 )
-from DiploGM.diplomacy.persistence.province import Location, Coast, Province, ProvinceType
-from DiploGM.diplomacy.persistence.unit import UnitType, Unit
-from DiploGM.diplomacy.persistence.player import Player
-from DiploGM.diplomacy.persistence.phase import Phase
-from DiploGM.diplomacy.adjudicator.adjudicator import MovesAdjudicator, RetreatsAdjudicator, BuildsAdjudicator, ResolutionState, Resolution
+from DiploGM.models.province import Location, Coast, Province, ProvinceType
+from DiploGM.models.unit import UnitType, Unit
+from DiploGM.models.player import Player
+from DiploGM.models.phase import Phase
+from DiploGM.adjudicator.adjudicator import MovesAdjudicator, RetreatsAdjudicator, BuildsAdjudicator, ResolutionState, Resolution
 
 import unittest
 

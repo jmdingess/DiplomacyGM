@@ -2,9 +2,8 @@ import os
 
 os.environ["simultaneous_svg_exports_limit"] = "1"
 
-import main
-from DiploGM.diplomacy.persistence.manager import Manager
-from DiploGM.diplomacy.adjudicator.mapper import Mapper
+from DiploGM.manager import Manager
+from DiploGM.adjudicator.mapper import Mapper
 
 manager = Manager()
 

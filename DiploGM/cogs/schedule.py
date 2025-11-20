@@ -14,7 +14,7 @@ from DiploGM.utils import (
     send_message_and_file,
     log_command_no_ctx,
 )
-from DiploGM.diplomacy.persistence.manager import Manager
+from DiploGM.manager import Manager
 
 logger = logging.getLogger(__name__)
 manager = Manager()

@@ -5,7 +5,7 @@ import numpy as np
 os.environ["simultaneous_svg_exports_limit"] = "1"
 
 import main
-import DiploGM.diplomacy.persistence.manager as manager
+import DiploGM.manager as manager
 
 x = manager.Manager()
 x.total_delete(1)

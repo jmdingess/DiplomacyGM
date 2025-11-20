@@ -6,8 +6,8 @@ from DiploGM import config
 from DiploGM import perms
 from DiploGM.parse_order import parse_order, parse_remove_order
 from DiploGM.utils import get_orders, log_command, parse_season, send_message_and_file
-from DiploGM.diplomacy.persistence.manager import Manager
-from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.manager import Manager
+from DiploGM.models.player import Player
 
 logger = logging.getLogger(__name__)
 manager = Manager()

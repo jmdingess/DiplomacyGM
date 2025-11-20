@@ -3,10 +3,10 @@ import logging
 import time
 
 from DiploGM.utils.sanitise import sanitise_name
-from DiploGM.diplomacy.persistence.turn import Turn
-from DiploGM.diplomacy.persistence.player import Player
-from DiploGM.diplomacy.persistence.province import Province, ProvinceType, Coast, Location, get_adjacent_provinces
-from DiploGM.diplomacy.persistence.unit import Unit, UnitType
+from DiploGM.models.turn import Turn
+from DiploGM.models.player import Player
+from DiploGM.models.province import Province, ProvinceType, Coast, Location, get_adjacent_provinces
+from DiploGM.models.unit import Unit, UnitType
 
 logger = logging.getLogger(__name__)
 

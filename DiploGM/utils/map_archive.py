@@ -4,9 +4,9 @@ import logging
 
 from subprocess import PIPE
 from discord.ext import commands
-from DiploGM.diplomacy.adjudicator.utils import svg_to_png
-from DiploGM.diplomacy.persistence.turn import Turn
-from DiploGM.diplomacy.persistence.board import Board
+from DiploGM.adjudicator.utils import svg_to_png
+from DiploGM.models.turn import Turn
+from DiploGM.models.board import Board
 
 from DiploGM.utils import log_command, send_message_and_file
 

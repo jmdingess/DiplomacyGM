@@ -11,8 +11,8 @@ from DiploGM.utils import (
     is_player_channel,
     get_player_by_channel,
 )
-from DiploGM.diplomacy.persistence.manager import Manager
-from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.manager import Manager
+from DiploGM.models.player import Player
 
 manager = Manager()
 

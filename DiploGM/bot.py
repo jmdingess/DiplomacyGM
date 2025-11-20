@@ -22,7 +22,7 @@ from DiploGM.config import (
 from DiploGM.events.eventbus import EventBus
 from DiploGM.perms import CommandPermissionError
 from DiploGM.utils import send_message_and_file
-from DiploGM.diplomacy.persistence.manager import Manager
+from DiploGM.manager import Manager
 
 logger = logging.getLogger(__name__)
 

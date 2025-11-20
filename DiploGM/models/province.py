@@ -10,8 +10,8 @@ from shapely import Polygon, MultiPolygon
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from DiploGM.diplomacy.persistence import player
-    from DiploGM.diplomacy.persistence import unit
+    from DiploGM.models import player
+    from DiploGM.models import unit
 
 
 class Location:

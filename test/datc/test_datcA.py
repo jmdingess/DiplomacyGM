@@ -1,9 +1,9 @@
 import unittest
 
-from DiploGM.diplomacy.persistence.order import (
+from DiploGM.models.order import (
     Support,
 )
-from DiploGM.diplomacy.persistence.unit import UnitType
+from DiploGM.models.unit import UnitType
 from test.utils import BoardBuilder
 
 # These tests are based off https://webdiplomacy.net/doc/DATC_v3_0.html, with 

@@ -1,8 +1,8 @@
 from enum import Enum
 
-from DiploGM.diplomacy.persistence.order import NMR, Hold, Core, Move, ConvoyMove, Support, ConvoyTransport
-from DiploGM.diplomacy.persistence.province import Province, Location
-from DiploGM.diplomacy.persistence.unit import Unit, UnitType
+from DiploGM.models.order import NMR, Hold, Core, Move, ConvoyMove, Support, ConvoyTransport
+from DiploGM.models.province import Province, Location
+from DiploGM.models.unit import Unit, UnitType
 
 
 class Resolution(Enum):

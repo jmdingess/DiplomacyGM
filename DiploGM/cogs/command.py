@@ -11,8 +11,8 @@ from DiploGM.utils import (
     get_role_by_player,
     log_command,
 )
-from DiploGM.diplomacy.persistence.manager import Manager
-from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.manager import Manager
+from DiploGM.models.player import Player
 
 
 logger = logging.getLogger(__name__)

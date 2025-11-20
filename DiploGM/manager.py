@@ -4,14 +4,14 @@ import os
 from typing import Optional
 
 from DiploGM.utils.singleton import SingletonMeta
-from DiploGM.diplomacy.adjudicator.adjudicator import make_adjudicator
-from DiploGM.diplomacy.adjudicator.mapper import Mapper
-from DiploGM.diplomacy.map_parser.vector.vector import get_parser
-from DiploGM.diplomacy.persistence.turn import Turn
-from DiploGM.diplomacy.persistence.board import Board
-from DiploGM.diplomacy.persistence.db import database
-from DiploGM.diplomacy.persistence.player import Player
-from DiploGM.diplomacy.persistence.spec_request import SpecRequest
+from DiploGM.adjudicator.adjudicator import make_adjudicator
+from DiploGM.adjudicator.mapper import Mapper
+from DiploGM.map_parser.vector.vector import get_parser
+from DiploGM.models.turn import Turn
+from DiploGM.models.board import Board
+from DiploGM.db import database
+from DiploGM.models.player import Player
+from DiploGM.models.spec_request import SpecRequest
 
 logger = logging.getLogger(__name__)
 

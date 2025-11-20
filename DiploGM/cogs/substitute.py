@@ -9,8 +9,8 @@ from DiploGM import config
 from DiploGM import perms
 from DiploGM .errors import CommandPermissionError
 from DiploGM.utils import get_player_by_name, send_message_and_file
-from DiploGM.diplomacy.persistence.manager import Manager
-from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.manager import Manager
+from DiploGM.models.player import Player
 
 logger = logging.getLogger(__name__)
 manager = Manager()

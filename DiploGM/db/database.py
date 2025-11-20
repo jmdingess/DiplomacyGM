@@ -5,10 +5,10 @@ from typing import Optional
 
 # TODO: Find a better way to do this
 # maybe use a copy from manager?
-from DiploGM.diplomacy.map_parser.vector.vector import get_parser
-from DiploGM.diplomacy.persistence.turn import Turn
-from DiploGM.diplomacy.persistence.board import Board
-from DiploGM.diplomacy.persistence.order import (
+from DiploGM.map_parser.vector.vector import get_parser
+from DiploGM.models.turn import Turn
+from DiploGM.models.board import Board
+from DiploGM.models.order import (
     Core,
     NMR,
     Hold,
@@ -27,9 +27,9 @@ from DiploGM.diplomacy.persistence.order import (
     Defect,
     RebellionMarker,
 )
-from DiploGM.diplomacy.persistence.player import Player
-from DiploGM.diplomacy.persistence.spec_request import SpecRequest
-from DiploGM.diplomacy.persistence.unit import UnitType, Unit
+from DiploGM.models.player import Player
+from DiploGM.models.spec_request import SpecRequest
+from DiploGM.models.unit import UnitType, Unit
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class _DatabaseConnection:
 
     def _initialize_schema(self):
         # FIXME: move the sql file somewhere more accessible (maybe it shouldn't be inside the package? /resources ?)
-        with open("DiploGM/diplomacy/persistence/db/schema.sql", "r") as sql_file:
+        with open("DiploGM/db/schema.sql", "r") as sql_file:
             cursor = self._connection.cursor()
             cursor.executescript(sql_file.read())
             cursor.close()

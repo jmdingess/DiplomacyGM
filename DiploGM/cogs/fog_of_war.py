@@ -11,9 +11,9 @@ from DiploGM.utils import (
     get_filtered_orders,
     send_message_and_file,
 )
-from DiploGM.diplomacy.adjudicator.utils import svg_to_png
-from DiploGM.diplomacy.persistence.manager import Manager
-from DiploGM.diplomacy.persistence.player import Player
+from DiploGM.adjudicator.utils import svg_to_png
+from DiploGM.manager import Manager
+from DiploGM.models.player import Player
 
 logger = logging.getLogger(__name__)
 manager = Manager()

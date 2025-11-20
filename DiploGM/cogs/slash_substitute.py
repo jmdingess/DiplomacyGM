@@ -9,7 +9,7 @@ from discord.utils import find as discord_find
 
 from DiploGM import config, utils
 from DiploGM.utils import get_player_by_name, send_message_and_file
-from DiploGM.diplomacy.persistence.manager import Manager
+from DiploGM.manager import Manager
 
 logger = logging.getLogger(__name__)
 manager = Manager()

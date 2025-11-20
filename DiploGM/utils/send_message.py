@@ -10,7 +10,7 @@ from discord.ext import commands
 
 from DiploGM import config
 from .logging import log_command_no_ctx
-from DiploGM.diplomacy.adjudicator.utils import svg_to_png, png_to_jpg
+from DiploGM.adjudicator.utils import svg_to_png, png_to_jpg
 
 
 logger = logging.getLogger(__name__)
