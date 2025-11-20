@@ -3,8 +3,8 @@ from typing import Any, Awaitable, Callable
 
 from discord.ext import commands
 
-from bot import config
-from bot.config import IMPDIP_SERVER_ID, SUPERUSERS
+from DiploGM import config
+from DiploGM.config import IMPDIP_SERVER_ID, SUPERUSERS
 from utils import (
     get_player_by_role,
     is_player_channel,

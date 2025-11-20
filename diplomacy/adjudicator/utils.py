@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from subprocess import PIPE
-from bot.config import SIMULATRANEOUS_SVG_EXPORT_LIMIT
+from DiploGM.config import SIMULATRANEOUS_SVG_EXPORT_LIMIT
 
 logger = logging.getLogger(__name__)
 

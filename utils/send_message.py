@@ -7,8 +7,8 @@ import discord
 from discord import Message, Embed, Colour
 from discord.ext import commands
 
-from bot import config
-from bot.perms import is_gm_channel
+from DiploGM import config
+from DiploGM.perms import is_gm_channel
 from utils import log_command_no_ctx, logger
 from diplomacy.adjudicator.utils import svg_to_png, png_to_jpg
 

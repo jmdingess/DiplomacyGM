@@ -2,7 +2,7 @@ from discord.ext import commands
 
 from discord import User
 
-from bot import perms
+from DiploGM import perms
 from utils import send_message_and_file
 
 

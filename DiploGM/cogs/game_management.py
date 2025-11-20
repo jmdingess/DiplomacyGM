@@ -11,9 +11,9 @@ from discord import (
 )
 from discord.ext import commands
 
-from bot import config
-from bot.parse_edit_state import parse_edit_state
-from bot import perms
+from DiploGM import config
+from DiploGM.parse_edit_state import parse_edit_state
+from DiploGM import perms
 from utils import (
     get_maps_channel,
     get_orders,
@@ -24,7 +24,7 @@ from utils import (
     send_message_and_file,
     upload_map_to_archive,
 )
-from bot.perms import is_gm
+from DiploGM.perms import is_gm
 from diplomacy.persistence import phase
 from diplomacy.persistence.db.database import get_connection
 from diplomacy.persistence.order import Disband, Build

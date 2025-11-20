@@ -6,8 +6,8 @@ from discord import HTTPException, NotFound, TextChannel
 from discord.ext import commands
 from discord.utils import find as discord_find
 
-from bot import config
-from bot import perms
+from DiploGM import config
+from DiploGM import perms
 from utils import log_command, parse_season, send_message_and_file, upload_map_to_archive
 from diplomacy.persistence.manager import Manager
 

@@ -4,8 +4,8 @@ from typing import Callable
 
 from discord.ext import commands
 
-from bot import config
-from bot import perms
+from DiploGM import config
+from DiploGM import perms
 from utils import (
     get_player_by_channel,
     get_filtered_orders,

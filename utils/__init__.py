@@ -5,7 +5,7 @@ from discord import Guild, Thread
 from discord.abc import GuildChannel
 from discord.ext import commands
 
-from bot import config
+from DiploGM import config
 from utils.send_message import send_message_and_file
 from diplomacy.persistence import phase
 from diplomacy.persistence.manager import Manager

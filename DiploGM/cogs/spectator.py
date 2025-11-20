@@ -4,8 +4,8 @@ import discord
 from discord.ext import commands
 from discord.utils import find as discord_find
 
-from bot import perms
-from bot.config import ERROR_COLOUR, IMPDIP_SERVER_ID
+from DiploGM import perms
+from DiploGM.config import ERROR_COLOUR, IMPDIP_SERVER_ID
 from utils import send_message_and_file
 from diplomacy.persistence.manager import Manager
 

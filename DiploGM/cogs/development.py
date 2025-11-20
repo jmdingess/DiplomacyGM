@@ -3,13 +3,13 @@ import logging
 from discord.ext import commands
 import random
 
-from bot.config import (
+from DiploGM.config import (
     IMPDIP_SERVER_ID,
     IMPDIP_BOT_WIZARD_ROLE,
     IMPDIP_SERVER_BOT_STATUS_CHANNEL_ID,
 )
-from bot.bot import DiploGM
-from bot import perms
+from DiploGM.bot import DiploGM
+from DiploGM import perms
 from utils import send_message_and_file
 from diplomacy.persistence.manager import Manager
 

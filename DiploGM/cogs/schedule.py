@@ -6,9 +6,9 @@ import logging
 from discord.ext import commands, tasks
 from discord import Message, User
 
-from bot.bot import DiploGM
-from bot import perms
-from bot.config import ERROR_COLOUR
+from DiploGM.bot import DiploGM
+from DiploGM import perms
+from DiploGM.config import ERROR_COLOUR
 from utils import (
     get_value_from_timestamp,
     send_message_and_file,
@@ -50,7 +50,7 @@ class ScheduleCog(commands.Cog):
 
         except FileNotFoundError:
             logger.warning(
-                "Could not load previous store of scheduled tasks because it does not exist: should be located at 'bot/assets/schedule.json'"
+                "Could not load previous store of scheduled tasks because it does not exist: should be located at 'DiploGM/assets/schedule.json'"
             )
         except Exception as e:
             logger.warning(f"Could not load previous store of scheduled tasks: {e}")

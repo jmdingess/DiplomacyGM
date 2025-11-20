@@ -2,7 +2,7 @@ import copy
 import logging
 import string
 
-from bot.config import ERROR_COLOUR, PARTIAL_ERROR_COLOUR
+from DiploGM.config import ERROR_COLOUR, PARTIAL_ERROR_COLOUR
 from utils import get_unit_type, get_keywords
 from diplomacy.adjudicator.mapper import Mapper
 from diplomacy.persistence import phase

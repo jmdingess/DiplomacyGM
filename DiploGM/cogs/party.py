@@ -2,14 +2,14 @@ import logging
 import random
 import time
 
-from bot.perms import is_superuser
+from DiploGM.perms import is_superuser
 from diplomacy.persistence.manager import Manager
 from scipy.integrate import odeint
 
 from discord.ext import commands
 
-from bot import perms
-from bot.config import ERROR_COLOUR, is_bumble, temporary_bumbles
+from DiploGM import perms
+from DiploGM.config import ERROR_COLOUR, is_bumble, temporary_bumbles
 from utils import log_command, send_message_and_file
 
 from diplomacy.persistence.db.database import get_connection
@@ -27,7 +27,7 @@ ping_text_choices = [
 # Intended use: to extend the possibilities within .advice
 WOC_ADVICE = ["Maybe the real friends were the dots we claimed along the way."]
 try:
-    with open("bot/assets/advice.txt", "r") as f:
+    with open("DiploGM/assets/advice.txt", "r") as f:
         WOC_ADVICE.extend(f.readlines())
 except FileNotFoundError:
     pass

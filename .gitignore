@@ -1,7 +1,6 @@
 
 /assets
-bot/_token.py
-bot/assets/schedule.json
+DiploGM/assets/schedule.json
 /config/*.txt
 *.pyc
 *.iml

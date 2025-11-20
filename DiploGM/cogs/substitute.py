@@ -5,8 +5,8 @@ from discord import HTTPException, Role, User
 from discord.ext import commands
 from discord.utils import find as discord_find
 
-from bot import config
-from bot import perms
+from DiploGM import config
+from DiploGM import perms
 from utils import get_player_by_name, send_message_and_file
 from diplomacy.persistence.manager import Manager
 from diplomacy.persistence.player import Player

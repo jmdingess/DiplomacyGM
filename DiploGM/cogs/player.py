@@ -2,9 +2,9 @@ import logging
 
 from discord.ext import commands
 
-from bot import config
-from bot import perms
-from bot.parse_order import parse_order, parse_remove_order
+from DiploGM import config
+from DiploGM import perms
+from DiploGM.parse_order import parse_order, parse_remove_order
 from utils import get_orders, log_command, parse_season, send_message_and_file
 from diplomacy.persistence.manager import Manager
 from diplomacy.persistence.player import Player

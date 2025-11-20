@@ -10,12 +10,12 @@ from discord.ext.commands import (
     ExtensionFailed,
 )
 
-from bot.config import (
+from DiploGM.config import (
     ERROR_COLOUR,
     PARTIAL_ERROR_COLOUR,
 )
-from bot.bot import DiploGM
-from bot import perms
+from DiploGM.bot import DiploGM
+from DiploGM import perms
 from utils import send_message_and_file
 from diplomacy.persistence.manager import Manager
 

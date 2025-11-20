@@ -11,21 +11,21 @@ import traceback
 import discord
 from discord.ext import commands
 
-from bot.config import (
+from DiploGM.config import (
     BOT_DEV_UNHANDLED_ERRORS_CHANNEL_ID,
     ERROR_COLOUR,
     IMPDIP_SERVER_ID,
     IMPDIP_SERVER_BOT_STATUS_CHANNEL_ID,
     EXTENSIONS_TO_LOAD_ON_STARTUP,
 )
-from bot.perms import CommandPermissionError
+from DiploGM.perms import CommandPermissionError
 from utils import send_message_and_file
 from diplomacy.persistence.manager import Manager
 
 logger = logging.getLogger(__name__)
 manager = Manager()
 
-_EXTENSION_DIRECTORY = "bot.cogs."
+_EXTENSION_DIRECTORY = "DiploGM.cogs."
 
 # List of funny, sarcastic messages
 WELCOME_MESSAGES = [
@@ -92,7 +92,7 @@ class DiploGM(commands.Bot):
             if not filename.endswith(".py") or filename.startswith("_"):
                 continue
 
-            yield f"bot.cogs.{filename[:-3]}"
+            yield f"DiploGM.cogs.{filename[:-3]}"
 
     # add logging to base extension functions
     async def load_extension(self, name: str, *, package: Optional[str] = None):

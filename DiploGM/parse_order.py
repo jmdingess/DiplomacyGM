@@ -4,7 +4,7 @@ from discord.ext.commands import Paginator
 from lark import Lark, Transformer, UnexpectedEOF, UnexpectedCharacters
 from lark.exceptions import VisitError
 
-from bot.config import ERROR_COLOUR, PARTIAL_ERROR_COLOUR
+from DiploGM.config import ERROR_COLOUR, PARTIAL_ERROR_COLOUR
 from utils import get_unit_type, _manage_coast_signature
 from diplomacy.persistence import order, phase
 from diplomacy.persistence.board import Board
@@ -275,7 +275,7 @@ class TreeToOrder(Transformer):
 generator = TreeToOrder()
 
 
-with open("bot/orders.ebnf", "r") as f:
+with open("DiploGM/orders.ebnf", "r") as f:
     ebnf = f.read()
 
 movement_parser = Lark(ebnf, start="order", parser="earley")
