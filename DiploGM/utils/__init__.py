@@ -1,41 +1,17 @@
-import re
 import logging
 
 import discord
-from discord import Guild, Thread, Member
+from discord import Guild, Thread
 from discord.abc import GuildChannel
 from discord.ext import commands
 
 from .sanitise import simple_player_name
 
 from DiploGM import config
-from DiploGM.models.turn import Turn
 from DiploGM.manager import Manager
 from DiploGM.models.player import Player
-from DiploGM.models.unit import UnitType
-
 
 logger = logging.getLogger(__name__)
-
-_north_coast = "nc"
-_south_coast = "sc"
-_east_coast = "ec"
-_west_coast = "wc"
-
-coast_dict = {
-    _north_coast: ["nc", "north coast", "(nc)"],
-    _south_coast: ["sc", "south coast", "(sc)"],
-    _east_coast: ["ec", "east coast", "(ec)"],
-    _west_coast: ["wc", "west coast", "(wc)"],
-}
-
-_army = "army"
-_fleet = "fleet"
-
-unit_dict = {
-    _army: ["a", "army", "cannon"],
-    _fleet: ["f", "fleet", "boat", "ship"],
-}
 
 
 def get_role_by_player(player: Player, roles: Guild.roles) -> discord.Role | None:
@@ -138,80 +114,16 @@ def is_player_channel(player_role: str, channel: commands.Context.channel) -> bo
     ) and config.is_player_category(channel.category.name)
 
 
-def get_keywords(command: str) -> list[str]:
-    """Command is split by whitespace with '_' representing whitespace in a concept to be stuck in one word.
-    e.g. 'A New_York - Boston' becomes ['A', 'New York', '-', 'Boston']"""
-    keywords = command.split(" ")
-    for i in range(len(keywords)):
-        for j in range(len(keywords[i])):
-            if keywords[i][j] == "_":
-                keywords[i] = keywords[i][:j] + " " + keywords[i][j + 1 :]
-
-    for i in range(len(keywords)):
-        keywords[i] = _manage_coast_signature(keywords[i])
-
-    return keywords
-
-
-def _manage_coast_signature(keyword: str) -> str:
-    for coast_key, coast_val in coast_dict.items():
-        # we want to make sure this was a separate word like "zapotec ec" and not part of a word like "zapotec"
-        suffix = f" {coast_val}"
-        if keyword.endswith(suffix):
-            # remove the suffix
-            keyword = keyword[: len(keyword) - len(suffix)]
-            # replace the suffix with the one we expect
-            new_suffix = f" {coast_key}"
-            keyword += f" {new_suffix}"
-    return keyword
-
-
-def get_unit_type(command: str) -> UnitType | None:
-    command = command.strip()
-    if command in unit_dict[_army]:
-        return UnitType.ARMY
-    if command in unit_dict[_fleet]:
-        return UnitType.FLEET
-    return None
-
-
-def parse_season(
-    arguments: list[str], default_year: str
-) -> Turn | None:
-    year, season, retreat = default_year, None, False
-    for s in arguments:
-        if s.isnumeric() and int(s) > 1640:
-            year = s
-
-        if s.lower() in ["spring", "s", "sm", "sr"]:
-            season = "Spring"
-        elif s.lower() in ["fall", "f", "fm", "fr"]:
-            season = "Fall"
-        elif s.lower() in ["winter", "w", "wa"]:
-            season = "Winter"
-
-        if s.lower() in ["retreat", "retreats", "r", "sr", "fr"]:
-            retreat = True
-
-    if season is None:
-        return None
-    if season == "Winter":
-        return Turn(year, "Winter Builds")
-    else:
-        return Turn(year, season + " " + ("Retreats" if retreat else "Moves"))
-
-def get_value_from_timestamp(timestamp: str) -> int | None:
-    if len(timestamp) == 10 and timestamp.isnumeric():
-        return int(timestamp)
-
-    match = re.match(r"<t:(\d{10}):\w>", timestamp)
-    if match:
-        return int(match.group(1))
-
-    return None
-
 from .logging import log_command, log_command_no_ctx
 from .send_message import send_message_and_file
 from .orders import get_orders, get_filtered_orders
 from .map_archive import upload_map_to_archive
-from .sanitise import sanitise_name, simple_player_name
+from .sanitise import (
+    sanitise_name,
+    simple_player_name,
+    get_keywords,
+    _manage_coast_signature,
+    get_unit_type,
+    parse_season,
+    get_value_from_timestamp
+)
