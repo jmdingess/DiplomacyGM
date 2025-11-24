@@ -2,7 +2,13 @@ import logging
 import random
 import time
 
-from DiploGM.perms import is_superuser
+from typing import List, Dict
+from itertools import permutations
+
+import discord
+from discord.ext.commands import Bot
+
+from DiploGM.perms import is_superuser, is_gm
 from DiploGM.manager import Manager
 from scipy.integrate import odeint
 
@@ -39,7 +45,8 @@ def fish_pop_model(Fish, t, growth_rate, carrying_capacity):
 
 class PartyCog(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: Bot = bot
+        self.eolhc_ed_members: Dict[int, List[int]] = dict()
 
     @commands.command(hidden=True)
     @perms.gm_only("botsay")
@@ -340,6 +347,47 @@ class PartyCog(commands.Cog):
                 channel=ctx.channel, title="Why would you want to do this to me?", message=""
             )
 
+    # feel free to add cute animal gifs
+    eolhc_gifs = [
+        "https://tenor.com/view/otter-cookie-svenja-gif-26360393",
+        "https://tenor.com/view/otter-gif-24469293",
+        "https://tenor.com/view/biting-smartphone-otter-bite-phone-animalsdoingthings-gif-16767408",
+        "https://tenor.com/view/oh-no-you-didnt-otter-get-otter-here-too-cute-funny-animals-gif-8905253"
+    ]
+
+    @commands.command(hidden=True)
+    async def eolhc(self, ctx: commands.Context,):
+        if ctx.author.id == 1352388421003251833:
+            if is_gm(ctx.author) and (ctx.guild.id not in self.eolhc_ed_members or ctx.me.id not in self.eolhc_ed_members[ctx.guild.id]):
+                self.eolhc_ed_members.setdefault(ctx.guild.id, list()).append(ctx.me.id)
+                await ctx.reply("*incoherent screaming*"[::-1])
+                await ctx.me.edit(nick=ctx.me.display_name[::-1])
+
+            await ctx.reply(random.choice(self.eolhc_gifs))
+            return
+        if manager.get_board(ctx.guild.id).is_chaos():
+            return
+
+        try:
+            await ctx.author.edit(nick=ctx.author.display_name[::-1])
+        except discord.Forbidden:
+            await ctx.reply("Pesky Admin")
+
+
+    eolhc_permutations = list(map(lambda x: "".join(x), permutations("eolhc")))
+    eolhc_permutations.remove("eolhc")
+    eolhc_permutations.remove("eohlc")
+
+    @commands.command(hidden=True, aliases=eolhc_permutations)
+    async def eohlc(self, ctx: commands.Context):
+        if ctx.author.id == 285108244714881024: # aahoughton
+            try:
+                await ctx.reply("*eolhc")
+                await ctx.author.edit(nick="aahuoghton")
+            except discord.Forbidden:
+                await ctx.reply("Very Pesky Admin")
+        else:
+            await ctx.reply("*eolhc")
 
 async def setup(bot):
     cog = PartyCog(bot)

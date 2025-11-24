@@ -7,6 +7,9 @@ Contributors
 - Chloe
 - Golden Kumquat
 
+# Fun Commands
+- .eolhc: no further questions
+
 # Player Bugfixes
 - fixed `/substitute` 
 
