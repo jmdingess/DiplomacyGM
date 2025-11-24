@@ -2,7 +2,6 @@ from typing import List, Tuple
 
 from discord.ext.commands import Context
 
-from DiploGM.utils import get_role_by_player
 from DiploGM.models.board import Board
 from DiploGM.models.player import Player
 

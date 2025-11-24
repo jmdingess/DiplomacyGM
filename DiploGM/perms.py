@@ -7,10 +7,7 @@ from discord.ext import commands
 from DiploGM import config
 from DiploGM.errors import CommandPermissionError
 from DiploGM.config import IMPDIP_SERVER_ID, SUPERUSERS
-from DiploGM.utils import (
-    is_player_channel,
-    get_player_by_channel,
-)
+from DiploGM.utils import (simple_player_name)
 from DiploGM.manager import Manager
 from DiploGM.models.player import Player
 
@@ -32,6 +29,14 @@ def get_player_by_context(ctx: commands.Context):
         player = manager.get_member_player_object(ctx.message.author)
 
     return player
+
+
+def is_player_channel(player_role: str, channel: commands.Context.channel) -> bool:
+    player_channel = player_role + config.player_channel_suffix
+    return simple_player_name(player_channel) == simple_player_name(
+        channel.name
+    ) and config.is_player_category(channel.category.name)
+
 
 
 def require_player_by_context(ctx: commands.Context, description: str):

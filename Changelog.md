@@ -44,6 +44,7 @@ This is an attempt to document all the changes that are part of this.
 - moved `get_keywords`, `_manage_coast_signature`, `get_unit_type`, `parse_season` & `get_value_from_timestamp` to `sanitise.py`
 - moved `get_role_by_player` into `Player`.
 - `Player` now has a reference to its `Board`.
+- moved `is_player_channel` into `perms.py`.
 
 ## Other Changes
 - renamed ordered scoreboard functions.

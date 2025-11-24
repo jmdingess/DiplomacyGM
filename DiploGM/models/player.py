@@ -5,7 +5,6 @@ from enum import Enum
 import discord
 
 from DiploGM.models import order
-from DiploGM.models.board import Board
 from DiploGM.utils import simple_player_name
 
 
@@ -69,7 +68,7 @@ class Player:
         self.vassals: list[Player] = []
 
         # Must be initialised when the board is made
-        self.board = Optional[Board] = None
+        self.board: Optional[Board] = None
 
 
     def find_discord_role(self, roles: Sequence[discord.Role]) -> Optional[discord.Role]:

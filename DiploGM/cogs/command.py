@@ -8,7 +8,6 @@ from DiploGM.config import ERROR_COLOUR
 from DiploGM import perms
 from DiploGM.utils import (
     send_message_and_file,
-    get_role_by_player,
     log_command,
 )
 from DiploGM.manager import Manager

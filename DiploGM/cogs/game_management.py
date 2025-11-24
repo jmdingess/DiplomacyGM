@@ -18,8 +18,6 @@ from DiploGM.utils import (
     get_maps_channel,
     get_orders,
     get_orders_log,
-    get_player_by_channel,
-    get_role_by_player,
     log_command,
     send_message_and_file,
     upload_map_to_archive,

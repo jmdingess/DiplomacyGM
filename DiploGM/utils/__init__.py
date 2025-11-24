@@ -67,13 +67,6 @@ def get_orders_log(guild: Guild) -> GuildChannel | None:
     return None
 
 
-def is_player_channel(player_role: str, channel: commands.Context.channel) -> bool:
-    player_channel = player_role + config.player_channel_suffix
-    return simple_player_name(player_channel) == simple_player_name(
-        channel.name
-    ) and config.is_player_category(channel.category.name)
-
-
 from .logging import log_command, log_command_no_ctx
 from .send_message import send_message_and_file
 from .orders import get_orders, get_filtered_orders

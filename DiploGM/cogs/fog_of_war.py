@@ -7,7 +7,6 @@ from discord.ext import commands
 from DiploGM import config
 from DiploGM import perms
 from DiploGM.utils import (
-    get_player_by_channel,
     get_filtered_orders,
     send_message_and_file,
 )
