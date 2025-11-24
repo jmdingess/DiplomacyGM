@@ -42,6 +42,8 @@ This is an attempt to document all the changes that are part of this.
 - moved functionality of `get_player_by_role` into the Manager.
 - removed unused `discord_id` property from `Player`.
 - moved `get_keywords`, `_manage_coast_signature`, `get_unit_type`, `parse_season` & `get_value_from_timestamp` to `sanitise.py`
+- moved `get_role_by_player` into `Player`.
+- `Player` now has a reference to its `Board`.
 
 ## Other Changes
 - renamed ordered scoreboard functions.

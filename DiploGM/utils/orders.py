@@ -29,7 +29,7 @@ def get_orders(
             if not player_restriction or player == player_restriction:
 
                 if (
-                    player_role := get_role_by_player(player, ctx.guild.roles)
+                    player_role := player.find_discord_role(ctx.guild.roles)
                 ) is not None:
                     player_name = player_role.mention
                 else:
@@ -89,7 +89,7 @@ def get_orders(
             if subset == "submitted" and not ordered:
                 continue
 
-            if (player_role := get_role_by_player(player, ctx.guild.roles)) is not None:
+            if (player_role := player.find_discord_role(ctx.guild.roles)) is not None:
                 player_name = player_role.mention
             else:
                 player_name = player.name

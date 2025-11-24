@@ -127,7 +127,7 @@ class CommandCog(commands.Cog):
             )
             for player in player_list:
                 if (
-                    player_role := get_role_by_player(player, ctx.guild.roles)
+                    player_role := player.find_discord_role(ctx.guild.roles)
                 ) is not None:
                     player_name = player_role.mention
                 else:
@@ -398,7 +398,7 @@ class CommandCog(commands.Cog):
             if owner is None:
                 player_name = "None"
             elif (
-                player_role := get_role_by_player(owner, ctx.guild.roles)
+                player_role := owner.find_discord_role(ctx.guild.roles)
             ) is not None:
                 player_name = player_role.mention
             else:

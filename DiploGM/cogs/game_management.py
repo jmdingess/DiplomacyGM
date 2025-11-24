@@ -153,7 +153,7 @@ class GameManagementCog(commands.Cog):
                     await ctx.send(f"No Player for {channel.name}")
                     continue
 
-                role = get_role_by_player(player, guild.roles)
+                role = player.find_discord_role(guild.roles)
                 if role is None:
                     await ctx.send(f"No Role for {player.name}")
                     continue
@@ -384,7 +384,7 @@ class GameManagementCog(commands.Cog):
         roles = {}
         sc_changes = {}
         for player in curr_board.players:
-            roles[player.name] = get_role_by_player(player, guild.roles)
+            roles[player.name] = player.find_discord_role(guild.roles)
             sc_changes[player.name] = len(player.centers)
 
         for player in board.players:
@@ -404,7 +404,7 @@ class GameManagementCog(commands.Cog):
                 if not player or (len(player.units) + len(player.centers) == 0):
                     continue
 
-                role = get_role_by_player(player, guild.roles)
+                role = player.find_discord_role(guild.roles)
                 out = f"Hey **{role.mention if role else player.name}**, the Game has adjudicated!\n"
                 await ch.send(out, silent=True)
                 await send_message_and_file(

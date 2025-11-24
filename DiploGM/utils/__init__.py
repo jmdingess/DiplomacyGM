@@ -14,13 +14,6 @@ from DiploGM.models.player import Player
 logger = logging.getLogger(__name__)
 
 
-def get_role_by_player(player: Player, roles: Guild.roles) -> discord.Role | None:
-    for role in roles:
-        if simple_player_name(role.name) == simple_player_name(player.name):
-            return role
-    return None
-
-
 def get_player_by_channel(
     channel: commands.Context.channel,
     manager: Manager,

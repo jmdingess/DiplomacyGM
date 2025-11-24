@@ -10,7 +10,6 @@ from DiploGM.models.unit import Unit, UnitType
 
 logger = logging.getLogger(__name__)
 
-
 class Board:
     def __init__(
         self, players: set[Player], provinces: set[Province], units: set[Unit], turn: Turn, data, datafile: str, fow: bool, year_offset: int = 1642
@@ -42,6 +41,9 @@ class Board:
             self.name_to_province[location.name.lower()] = location
             for coast in location.coasts:
                 self.name_to_coast[coast.name.lower()] = coast
+
+        for player in self.players:
+            player.board = self
 
     def get_player(self, name: str) -> Player:
         if name.lower() == "none":
