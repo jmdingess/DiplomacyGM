@@ -63,7 +63,6 @@ class Player:
 
         self.points: int = 0
         self.liege: Player | None = None
-        self.discord_id = None
         self.vassals: list[Player] = []
 
     def __str__(self):

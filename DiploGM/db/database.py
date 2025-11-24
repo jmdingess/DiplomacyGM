@@ -165,19 +165,19 @@ class _DatabaseConnection:
         board.board_id = board_id
 
         player_data = cursor.execute(
-            "SELECT player_name, color, liege, points, discord_id FROM players WHERE board_id=?",
+            "SELECT player_name, color, liege, points FROM players WHERE board_id=?",
             (board_id,),
         ).fetchall()
         player_info_by_name = {
-            player_name: (color, liege, points, discord_id)
-            for player_name, color, liege, points, discord_id in player_data
+            player_name: (color, liege, points)
+            for player_name, color, liege, points in player_data
         }
         name_to_player = {player.name: player for player in board.players}
         for player in board.players:
             if player.name not in player_info_by_name:
                 logger.warning(f"Couldn't find player {player.name} in DB")
                 continue
-            color, liege, points, discord_id = player_info_by_name[player.name]
+            color, liege, points = player_info_by_name[player.name]
             player.render_color = color
             if liege is not None:
                 try:
@@ -185,8 +185,6 @@ class _DatabaseConnection:
                 except KeyError:
                     logger.warning(f"Invalid liege of player {player.name}: {liege}")
                 player.liege.vassals.append(player)
-            if discord_id is not None:
-                player.discord_id = discord_id
             player.points = points
             player.units = set()
             player.centers = set()
