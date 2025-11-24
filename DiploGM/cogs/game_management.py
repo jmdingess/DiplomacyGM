@@ -8,16 +8,16 @@ from discord import (
     PermissionOverwrite,
     Role,
     Thread,
+    Guild,
 )
+from discord.abc import GuildChannel
 from discord.ext import commands
 
 from DiploGM import config
 from DiploGM.parse_edit_state import parse_edit_state
 from DiploGM import perms
 from DiploGM.utils import (
-    get_maps_channel,
     get_orders,
-    get_orders_log,
     log_command,
     send_message_and_file,
     upload_map_to_archive,
@@ -775,3 +775,26 @@ class GameManagementCog(commands.Cog):
 async def setup(bot):
     cog = GameManagementCog(bot)
     await bot.add_cog(cog)
+
+
+def get_maps_channel(guild: Guild) -> GuildChannel | None:
+    for channel in guild.channels:
+        if (
+            channel.name.lower() == "maps"
+            and channel.category is not None
+            and channel.category.name.lower() == "gm channels"
+        ):
+            return channel
+    return None
+
+
+def get_orders_log(guild: Guild) -> GuildChannel | None:
+    for channel in guild.channels:
+        # FIXME move "orders" and "gm channels" to bot.config
+        if (
+            channel.name.lower() == "orders-log"
+            and channel.category is not None
+            and channel.category.name.lower() == "gm channels"
+        ):
+            return channel
+    return None

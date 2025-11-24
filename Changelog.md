@@ -38,15 +38,16 @@ This is an attempt to document all the changes that are part of this.
 - `diplomacy/persistance/db/` has been moved to `DiploGM/db/`.
 - `persistance` package has been renamed `models`.
 - removed `utils.whitespace_dict` as it was only used once and contained one item.
-- moved `utils.simple_player_name` to `utils.sanitise.simple_player_name`.
-- moved functionality of `get_player_by_role` into the Manager.
+- moved `utils.simple_player_name()` to `utils.sanitise.simple_player_name()`.
+- moved functionality of `get_player_by_role()` into the Manager.
 - removed unused `discord_id` property from `Player`.
-- moved `get_keywords`, `_manage_coast_signature`, `get_unit_type`, `parse_season` & `get_value_from_timestamp` to `sanitise.py`
-- moved `get_role_by_player` into `Player`.
+- moved `get_keywords()`, `_manage_coast_signature()`, `get_unit_type()`, `parse_season()` & `get_value_from_timestamp()` to `sanitise.py`
+- moved `get_role_by_player()` into `Player`.
 - `Player` now has a reference to its `Board`.
-- moved `is_player_channel` into `perms.py`.
+- moved `is_player_channel()` into `perms.py`.
 - removed `get_channel_by_player.
-- moved `get_player_by_name` into `Board`.
+- moved `get_player_by_name()` into `Board`.
+- moved `get_maps_channel()` and `get_orders_log()` into `game_management.py`
 
 ## Other Changes
 - renamed ordered scoreboard functions.
