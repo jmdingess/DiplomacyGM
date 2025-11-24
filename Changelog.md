@@ -45,7 +45,8 @@ This is an attempt to document all the changes that are part of this.
 - moved `get_role_by_player` into `Player`.
 - `Player` now has a reference to its `Board`.
 - moved `is_player_channel` into `perms.py`.
-- removed `get_channel_by_player`
+- removed `get_channel_by_player.
+- moved `get_player_by_name` into `Board`.
 
 ## Other Changes
 - renamed ordered scoreboard functions.

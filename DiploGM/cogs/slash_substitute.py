@@ -8,7 +8,7 @@ from discord.ext import commands
 from discord.utils import find as discord_find
 
 from DiploGM import config, utils
-from DiploGM.utils import get_player_by_name, send_message_and_file
+from DiploGM.utils import send_message_and_file
 from DiploGM.manager import Manager
 
 logger = logging.getLogger(__name__)
@@ -130,7 +130,7 @@ class SlashSubstituteCog(commands.Cog):
             return
 
         board = manager.get_board(guild.id)
-        player = get_player_by_name(power_role.name, manager, guild.id)
+        player = board.get_player_sanitised(power_role.name)
         if not player:
             out = f"Could not find Player object for given role {power_role.mention}"
             await send_message_and_file(
@@ -302,7 +302,8 @@ class SlashSubstituteCog(commands.Cog):
             return
 
         # CHECK A VALID PLAYER HAS BEEN GIVEN
-        player = utils.get_player_by_name(power_role.name, manager, guild.id)
+        board = manager.get_board(guild.id)
+        player = board.get_player_sanitised(power_role.name)
         if not player:
             out = f"Could not find Player object for given role {power_role.mention}"
             await send_message_and_file(

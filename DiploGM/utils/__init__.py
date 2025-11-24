@@ -14,13 +14,6 @@ from DiploGM.models.player import Player
 logger = logging.getLogger(__name__)
 
 
-def get_player_by_name(name: str, manager: Manager, server_id: int) -> Player | None:
-    for player in manager.get_board(server_id).players:
-        if simple_player_name(player.name) == simple_player_name(name):
-            return player
-    return None
-
-
 def get_maps_channel(guild: Guild) -> GuildChannel | None:
     for channel in guild.channels:
         if (

@@ -1,6 +1,7 @@
 import re
 import logging
 import time
+from typing import Dict, Optional
 
 from discord import Thread
 from discord.ext import commands
@@ -38,11 +39,12 @@ class Board:
         self.fow = fow
 
         # store as lower case for user input purposes
-        self.name_to_player: dict[str, Player] = {player.name.lower(): player for player in self.players}
+        self.name_to_player: Dict[str, Player] = {player.name.lower(): player for player in self.players}
         # remove periods and apostrophes
-        self.cleaned_name_to_player: dict[str, Player] = {sanitise_name(player.name.lower()): player for player in self.players}
-        self.name_to_province: dict[str, Province] = {}
-        self.name_to_coast: dict[str, Coast] = {}
+        self.cleaned_name_to_player: Dict[str, Player] = {sanitise_name(player.name.lower()): player for player in self.players}
+        self.simple_player_name_to_player: Dict[str, Player] = {simple_player_name(player.name): player for player in self.players}
+        self.name_to_province: Dict[str, Province] = {}
+        self.name_to_coast: Dict[str, Coast] = {}
         for location in self.provinces:
             self.name_to_province[location.name.lower()] = location
             for coast in location.coasts:
@@ -51,19 +53,27 @@ class Board:
         for player in self.players:
             player.board = self
 
-    def get_player(self, name: str) -> Player:
+    def get_player(self, name: str) -> Optional[Player]:
         if name.lower() == "none":
             return None
         if name.lower() not in self.name_to_player:
             raise ValueError(f"Player {name} not found")
         return self.name_to_player.get(name.lower())
 
-    def get_cleaned_player(self, name: str) -> Player:
+    def get_cleaned_player(self, name: str) -> Optional[Player]:
         if name.lower() == "none":
             return None
         if name.lower() not in self.cleaned_name_to_player:
             raise ValueError(f"Player {name} not found")
         return self.cleaned_name_to_player.get(sanitise_name(name.lower()))
+
+    def get_player_sanitised(self, name:str) -> Optional[Player]:
+        name = simple_player_name(name)
+        if name == "none":
+            return None
+        if name not in self.simple_player_name_to_player:
+            raise ValueError(f"Player {name} not found")
+        return self.simple_player_name_to_player.get(simple_player_name(name))
 
 
     # TODO: break ties in a fixed manner
