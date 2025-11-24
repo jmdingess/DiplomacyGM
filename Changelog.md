@@ -39,6 +39,7 @@ This is an attempt to document all the changes that are part of this.
 - `persistance` package has been renamed `models`.
 - removed `utils.whitespace_dict` as it was only used once and contained one item.
 - moved `utils.simple_player_name` to `utils.sanitise.simple_player_name`.
+- moved functionality of `get_player_by_role` into the Manager.
 
 ## Other Changes
 - renamed ordered scoreboard functions.

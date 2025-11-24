@@ -2,16 +2,18 @@ import re
 import logging
 
 import discord
-from discord import Guild, Thread
+from discord import Guild, Thread, Member
 from discord.abc import GuildChannel
 from discord.ext import commands
+
+from .sanitise import simple_player_name
 
 from DiploGM import config
 from DiploGM.models.turn import Turn
 from DiploGM.manager import Manager
 from DiploGM.models.player import Player
 from DiploGM.models.unit import UnitType
-from .sanitise import simple_player_name
+
 
 logger = logging.getLogger(__name__)
 
@@ -34,16 +36,6 @@ unit_dict = {
     _army: ["a", "army", "cannon"],
     _fleet: ["f", "fleet", "boat", "ship"],
 }
-
-
-def get_player_by_role(
-    author: commands.Context.author, manager: Manager, server_id: int
-) -> Player | None:
-    for role in author.roles:
-        for player in manager.get_board(server_id).players:
-            if simple_player_name(player.name) == simple_player_name(role.name):
-                return player
-    return None
 
 
 def get_role_by_player(player: Player, roles: Guild.roles) -> discord.Role | None:
@@ -222,4 +214,4 @@ from .logging import log_command, log_command_no_ctx
 from .send_message import send_message_and_file
 from .orders import get_orders, get_filtered_orders
 from .map_archive import upload_map_to_archive
-from .sanitise import sanitise_name
+from .sanitise import sanitise_name, simple_player_name

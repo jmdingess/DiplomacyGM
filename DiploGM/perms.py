@@ -1,13 +1,13 @@
 from functools import wraps
 from typing import Any, Awaitable, Callable
 
+import discord
 from discord.ext import commands
 
 from DiploGM import config
 from DiploGM.errors import CommandPermissionError
 from DiploGM.config import IMPDIP_SERVER_ID, SUPERUSERS
 from DiploGM.utils import (
-    get_player_by_role,
     is_player_channel,
     get_player_by_channel,
 )
@@ -27,7 +27,9 @@ def get_player_by_context(ctx: commands.Context):
             ctx.channel, manager, ctx.guild.id, ignore_category=weak_channel_checking
         )
     else:
-        player = get_player_by_role(ctx.message.author, manager, ctx.guild.id)
+        if not isinstance(ctx.author, discord.Member):
+            return None
+        player = manager.get_member_player_object(ctx.message.author)
 
     return player
 
@@ -44,7 +46,7 @@ def require_player_by_context(ctx: commands.Context, description: str):
         if player:
             return player
     else:
-        player = get_player_by_role(ctx.message.author, manager, ctx.guild.id)
+        player = manager.get_member_player_object(ctx.message.author)
 
     if player:
         if not is_player_channel(player.name, ctx.channel):
