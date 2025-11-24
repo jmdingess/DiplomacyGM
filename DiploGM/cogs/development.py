@@ -34,7 +34,7 @@ class DevelopmentCog(commands.Cog):
     async def su_dashboard(self, ctx: commands.Context):
 
         extensions_body = ""
-        for extension in self.bot.get_all_extensions():
+        for extension in sorted(self.bot.get_all_extensions()):
             if extension in self.bot.extensions.keys():
                 extensions_body += "- :white_check_mark: "
             else:

@@ -55,6 +55,7 @@ This is an attempt to document all the changes that are part of this.
 - depreciated `get_latest_board()`.
 - `Phase` has been replaced with `Turn`.
 - `IMPDIP_SERVER_SUBSTITUTE_LOG_CHANNEL_ID` is no longer a list ( this was breaking `/substitute`).
+- `.su_dashboard` now sorts extension list.
 
 1.2.1
 =====
