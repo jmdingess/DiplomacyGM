@@ -23,8 +23,8 @@ def get_player_by_context(ctx: commands.Context):
     # return if in order channel
     weak_channel_checking = "weak channel checking" in board.data.get("flags", [])
     if board.fow or weak_channel_checking:
-        player = get_player_by_channel(
-            ctx.channel, manager, ctx.guild.id, ignore_category=weak_channel_checking
+        player = board.get_player_by_channel(
+            ctx.channel, ignore_category=weak_channel_checking
         )
     else:
         if not isinstance(ctx.author, discord.Member):
@@ -40,8 +40,8 @@ def require_player_by_context(ctx: commands.Context, description: str):
     # return if in order channel
     weak_channel_checking = "weak channel checking" in board.data.get("flags", [])
     if board.fow or weak_channel_checking:
-        player = get_player_by_channel(
-            ctx.channel, manager, ctx.guild.id, ignore_category=weak_channel_checking
+        player = board.get_player_by_channel(
+            ctx.channel, ignore_category=weak_channel_checking
         )
         if player:
             return player
@@ -58,7 +58,7 @@ def require_player_by_context(ctx: commands.Context, description: str):
             raise CommandPermissionError(
                 f"You cannot {description} because you are neither a GM nor a player."
             )
-        player_channel = get_player_by_channel(ctx.channel, manager, ctx.guild.id)
+        player_channel = board.get_player_by_channel(ctx.channel)
         if player_channel is not None:
             player = player_channel
         elif not is_gm_channel(ctx.channel):

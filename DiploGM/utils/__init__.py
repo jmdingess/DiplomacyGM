@@ -14,39 +14,6 @@ from DiploGM.models.player import Player
 logger = logging.getLogger(__name__)
 
 
-def get_player_by_channel(
-    channel: commands.Context.channel,
-    manager: Manager,
-    server_id: int,
-    ignore_category=False,
-) -> Player | None:
-    # thread -> main channel
-    if isinstance(channel, Thread):
-        channel = channel.parent
-
-    board = manager.get_board(server_id)
-    name = channel.name
-    if (not ignore_category) and not config.is_player_category(channel.category.name):
-        return None
-
-    if board.is_chaos() and name.endswith("-void"):
-        name = name[:-5]
-    else:
-        if not name.endswith(config.player_channel_suffix):
-            return None
-
-        name = name[: -(len(config.player_channel_suffix))]
-
-    try:
-        return board.get_cleaned_player(name)
-    except ValueError:
-        pass
-    try:
-        return board.get_cleaned_player(simple_player_name(name))
-    except ValueError:
-        return None
-
-    return None
 
 
 # FIXME this is done pretty poorly

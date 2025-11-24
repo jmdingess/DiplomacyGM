@@ -2,11 +2,17 @@ import re
 import logging
 import time
 
+from discord import Thread
+from discord.ext import commands
+
 from DiploGM.utils.sanitise import sanitise_name
 from DiploGM.models.turn import Turn
 from DiploGM.models.player import Player
 from DiploGM.models.province import Province, ProvinceType, Coast, Location, get_adjacent_provinces
 from DiploGM.models.unit import Unit, UnitType
+from DiploGM.config import player_channel_suffix, is_player_category
+from DiploGM.utils import simple_player_name
+
 
 logger = logging.getLogger(__name__)
 
@@ -259,3 +265,33 @@ class Board:
         
     def is_chaos(self) -> bool:
         return self.data["players"] == "chaos"
+
+    def get_player_by_channel(
+            self,
+            channel: commands.Context.channel,
+            ignore_category=False,
+    ) -> Player | None:
+        # thread -> main channel
+        if isinstance(channel, Thread):
+            channel = channel.parent
+
+        name = channel.name
+        if (not ignore_category) and not is_player_category(channel.category.name):
+            return None
+
+        if self.is_chaos() and name.endswith("-void"):
+            name = name[:-5]
+        else:
+            if not name.endswith(player_channel_suffix):
+                return None
+
+            name = name[: -(len(player_channel_suffix))]
+
+        try:
+            return self.get_cleaned_player(name)
+        except ValueError:
+            pass
+        try:
+            return self.get_cleaned_player(simple_player_name(name))
+        except ValueError:
+            return None

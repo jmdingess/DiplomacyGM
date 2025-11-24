@@ -97,7 +97,7 @@ class FogOfWarCog(commands.Cog):
             name_to_player[player.name.lower()] = player
 
         for channel in player_category.channels:
-            player = get_player_by_channel(channel, manager, guild.id)
+            player = board.get_player_by_channel(channel)
 
             if not player or (filter_player and player != filter_player):
                 continue
@@ -144,7 +144,7 @@ async def publish_map(
     tasks = []
 
     for channel in player_category.channels:
-        player = get_player_by_channel(channel, manager, guild.id)
+        player = board.get_player_by_channel(channel)
 
         if not player or (filter_player and player != filter_player):
             continue

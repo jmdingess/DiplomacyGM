@@ -148,7 +148,7 @@ class GameManagementCog(commands.Cog):
         response = ""
         for category in player_categories:
             for channel in category.text_channels:
-                player = get_player_by_channel(channel, manager, guild.id)
+                player = board.get_player_by_channel(channel)
                 if player is None:
                     await ctx.send(f"No Player for {channel.name}")
                     continue
@@ -400,7 +400,7 @@ class GameManagementCog(commands.Cog):
 
         for c in player_categories:
             for ch in c.text_channels:
-                player = get_player_by_channel(ch, manager, guild.id)
+                player = board.get_player_by_channel(ch)
                 if not player or (len(player.units) + len(player.centers) == 0):
                     continue
 
@@ -709,8 +709,8 @@ class GameManagementCog(commands.Cog):
                 embed_colour=config.ERROR_COLOUR,
             )
 
-        player = get_player_by_channel(
-            channel, manager, ctx.guild.id, ignore_category=True
+        player = board.get_player_by_channel(
+            channel, ignore_category=True
         )
 
         # TODO hacky
