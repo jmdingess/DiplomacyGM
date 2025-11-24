@@ -14,29 +14,6 @@ from DiploGM.models.player import Player
 logger = logging.getLogger(__name__)
 
 
-
-
-# FIXME this is done pretty poorly
-async def get_channel_by_player(
-    player: Player, ctx: commands.Context, manager: Manager
-) -> GuildChannel:
-    guild = ctx.guild
-    guild_id = guild.id
-    board = manager.get_board(guild_id)
-
-    channel_name = simple_player_name(player.name) + config.player_channel_suffix
-
-    for category in guild.categories:
-        if not config.is_player_category(category.name) and not board.is_chaos():
-            continue
-
-        for channel in category.channels:
-            if channel.name == channel_name:
-                return channel
-
-    return None
-
-
 def get_player_by_name(name: str, manager: Manager, server_id: int) -> Player | None:
     for player in manager.get_board(server_id).players:
         if simple_player_name(player.name) == simple_player_name(name):
