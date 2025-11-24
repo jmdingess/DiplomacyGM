@@ -5,7 +5,7 @@ from typing import Optional
 
 from discord import Member
 
-from DiploGM.utils.singleton import SingletonMeta
+from DiploGM.utils import SingletonMeta
 from DiploGM.adjudicator.adjudicator import make_adjudicator
 from DiploGM.adjudicator.mapper import Mapper
 from DiploGM.map_parser.vector.vector import get_parser

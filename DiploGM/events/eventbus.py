@@ -1,7 +1,7 @@
 import logging
 from typing import List, Type
 
-from DiploGM.utils.singleton import SingletonMeta
+from DiploGM.utils import SingletonMeta
 from DiploGM.events.base_listener import BaseListener
 from DiploGM.events.events import Event
 

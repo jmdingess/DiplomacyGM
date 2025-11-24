@@ -8,7 +8,7 @@ from discord.utils import find as discord_find
 from DiploGM import config
 from DiploGM import perms
 from DiploGM .errors import CommandPermissionError
-from DiploGM.utils import get_player_by_name, send_message_and_file
+from DiploGM.utils import send_message_and_file
 from DiploGM.manager import Manager
 from DiploGM.models.player import Player
 
