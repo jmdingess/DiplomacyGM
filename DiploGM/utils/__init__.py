@@ -11,8 +11,7 @@ from DiploGM.models.turn import Turn
 from DiploGM.manager import Manager
 from DiploGM.models.player import Player
 from DiploGM.models.unit import UnitType
-
-
+from .sanitise import simple_player_name
 
 logger = logging.getLogger(__name__)
 
@@ -108,11 +107,6 @@ async def get_channel_by_player(
                 return channel
 
     return None
-
-
-# I'm sorry this is a bad function name. I couldn't think of anything better and I'm in a rush
-def simple_player_name(name: str):
-    return name.lower().replace("-", " ").replace("'", "").replace(".", "")
 
 
 def get_player_by_name(name: str, manager: Manager, server_id: int) -> Player | None:
