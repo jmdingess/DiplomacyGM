@@ -16,10 +16,6 @@ from DiploGM.models.unit import UnitType
 
 logger = logging.getLogger(__name__)
 
-whitespace_dict = {
-    "_",
-}
-
 _north_coast = "nc"
 _south_coast = "sc"
 _east_coast = "ec"
@@ -162,7 +158,7 @@ def get_keywords(command: str) -> list[str]:
     keywords = command.split(" ")
     for i in range(len(keywords)):
         for j in range(len(keywords[i])):
-            if keywords[i][j] in whitespace_dict:
+            if keywords[i][j] == "_":
                 keywords[i] = keywords[i][:j] + " " + keywords[i][j + 1 :]
 
     for i in range(len(keywords)):

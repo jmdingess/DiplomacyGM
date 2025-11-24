@@ -33,17 +33,18 @@ This is an attempt to document all the changes that are part of this.
 - moved `santise.py` into the `utils` package.
 - renamed `bot` package to `DiploGM`.
 - merged `DiploGM` and `diplomacy` packages.
-- removed both `core` packages. Events have been moved to their own `events` package and singleton into `utils`
-- `bot/assets/` has been moved to `assets/`
-- `diplomacy/persistance/db/` has been moved to `DiploGM/db/`
-- `persistance` package has been renamed `models`
+- removed both `core` packages. Events have been moved to their own `events` package and singleton into `utils`.
+- `bot/assets/` has been moved to `assets/`.
+- `diplomacy/persistance/db/` has been moved to `DiploGM/db/`.
+- `persistance` package has been renamed `models`.
+- removed `utils.whitespace_dict` as it was only used once and contained one item.
 
 ## Other Changes
-- renamed ordered scoreboard functions
-- Added `assets/*_adjacencies.txt`, `*.pclprof` & `logs/*` and removed `assets/`
-- depreciated `get_latest_board()`
-- `Phase` has been replaced with `Turn`
-- `IMPDIP_SERVER_SUBSTITUTE_LOG_CHANNEL_ID` is no longer a list ( this was breaking `/substitute`)
+- renamed ordered scoreboard functions.
+- Added `assets/*_adjacencies.txt`, `*.pclprof` & `logs/*` and removed `assets/`.
+- depreciated `get_latest_board()`.
+- `Phase` has been replaced with `Turn`.
+- `IMPDIP_SERVER_SUBSTITUTE_LOG_CHANNEL_ID` is no longer a list ( this was breaking `/substitute`).
 
 1.2.1
 =====
