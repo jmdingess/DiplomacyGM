@@ -1,3 +1,4 @@
+import logging
 import tomllib
 import sys
 from typing import List, Tuple, Any
@@ -10,7 +11,7 @@ with open("config.toml", "rb") as toml_file:
 
 
 def merge_toml(main: dict[str, Any], default: dict[str, Any], current_path: str = "") -> Tuple[
-    List[str], dict[str, Any]]:
+    List[Tuple[int, str]], dict[str, Any]]:
     output = {}
     errors = []
     for key in default:
@@ -22,7 +23,7 @@ def merge_toml(main: dict[str, Any], default: dict[str, Any], current_path: str 
                 else:
                     output[key] = main[key]
             else:
-                errors.append(f"{current_path}.")
+                errors.append((logging.ERROR, f"Mismatched config types: {current_path}"))
         else:
             output[key] = default[key]
     return errors, output
@@ -158,3 +159,9 @@ temporary_bumbles: set[str] = set()
 
 def is_bumble(name: str) -> bool:
     return name == "_bumble" or name in temporary_bumbles
+
+def output_config_logs(logger=None):
+    if logger is None:
+        logger = logging.getLogger(__name__)
+    for error in toml_errors:
+        logger.log(error[0], error[1])
