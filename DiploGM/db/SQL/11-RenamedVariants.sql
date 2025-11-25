@@ -1,66 +1,38 @@
 BEGIN TRANSACTION;
 UPDATE board
-SET data_file = 'Iqaluit'
-WHERE data_file = 'Iqualuit';
+SET data_file = 'helladip.0.2'
+WHERE data_file = 'helladip';
 
 UPDATE board
-SET data_file = 'Iqaluit coast'
-WHERE data_file = 'Iqualuit coast';
+SET data_file = 'impdip.1.0'
+WHERE data_file = 'impdip';
 
 UPDATE board
-SET data_file = 'Arkhangelsk'
-WHERE data_file = 'Arkangelsk';
+SET data_file = 'impdip.1.1'
+WHERE data_file = 'impdip1.0';
 
 UPDATE board
-SET data_file = 'Arkhangelsk coast'
-WHERE data_file = 'Arkangelsk coast';
+SET data_file = 'impdip.0.1'
+WHERE data_file = 'impdip_a1';
 
 UPDATE board
-SET data_file = 'Cartagena'
-WHERE data_file = 'Cartogena';
+SET data_file = 'impdip.1.4.chaos'
+WHERE data_file = 'impdipchaos';
 
 UPDATE board
-SET data_file = 'Cartagena coast'
-WHERE data_file = 'Cartogena coast';
+SET data_file = 'impdip.1.2.chaos.sa'
+WHERE data_file = 'impdipchaos_sa';
 
 UPDATE board
-SET data_file = 'Philippine Sea'
-WHERE data_file = 'Philippene Sea';
+SET data_file = 'impdip.1.2.fow'
+WHERE data_file = 'impdipfow';
 
 UPDATE board
-SET data_file = 'Constantinople coast'
-WHERE data_file = 'Constantinople coast #1';
+SET data_file = 'maddip.0.2'
+WHERE data_file = 'maddip';
 
 UPDATE board
-SET data_file = 'Cairo coast'
-WHERE data_file = 'Cairo coast #1';
-
-UPDATE board
-SET data_file = 'Kiel coast'
-WHERE data_file = 'Kiel coast #1';
-
-UPDATE board
-SET data_file = 'Luxembourg'
-WHERE data_file = 'Luxemburg';
-
-UPDATE board
-SET data_file = 'Hyderabad'
-WHERE data_file = 'Hydarabad';
-
-UPDATE board
-SET data_file = 'Strasbourg'
-WHERE data_file = 'Strasburg';
-
-UPDATE board
-SET data_file = 'Syunik'
-WHERE data_file = 'Synuik';
-
-UPDATE board
-SET data_file = 'Sargasso Sea'
-WHERE data_file = 'Saragasso Sea';
-
-UPDATE board
-SET data_file = 'Kathmandu'
-WHERE data_file = 'Kathmundu';
+SET data_file = 'pelopondip.2.2'
+WHERE data_file = 'peloponnesian_war';
 
 COMMIT;
