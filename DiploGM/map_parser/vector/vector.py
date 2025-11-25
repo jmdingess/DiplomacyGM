@@ -635,8 +635,6 @@ parsers = {}
 def get_parser(name: str) -> Parser:
     if name not in parsers:
         logger.info(f"Creating new Parser for board named {name}")
-        # Deals with legacy database names
-        name = name.rstrip(".json")
         parsers[name] = Parser(name)
     return parsers[name]
 
