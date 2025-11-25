@@ -1,3 +1,16 @@
+1.3.1
+=====
+*panic*
+
+Contributors
+- Chloe
+
+
+# Developer Changes
+- Fixed `11-RenamedVariants.py`
+- in `.gitmodules` made `variants` submodule use ssh instead of https for cloning 
+- fixed `get_parser()` for `impdip.1.4.chaos`
+
 1.3.0
 =====
 Please never make me do a merge again.
