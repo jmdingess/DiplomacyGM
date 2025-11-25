@@ -5,13 +5,13 @@ import os
 
 from discord import Intents
 
-from bot.bot import DiploGM
+from DiploGM.bot import DiploGM
 
 # Importing config for the first time initialises it.
-import bot.config as config
-from bot.config import ConfigException
+from DiploGM.config import ConfigException, LOGGING_LEVEL, DISCORD_TOKEN, COMMAND_PREFIX, toml_errors, \
+    output_config_logs
 
-match config.LOGGING_LEVEL:
+match LOGGING_LEVEL:
     case "CRITICAL":
         log_level = logging.CRITICAL
     case "ERROR":
@@ -33,9 +33,11 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+# config is run before logging is setup. Output logs now.
+output_config_logs()
 
 async def main():
-    token = config.DISCORD_TOKEN
+    token = DISCORD_TOKEN
     if not token:
         raise RuntimeError("The DISCORD_TOKEN environment variable is not set")
 
@@ -43,7 +45,7 @@ async def main():
     intents.message_content = True
     intents.members = True
     bot = DiploGM(
-        command_prefix=config.COMMAND_PREFIX, intents=intents
+        command_prefix=COMMAND_PREFIX, intents=intents
     )
 
     async with bot:
