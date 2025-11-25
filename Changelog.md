@@ -18,6 +18,7 @@ Contributors
 
 # GM Changes
 - Depreciated `.vm true` and `.vc true`
+- Added `#gm-bot-commands` as a valid gm command channel.
 
 
 # Developer Changes
