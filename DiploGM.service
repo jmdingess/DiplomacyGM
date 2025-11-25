@@ -1,0 +1,14 @@
+[Unit]
+Description=Diplomacy Bot
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+type=simple
+WorkingDirectory=/opt/DiplomacyGM
+ExecStart=/opt/DiplomacyGM/botvm/bin/python3.11 /opt/DiplomacyGM/main.py
+SyslogIndentifier=%n
+Restart=always
+RestartSec=5
