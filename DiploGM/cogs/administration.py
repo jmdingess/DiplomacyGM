@@ -32,7 +32,7 @@ class AdminCog(commands.Cog):
             if server is None:
                 continue
             admin_chat_channel = next(
-                channel for channel in server.channels if config.is_gm_channel(channel)
+                channel for channel in server.channels if config.is_gm_channel(channel.name)
             )
             if admin_chat_channel is None:
                 message += f"\n- ~~{server.name}~~ Couldn't find admin channel"
