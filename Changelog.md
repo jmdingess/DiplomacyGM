@@ -1,3 +1,12 @@
+?.?.?
+=====
+
+Contributors
+- Chloe
+
+# Develper Changes
+- Fixed `.announce` for servers with no gm_channels
+
 1.3.2
 =====
 *further panicking*
