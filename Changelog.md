@@ -17,8 +17,9 @@ Contributors
 
 
 # GM Changes
-- Depreciated `.vm true` and `.vc true`
-- Added `#gm-bot-commands` as a valid gm command channel.
+- Depreciated `.vm true` and `.vc true`.
+- Added `#gm-bot-commands` as a valid GM command channel.
+- Removed `#bot-spam` as a valid GM command channel.
 
 
 # Developer Changes
