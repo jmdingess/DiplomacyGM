@@ -9,8 +9,12 @@ class Turn:
         self.start_year = start_year
     
     def __str__(self):
-        return f"{str(self.year)} {self.phase_names[self.phase]}"
-        
+        if self.year <= 0:
+            year_str =  f"{str(1-self.year)} BCE"
+        else:
+            year_str = str(self.year)
+        return f"{year_str} {self.phase_names[self.phase]}"
+
     def get_indexed_name(self) -> str:
         return f"{self.get_year_index()} {self.phase_names[self.phase]}"
     
