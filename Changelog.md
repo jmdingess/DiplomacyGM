@@ -23,12 +23,11 @@ Contributors
 # Developer Changes
 so a lot changed....
 
-
 ## Variants Submodule
 Variants have been moved to their own private submodule at https://github.com/Imperial-Diplomacy/DiplomacyGM-Variants/. 
 Variant names have also been standardised.
 This uses a git submodule that can be updated separately. This means that the previous `config/` and `assets/` have been removed.
-
+#### There is an update to the database be sure to apply `sqlite3 bot_db.db < DiploGM/db/SQL/11-RenamedVariants.sql`
 
 ## The refactor
 This is an attempt to document all the changes that are part of this.
