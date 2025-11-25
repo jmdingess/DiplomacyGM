@@ -375,8 +375,6 @@ class GameManagementCog(commands.Cog):
             title=f"Sent Orders to {log.jump_url}",
         )
 
-        return
-
         # HACK: Lifted from .ping_players
         # Should really work its way into a util function
         roles = {}

@@ -12,6 +12,8 @@ Contributors
 
 # Player Bugfixes
 - fixed `/substitute` 
+- fixed year display for negative years (now shows BCE)
+- readded Adjudication Information messages
 
 
 # GM Changes
