@@ -14,6 +14,7 @@ from discord.abc import GuildChannel
 from discord.ext import commands
 
 from DiploGM import config
+from DiploGM.config import MAP_ARCHIVE_SAS_TOKEN
 from DiploGM.parse_edit_state import parse_edit_state
 from DiploGM import perms
 from DiploGM.utils import (
@@ -414,7 +415,7 @@ class GameManagementCog(commands.Cog):
                     ),
                 )
 
-        if "maps_sas_token" in os.environ:
+        if MAP_ARCHIVE_SAS_TOKEN:
             file, _ = manager.draw_map_for_board(board, draw_moves=True)
             await upload_map_to_archive(ctx, ctx.guild.id, board, file)
 

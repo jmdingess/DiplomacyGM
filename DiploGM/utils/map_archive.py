@@ -5,6 +5,7 @@ import logging
 from subprocess import PIPE
 from discord.ext import commands
 from DiploGM.adjudicator.utils import svg_to_png
+from DiploGM.config import MAP_ARCHIVE_SAS_TOKEN, MAP_ARCHIVE_UPLOAD_URL
 from DiploGM.models.turn import Turn
 from DiploGM.models.board import Board
 
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 async def upload_map_to_archive(ctx: commands.Context, server_id: int, board: Board, map: str, turn: Turn | None = None) -> None:
-    if "maps_sas_token" not in os.environ:
+    if not MAP_ARCHIVE_SAS_TOKEN:
         return
     turnstr = board.turn.get_short_name() if turn is None else turn.get_short_name()
     url = None
@@ -23,7 +24,7 @@ async def upload_map_to_archive(ctx: commands.Context, server_id: int, board: Bo
         for server in gamefile:
             server_info = server.strip().split("\t")
             if str(server_id) == server_info[0]:
-                url = f"{os.environ['maps_url']}/{server_info[1]}/{server_info[2]}/{turnstr}m.png{os.environ['maps_sas_token']}"
+                url = f"{MAP_ARCHIVE_UPLOAD_URL}/{server_info[1]}/{server_info[2]}/{turnstr}m.png{MAP_ARCHIVE_SAS_TOKEN}"
                 break
     if url is None:
         return

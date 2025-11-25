@@ -37,6 +37,12 @@ LOGGING_LEVEL = all_config["bot"]["log_level"]
 COMMAND_PREFIX = all_config["bot"]["command_prefix"]
 
 
+# ARCHIVE WEBSITE
+MAP_ARCHIVE_SAS_TOKEN = all_config["archive_website"]["sas_token"]
+MAP_ARCHIVE_UPLOAD_URL = all_config["archive_website"]["upload_url"]
+MAP_ARCHIVE_URL = all_config["archive_website"]["url"]
+
+
 # DEVELOPMENT SERVER HUB
 BOT_DEV_SERVER_ID = all_config["dev_hub"]["id"]
 BOT_DEV_UNHANDLED_ERRORS_CHANNEL_ID = all_config["dev_hub"]["unhandled_errors_channel"]

@@ -24,6 +24,11 @@ Contributors
 # Developer Changes
 so a lot changed....
 
+## Added DiploGM.service to repo
+
+- Moved Map Archive environment variables to `config.toml`
+
+
 ## Variants Submodule
 Variants have been moved to their own private submodule at https://github.com/Imperial-Diplomacy/DiplomacyGM-Variants/. 
 Variant names have also been standardised.

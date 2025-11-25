@@ -8,6 +8,7 @@ from discord.utils import find as discord_find
 
 from DiploGM import config
 from DiploGM import perms
+from DiploGM.config import MAP_ARCHIVE_SAS_TOKEN
 from DiploGM.utils import log_command, parse_season, send_message_and_file, upload_map_to_archive
 from DiploGM.manager import Manager
 
@@ -258,7 +259,7 @@ class AdminCog(commands.Cog):
     @commands.command(hidden=True)
     @perms.superuser_only("Uploads map to archive")
     async def archive_upload(self, ctx: commands.Context) -> None:
-        if "maps_sas_token" not in os.environ:
+        if not MAP_ARCHIVE_SAS_TOKEN:
             await send_message_and_file(
                 channel=ctx.channel,
                 title=f"maps_sas_token is not defined in environment variables",

@@ -70,3 +70,9 @@ embed_error = "#FF0000"
 [inkscape]
 # limits the number of simultaneous Inkscape invocations
 simultaneous_svg_exports_limit = 1
+
+[archive_website]
+# Should be set in config.toml, Contact Golden Kumquat for further info.
+sas_token = ""
+upload_url = ""
+url = "https://imperialdiplomacy.com/maparchive/"
