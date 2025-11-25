@@ -5,7 +5,7 @@
 to_rename = [
     ["helladip", "helladip.0.2"],
     ["impdip", "impdip.1.0"],
-    ["impdip1.0", "impdip.1.1"],
+    ["impdip1.1", "impdip.1.1"],
     ["impdip_a1", "impdip.0.1"],
     ["impdipchaos", "impdip.1.4.chaos"],
     ["impdipchaos_sa", "impdip.1.2.chaos.sa"],
@@ -15,7 +15,7 @@ to_rename = [
 ]
 
 db_usages = [
-    ["board", "data_file"],
+    ["boards", "data_file"],
 ]
 
 SQL_txt = "BEGIN TRANSACTION;"
