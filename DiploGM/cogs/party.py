@@ -362,8 +362,8 @@ class PartyCog(commands.Cog):
                 self.eolhc_ed_members.setdefault(ctx.guild.id, list()).append(ctx.me.id)
                 await ctx.reply("*incoherent screaming*"[::-1])
                 await ctx.me.edit(nick=ctx.me.display_name[::-1])
-
-            await ctx.reply(random.choice(self.eolhc_gifs))
+            else:
+                await ctx.reply(random.choice(self.eolhc_gifs))
             return
         if manager.get_board(ctx.guild.id).is_chaos():
             return
