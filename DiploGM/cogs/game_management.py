@@ -1,7 +1,8 @@
 import logging
-import os
+import random
 import re
 
+import discord.utils
 from discord import (
     CategoryChannel,
     Member,
@@ -23,12 +24,12 @@ from DiploGM.utils import (
     send_message_and_file,
     upload_map_to_archive,
 )
+
 from DiploGM.perms import is_gm
 from DiploGM.db.database import get_connection
 from DiploGM.models.order import Disband, Build
 from DiploGM.models.player import Player
-from DiploGM.manager import Manager
-
+from DiploGM.manager import Manager, SEVERENCE_A_ID, SEVERENCE_B_ID
 
 logger = logging.getLogger(__name__)
 manager = Manager()
@@ -119,7 +120,7 @@ class GameManagementCog(commands.Cog):
                 player_roles.add(r)
 
         if len(player_roles) == 0:
-            log_command(logger, ctx, message=f"No player role found")
+            log_command(logger, ctx, message="No player role found")
             await send_message_and_file(
                 channel=ctx.channel,
                 message="No player category found",
@@ -133,7 +134,7 @@ class GameManagementCog(commands.Cog):
                 player_categories.append(c)
 
         if len(player_categories) == 0:
-            log_command(logger, ctx, message=f"No player category found")
+            log_command(logger, ctx, message="No player category found")
             await send_message_and_file(
                 channel=ctx.channel,
                 message="No player category found",
@@ -262,7 +263,7 @@ class GameManagementCog(commands.Cog):
             failed_players_str = "\n- ".join([player.name for player in failed_players])
             await send_message_and_file(
                 channel=ctx.channel,
-                title=f"Failed to find a player for the following:",
+                title="Failed to find a player for the following:",
                 message=f"- {failed_players_str}",
             )
 
@@ -341,7 +342,7 @@ class GameManagementCog(commands.Cog):
             log_command(
                 logger,
                 ctx,
-                message=f"Failed for an unknown reason",
+                message="Failed for an unknown reason",
                 level=logging.ERROR,
             )
             await send_message_and_file(
@@ -355,7 +356,7 @@ class GameManagementCog(commands.Cog):
             log_command(
                 logger,
                 ctx,
-                message=f"Could not find orders log channel",
+                message="Could not find orders log channel",
                 level=logging.WARN,
             )
             await send_message_and_file(
@@ -370,7 +371,7 @@ class GameManagementCog(commands.Cog):
             title=f"{board.turn}",
             fields=order_text,
         )
-        log_command(logger, ctx, message=f"Successfully published orders")
+        log_command(logger, ctx, message="Successfully published orders")
         await send_message_and_file(
             channel=ctx.channel,
             title=f"Sent Orders to {log.jump_url}",
@@ -540,6 +541,38 @@ class GameManagementCog(commands.Cog):
             await self.publish_orders(ctx)
             await self.unlock_orders(ctx)
 
+        # NOTE: Temporary for Meme's Severence Diplomacy Event
+        if guild.id in [SEVERENCE_A_ID, SEVERENCE_B_ID]:
+            seva = self.bot.get_guild(SEVERENCE_A_ID)
+            sevb = self.bot.get_guild(SEVERENCE_B_ID)
+            
+            seva_player = discord.utils.find(lambda r: r.name == "Player", seva.roles)
+            aperms = seva_player.permissions
+            sevb_player = discord.utils.find(lambda r: r.name == "Player", sevb.roles)
+            bperms = sevb_player.permissions
+
+            if "Spring" in new_board.phase.name:
+                await send_message_and_file(channel=ctx.channel, message="Game A is permitted to play.")
+                aperms.update(send_messages=True)
+                bperms.update(send_messages=False)
+
+            if "Fall" in new_board.phase.name:
+                await send_message_and_file(channel=ctx.channel, message="Game B is permitted to play.")
+                aperms.update(send_messages=False)
+                bperms.update(send_messages=True)
+            if "Winter" in new_board.phase.name:
+                if random.choice([0,1]) == 0:
+                    await send_message_and_file(channel=ctx.channel, message="Game A is permitted to play.")
+                    aperms.update(send_messages=True)
+                    bperms.update(send_messages=False)
+                else:
+                    await send_message_and_file(channel=ctx.channel, message="Game B is permitted to play.")
+                    aperms.update(send_messages=False)
+                    bperms.update(send_messages=True)
+
+            await seva_player.edit(permissions=aperms)
+            await sevb_player.edit(permissions=bperms)
+
         # AUTOMATIC SCOREBOARD OUTPUT FOR DATA SPREADSHEET
         if new_board.turn.is_builds() and (guild.id != config.BOT_DEV_SERVER_ID and guild.name.startswith("Imperial Diplomacy")) and not test_adjudicate:
             channel = self.bot.get_channel(config.IMPDIP_SERVER_WINTER_SCOREBOARD_OUTPUT_CHANNEL_ID)
@@ -655,7 +688,7 @@ class GameManagementCog(commands.Cog):
 
         if spectator_role == None:
             await send_message_and_file(
-                channel=ctx.channel, message=f"Missing spectator role"
+                channel=ctx.channel, message="Missing spectator role"
             )
             return
 
@@ -693,7 +726,7 @@ class GameManagementCog(commands.Cog):
     async def publicize(self, ctx: commands.Context) -> None:
         if not is_gm(ctx.message.author):
             raise PermissionError(
-                f"You cannot publicize a void because you are not a GM."
+                "You cannot publicize a void because you are not a GM."
             )
 
         channel = ctx.channel

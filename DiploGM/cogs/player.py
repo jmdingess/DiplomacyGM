@@ -6,7 +6,7 @@ from DiploGM import config
 from DiploGM import perms
 from DiploGM.parse_order import parse_order, parse_remove_order
 from DiploGM.utils import get_orders, log_command, parse_season, send_message_and_file
-from DiploGM.manager import Manager
+from DiploGM.manager import Manager, SEVERENCE_A_ID, SEVERENCE_B_ID
 from DiploGM.models.player import Player
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ class PlayerCog(commands.Cog):
         board = manager.get_board(ctx.guild.id)
 
         if player and not board.orders_enabled:
-            log_command(logger, ctx, f"Orders locked - not processing")
+            log_command(logger, ctx, "Orders locked - not processing")
             await send_message_and_file(
                 channel=ctx.channel,
                 title="Orders locked!",
@@ -70,7 +70,7 @@ class PlayerCog(commands.Cog):
         board = manager.get_board(ctx.guild.id)
 
         if player and not board.orders_enabled:
-            log_command(logger, ctx, f"Orders locked - not processing")
+            log_command(logger, ctx, "Orders locked - not processing")
             await send_message_and_file(
                 channel=ctx.channel,
                 title="Orders locked!",
@@ -119,7 +119,7 @@ class PlayerCog(commands.Cog):
             log_command(
                 logger,
                 ctx,
-                message=f"Failed for an unknown reason",
+                message="Failed for an unknown reason",
                 level=logging.ERROR,
             )
             await send_message_and_file(
@@ -171,7 +171,7 @@ class PlayerCog(commands.Cog):
         turn = board.turn if not season else season
 
         if player and not board.orders_enabled:
-            log_command(logger, ctx, f"Orders locked - not processing")
+            log_command(logger, ctx, "Orders locked - not processing")
             await send_message_and_file(
                 channel=ctx.channel,
                 title="Orders locked!",
@@ -199,7 +199,7 @@ class PlayerCog(commands.Cog):
             log_command(
                 logger,
                 ctx,
-                message=f"Failed to generate map for an unknown reason",
+                message="Failed to generate map for an unknown reason",
                 level=logging.ERROR,
             )
             await send_message_and_file(
@@ -253,9 +253,22 @@ class PlayerCog(commands.Cog):
         board = manager.get_board(ctx.guild.id)
         season = parse_season(arguments, board.get_year_str())
         turn = board.turn if not season else season
+        
+        # NOTE: Temporary for Meme's Severence Diplomacy Event
+        if player is not None and season is not None and ctx.guild.id in [SEVERENCE_A_ID, SEVERENCE_B_ID]:
+            await send_message_and_file(
+                channel=ctx.channel,
+                title="Don't think above your station!",
+                message="We don't allow that here...",
+                embed_colour=config.ERROR_COLOUR,
+            )
+            return
+
+        year = board.get_year_str() if season is None else season[0]
+        phase_str = board.phase.name if season is None else season[1].name
 
         if player and not board.orders_enabled:
-            log_command(logger, ctx, f"Orders locked - not processing")
+            log_command(logger, ctx, "Orders locked - not processing")
             await send_message_and_file(
                 channel=ctx.channel,
                 title="Orders locked!",
@@ -278,7 +291,7 @@ class PlayerCog(commands.Cog):
             log_command(
                 logger,
                 ctx,
-                message=f"Failed to generate map for an unknown reason",
+                message="Failed to generate map for an unknown reason",
                 level=logging.ERROR,
             )
             await send_message_and_file(
@@ -326,7 +339,7 @@ class PlayerCog(commands.Cog):
         board = manager.get_board(ctx.guild.id)
 
         if player and not board.orders_enabled:
-            log_command(logger, ctx, f"Orders locked - not processing")
+            log_command(logger, ctx, "Orders locked - not processing")
             await send_message_and_file(
                 channel=ctx.channel,
                 title="Orders locked!",
@@ -348,7 +361,7 @@ class PlayerCog(commands.Cog):
             log_command(
                 logger,
                 ctx,
-                message=f"Failed to generate map for an unknown reason",
+                message="Failed to generate map for an unknown reason",
                 level=logging.ERROR,
             )
             await send_message_and_file(
@@ -380,7 +393,7 @@ class PlayerCog(commands.Cog):
         board = manager.get_board(ctx.guild.id)
 
         if not player or not board.fow:
-            log_command(logger, ctx, message=f"No fog of war game")
+            log_command(logger, ctx, message="No fog of war game")
             await send_message_and_file(
                 channel=ctx.channel,
                 message="This command only works for players in fog of war games.",

@@ -18,6 +18,8 @@ from DiploGM.utils.sanitise import simple_player_name
 
 logger = logging.getLogger(__name__)
 
+SEVERENCE_A_ID = 1440703393369821248
+SEVERENCE_B_ID = 1440703645971644648
 
 class Manager(metaclass=SingletonMeta):
     """Manager acts as an intermediary between Bot (the Discord API), Board (the board state), the database."""
@@ -72,13 +74,17 @@ class Manager(metaclass=SingletonMeta):
         self._spec_requests[server_id].append(obj)
         self._database.save_spec_request(obj)
 
-        return f"Approved request Logged!"
+        return "Approved request Logged!"
 
     def get_board(self, server_id: int) -> Board:
         # try:
         board = self._boards.get(server_id)
         # except KeyError:
             # board = self._database.get_latest_board(server_id)
+
+        # NOTE: Temporary for Meme's Severence Diplomacy Event
+        if server_id == SEVERENCE_B_ID:
+            server_id = SEVERENCE_A_ID
 
         if not board:
             raise RuntimeError("There is no existing game this this server.")
@@ -97,7 +103,7 @@ class Manager(metaclass=SingletonMeta):
         turn: Turn | None = None,
         movement_only: bool = False,
     ) -> tuple[str, str]:
-        cur_board = self._boards[server_id]
+        cur_board = self.get_board(server_id)
         if turn is None:
             board = cur_board
         else:
@@ -154,7 +160,7 @@ class Manager(metaclass=SingletonMeta):
     def adjudicate(self, server_id: int, test: bool = False) -> Board:
         start = time.time()
 
-        board = self._boards[server_id]
+        board = self.get_board(server_id)
         old_board = self._database.get_board(
             server_id, board.turn.get_phase(), board.turn.get_year_index(), board.fish, board.name, board.datafile
         )
@@ -167,8 +173,8 @@ class Manager(metaclass=SingletonMeta):
         new_board.turn = new_board.turn.get_next_turn()
         logger.info("Adjudicator ran successfully")
         if not test:
-            self._boards[server_id] = new_board
-            self._database.save_board(server_id, new_board)
+            self._boards[new_board.board_id] = new_board
+            self._database.save_board(new_board.board_id, new_board)
 
         elapsed = time.time() - start
         logger.info(f"manager.adjudicate.{server_id}.{elapsed}s")
@@ -258,7 +264,7 @@ class Manager(metaclass=SingletonMeta):
 
     def rollback(self, server_id: int) -> dict[str, ...]:
         logger.info(f"Rolling back in server {server_id}")
-        board = self._boards[server_id]
+        board = self.get_board(server_id)
         # TODO: what happens if we're on the first phase?
         last_turn = board.turn.get_previous_turn()
 
@@ -277,7 +283,7 @@ class Manager(metaclass=SingletonMeta):
             )
 
         self._database.delete_board(board)
-        self._boards[server_id] = old_board
+        self._boards[old_board.board_id] = old_board
         mapper = Mapper(old_board)
 
         message = f"Rolled back to {old_board.turn.get_indexed_name()}"
@@ -285,7 +291,7 @@ class Manager(metaclass=SingletonMeta):
         return {"message": message, "file": file, "file_name": file_name}
 
     def get_previous_board(self, server_id: int) -> Board | None:
-        board = self._boards[server_id]
+        board = self.get_board(server_id)
         # TODO: what happens if we're on the first phase?
         last_turn = board.turn.get_previous_turn()
         old_board = self._database.get_board(
@@ -300,7 +306,7 @@ class Manager(metaclass=SingletonMeta):
 
     def reload(self, server_id: int) -> dict[str, ...]:
         logger.info(f"Reloading server {server_id}")
-        board = self._boards[server_id]
+        board = self.get_board(server_id)
 
         loaded_board = self._database.get_board(
             server_id, board.turn.get_phase(), board.turn.get_year_index(), board.fish, board.name, board.datafile
@@ -310,7 +316,7 @@ class Manager(metaclass=SingletonMeta):
                 f"There is no {board.turn} board for this server"
             )
 
-        self._boards[server_id] = loaded_board
+        self._boards[board.board_id] = loaded_board
         mapper = Mapper(loaded_board)
 
         message = f"Reloaded board for phase {loaded_board.turn.get_indexed_name()}"
