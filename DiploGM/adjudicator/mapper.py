@@ -194,7 +194,7 @@ class Mapper:
         get_svg_element(self._moves_svg.getroot(), self.board.data["svg config"]["sidebar"]).clear()
         if self.board.data["svg config"]["power_banners"]:
             get_svg_element(self._moves_svg.getroot(), self.board.data["svg config"]["power_banners"]).clear()
-        with open("diplomacy/adjudicator/mapper.js", 'r') as f:
+        with open("DiploGM/adjudicator/mapper.js", 'r') as f:
             js = f.read()
         
         locdict = {}

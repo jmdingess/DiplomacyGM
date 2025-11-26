@@ -1,3 +1,42 @@
+1.3.3
+=====
+
+Contributors
+- Chloe
+
+# Player Changes
+- Fixed `.view_gui`
+
+
+# Develper Changes
+- Fixed `.announce` for servers with no gm_channels
+- Fixed incorrect path for `mapper.js`
+- when eolhc runs `.eolhc` in the Hub server it no longer edits DiploGM's nickname
+
+1.3.2
+=====
+*further panicking*
+
+Contributors
+- Chloe
+
+
+# Developer Changes
+- fixed 11-RenamedVariants.py based on changes to `get_parser()` in `1.3.1`
+
+1.3.1
+=====
+*panic*
+
+Contributors
+- Chloe
+
+
+# Developer Changes
+- Fixed `11-RenamedVariants.py`
+- in `.gitmodules` made `variants` submodule use ssh instead of https for cloning 
+- fixed `get_parser()` for `impdip.1.4.chaos`
+
 1.3.0
 =====
 Please never make me do a merge again.

@@ -31,12 +31,13 @@ class AdminCog(commands.Cog):
         for server in ctx.bot.guilds:
             if server is None:
                 continue
-            admin_chat_channel = next(
-                channel for channel in server.channels if config.is_gm_channel(channel.name)
-            )
-            if admin_chat_channel is None:
+            admin_chat_channels = [channel for channel in server.channels if config.is_gm_channel(channel.name)]
+
+            if len(admin_chat_channels) == 0:
                 message += f"\n- ~~{server.name}~~ Couldn't find admin channel"
                 continue
+
+            admin_chat_channel = next(admin_chat_channels)
 
             message += f"\n- {server.name}"
             if server.id in guilds_with_games:
