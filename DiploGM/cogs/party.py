@@ -15,7 +15,7 @@ from scipy.integrate import odeint
 from discord.ext import commands
 
 from DiploGM import perms
-from DiploGM.config import ERROR_COLOUR, is_bumble, temporary_bumbles
+from DiploGM.config import ERROR_COLOUR, is_bumble, temporary_bumbles, IMPDIP_SERVER_ID
 from DiploGM.utils import log_command, send_message_and_file
 
 from DiploGM.db.database import get_connection
@@ -358,7 +358,7 @@ class PartyCog(commands.Cog):
     @commands.command(hidden=True)
     async def eolhc(self, ctx: commands.Context,):
         if ctx.author.id == 1352388421003251833:
-            if is_gm(ctx.author) and (ctx.guild.id not in self.eolhc_ed_members or ctx.me.id not in self.eolhc_ed_members[ctx.guild.id]):
+            if ctx.guild.id != IMPDIP_SERVER_ID and is_gm(ctx.author) and (ctx.guild.id not in self.eolhc_ed_members or ctx.me.id not in self.eolhc_ed_members[ctx.guild.id]):
                 self.eolhc_ed_members.setdefault(ctx.guild.id, list()).append(ctx.me.id)
                 await ctx.reply("*incoherent screaming*"[::-1])
                 await ctx.me.edit(nick=ctx.me.display_name[::-1])
