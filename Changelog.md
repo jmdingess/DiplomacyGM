@@ -1,11 +1,16 @@
-?.?.?
+1.3.3
 =====
 
 Contributors
 - Chloe
 
+# Player Changes
+- Fixed `.view_gui`
+
+
 # Develper Changes
 - Fixed `.announce` for servers with no gm_channels
+- Fixed incorrect path for `mapper.js`
 
 1.3.2
 =====
