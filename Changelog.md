@@ -1,3 +1,24 @@
+1.3.4
+=====
+
+Contributors
+- aahoughton
+
+# Player Changes
+- Changed styling of orders displayed by `.view_gui` to distinguish it from the outputs of `.view_map`
+
+# Variant Changes
+- Added support for a new subvariant of Imperial Diplomacy for an event being arranged by CaptainMeme of DiploStrats
+
+# Moderator Changes
+- Added a new method that reports on players when joining servers managed/observed by DiploGM under the following conditions:
+  - Account is less than 2 weeks old
+  - Account is not a member of the Imperial Diplomacy Hub Server
+  - Account is not verified on the Imperial Diplomacy Hub Server
+
+# Developer Changes
+- Replaced fetches of past and/or future board statess to use `get_board()` or the stored `board_id` attached to the handled object, not the current `server_id`
+
 1.3.3
 =====
 
