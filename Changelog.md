@@ -11,6 +11,7 @@ Contributors
 # Develper Changes
 - Fixed `.announce` for servers with no gm_channels
 - Fixed incorrect path for `mapper.js`
+- when eolhc runs `.eolhc` in the Hub server it no longer edits DiploGM's nickname
 
 1.3.2
 =====
