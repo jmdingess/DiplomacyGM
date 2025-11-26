@@ -9,6 +9,7 @@ const None = undefined;
 
 // dict with name: primary_loc
 // fed in by mapper.py
+
 const location_data = %s;
 const svg_config = %s;
 
@@ -17,6 +18,9 @@ const province_to_unit_type = %s;
 const province_to_province_type = %s;
 
 const arrow_layer = document.getElementById(svg_config["arrow_output"]);
+
+const order_colour = "white";
+const dasharray_size = 3.5 * svg_config["order_stroke_width"];
 
 unit_elements = {};
 
@@ -161,7 +165,9 @@ function draw_hold(order) {
             cy: coord[1],
             r: svg_config["unit_radius"],
             fill: "none",
-            stroke: "black",
+            stroke: order_colour,
+            "stroke-dasharray": `${dasharray_size} ${dasharray_size}`,
+	    "stroke-opacity": "0.65",
             "stroke-width": svg_config["order_stroke_width"],
             "shape-rendering": "geometricPrecision"
         }
@@ -184,7 +190,9 @@ function draw_core(order) {
             width: svg_config["unit_radius"] * 2,
             height: svg_config["unit_radius"] * 2,
             fill: "none",
-            stroke: "black",
+            stroke: order_colour,
+            "stroke-dasharray": `${dasharray_size} ${dasharray_size}`,
+	    "stroke-opacity": "0.65",
             "stroke-width": svg_config["order_stroke_width"],
             transform: `rotate(45 ${coord[0]} ${coord[1]})`,
             "shape-rendering": "geometricPrecision"
@@ -203,8 +211,10 @@ function draw_move(order) {
         {
             d: `M ${startcoord[0]} ${startcoord[1]} L ${endcoord[0]} ${endcoord[1]}`,
             fill: "none",
-            stroke: "black",
+            stroke: order_colour,
             "stroke-width": svg_config["order_stroke_width"],
+            "stroke-dasharray": `${dasharray_size} ${dasharray_size}`,
+	    "stroke-opacity": "0.65",
             "stroke-linecap": "round",
             "marker-end": `url(#arrow)`,
             "shape-rendering": "geometricPrecision"
@@ -220,7 +230,9 @@ function draw_convoy(order) {
             cy: coord[1],
             r: svg_config["unit_radius"] / 2,
             fill: "none",
-            stroke: "black",
+            stroke: order_colour,
+            "stroke-dasharray": `${dasharray_size} ${dasharray_size}`,
+	    "stroke-opacity": "0.65",
             "stroke-width": svg_config["order_stroke_width"] * 2 / 3,
             "shape-rendering": "geometricPrecision"
         }
@@ -232,7 +244,6 @@ function draw_support(order) {
     let supportcoord = location_data[order["support"]];
     let endcoord = location_data[order["destination"]];
     let trueendcoord = endcoord;
-    const dasharray_size = 2.5 * svg_config["order_stroke_width"];
     let marker_end = "arrow";
     let marker_start = ""
     if (supportcoord == endcoord) {
@@ -268,8 +279,9 @@ function draw_support(order) {
         {
             "d": `M ${startcoord[0]},${startcoord[1]} Q ${supportcoord[0]},${supportcoord[1]} ${endcoord[0]},${endcoord[1]}`,
             "fill": "none",
-            "stroke": "black",
+            "stroke": order_colour,
             "stroke-dasharray": `${dasharray_size} ${dasharray_size}`,
+	    "stroke-opacity": "0.65",
             "stroke-width": svg_config["order_stroke_width"],
             "stroke-linecap": "round",
             "marker-start": `url(#${marker_start})`,
@@ -286,7 +298,7 @@ function draw_support(order) {
                 cy: trueendcoord[1],
                 r: svg_config["unit_radius"],
                 fill: "none",
-                stroke: "black",
+                stroke: order_colour,
                 "stroke-linecap": "round",
                 "stroke-width": svg_config["order_stroke_width"],
                 "shape-rendering": "geometricPrecision",
