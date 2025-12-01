@@ -267,7 +267,7 @@ class CommandCog(commands.Cog):
         # FOW permissions
         if board.fow:
             player = perms.require_player_by_context(ctx, "get province info")
-            if player and not province in board.get_visible_provinces(player):
+            if player and province.name not in board.get_visible_provinces(player):
                 log_command(
                     logger,
                     ctx,

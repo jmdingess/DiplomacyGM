@@ -11,6 +11,8 @@ class TestSanitise(unittest.TestCase):
             "Fr",
             "1902 wa",
             "1903",
+            "1903 s r",
+            ""
         ]
         output_turns = [
             Turn(1901, "Spring Moves"),
@@ -18,6 +20,8 @@ class TestSanitise(unittest.TestCase):
             Turn(1902, "Fall Retreats"),
             Turn(1902, "Winter Builds"),
             Turn(1903, "Spring Moves"),
+            Turn(1903, "Spring Retreats"),
+            Turn(1903, "Spring Retreats"),
         ]
         for input_phase, expected_turn in zip(input_phases, output_turns):
             output_turn = parse_season(input_phase.split(" "), Turn(1903, "Spring Retreats"))

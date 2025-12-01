@@ -386,9 +386,8 @@ class PlayerCog(commands.Cog):
             logger, ctx, message=f"There are {len(visible_provinces)} visible provinces"
         )
         await send_message_and_file(
-            channel=ctx.channel, message=", ".join([x.name for x in visible_provinces])
+            channel=ctx.channel, message=", ".join(visible_provinces)
         )
-        return
 
 
 async def setup(bot):

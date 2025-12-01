@@ -76,7 +76,7 @@ def get_unit_type(command: str) -> UnitType | None:
 def parse_season(
     arguments: list[str], default_turn: Turn
 ) -> Turn:
-    year, season, retreat = default_turn.year, "Spring", False
+    year, season, retreat = None, None, False
     for s in arguments:
         if s.isnumeric() and int(s) >= default_turn.start_year:
             year = int(s)
@@ -91,11 +91,17 @@ def parse_season(
         if s.lower() in ["retreat", "retreats", "r", "sr", "fr"]:
             retreat = True
 
-    if season is not None:
-        if season == "Winter":
-            season = "Winter Builds"
-        else:
-            season = season + (" Retreats" if retreat else " Moves")
+    if year is None:
+        if season is None:
+            return default_turn
+        year = default_turn.year
+    if season is None:
+        season = "Spring"
+
+    if season == "Winter":
+        season = "Winter Builds"
+    else:
+        season = season + (" Retreats" if retreat else " Moves")
 
     new_turn = Turn(year, season, default_turn.start_year)
     if new_turn.year > default_turn.year:

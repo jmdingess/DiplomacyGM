@@ -84,10 +84,10 @@ class Mapper:
             )
 
         self.restriction = restriction
-        if restriction != None:
-            self.adjacent_provinces: set[Province] = self.board.get_visible_provinces(restriction)
+        if restriction is not None:
+            self.adjacent_provinces: set[str] = self.board.get_visible_provinces(restriction)
         else:
-            self.adjacent_provinces: set[Province] = self.board.provinces
+            self.adjacent_provinces: set[str] = {province.name for province in self.board.provinces}
 
         # TODO: Switch to passing the SVG directly, as that's simpiler (self.svg = draw_units(svg)?)
         self._draw_units()
@@ -111,7 +111,7 @@ class Mapper:
             clear_svg_element(svg, self.board.data["svg config"][element_name])
     
     def is_moveable(self, unit: Unit):
-        if unit.province not in self.adjacent_provinces:
+        if unit.province.name not in self.adjacent_provinces:
             return False
         if self.player_restriction and unit.player.name != self.player_restriction.name:
             return False
@@ -191,7 +191,7 @@ class Mapper:
             for player in players:
                 for build_order in player.build_orders:
                     if isinstance(build_order, PlayerOrder):
-                        if build_order.province in self.adjacent_provinces:
+                        if build_order.province.name in self.adjacent_provinces:
                             self._draw_player_order(player, build_order)
 
         self.draw_side_panel(self._moves_svg)
@@ -234,7 +234,7 @@ class Mapper:
         province_to_unit_type = {}
         for province in self.board.provinces:
             s = None
-            if province not in self.adjacent_provinces:
+            if province.name not in self.adjacent_provinces:
                 s = '?'
             elif province.unit:
                 if province.unit.unit_type == UnitType.FLEET:
@@ -561,7 +561,7 @@ class Mapper:
         options = []
         new_checked = already_checked + (current,)
         for possibility in current.adjacent:
-            if possibility not in self.adjacent_provinces:
+            if possibility.name not in self.adjacent_provinces:
                 continue
 
             if possibility == destination:
@@ -819,7 +819,7 @@ class Mapper:
 
             visited_provinces.add(province.name)
             color = self.neutral_color
-            if province not in self.adjacent_provinces:
+            if province.name not in self.adjacent_provinces:
                 color = self.board.data["svg config"]["unknown"]
             elif province.owner:
                 color = self.player_colors[province.owner.name]
@@ -833,7 +833,7 @@ class Mapper:
                 print(f"Error during recoloring provinces: {ex}", file=sys.stderr)
                 continue
 
-            if province in self.adjacent_provinces:
+            if province.name in self.adjacent_provinces:
                 self.color_element(province_element, self.clear_seas_color)
 
             visited_provinces.add(province.name)
@@ -845,7 +845,7 @@ class Mapper:
                 print(f"Error during recoloring provinces: {ex}", file=sys.stderr)
                 continue
 
-            if province in self.adjacent_provinces:
+            if province.name in self.adjacent_provinces:
                 self.color_element(province_element, self.clear_seas_color)
 
         # Try to combine this with the code above? A lot of repeated stuff here
@@ -857,7 +857,7 @@ class Mapper:
                 continue
 
             color = self.neutral_color
-            if province not in self.adjacent_provinces:
+            if province.name not in self.adjacent_provinces:
                 color = self.board.data["svg config"]["unknown"]
             elif province.owner:
                 color = self.player_colors[province.owner.name]
@@ -886,7 +886,7 @@ class Mapper:
                 print(f"Province {province.name} says it has no supply center, but it does", file=sys.stderr)
                 continue
 
-            if province not in self.adjacent_provinces:
+            if province.name not in self.adjacent_provinces:
                 core_color = self.board.data["svg config"]["unknown"]
                 half_color = core_color
             else:
@@ -941,7 +941,7 @@ class Mapper:
 
     def _draw_units(self) -> None:
         for unit in self.board.units:
-            if unit.province in self.adjacent_provinces:
+            if unit.province.name in self.adjacent_provinces:
                 self._draw_unit(unit)
 
     def _draw_unit(self, unit: Unit, use_moves_svg=False):
@@ -984,7 +984,7 @@ class Mapper:
 
     def highlight_retreating_units(self, svg):
         for unit in self.board.units:
-            if unit == unit.province.dislodged_unit and unit.province in self.adjacent_provinces:
+            if unit == unit.province.dislodged_unit and unit.province.name in self.adjacent_provinces:
                 self._draw_retreat_options(unit, svg)
 
     def _get_element_for_unit_type(self, unit_type) -> Element:
