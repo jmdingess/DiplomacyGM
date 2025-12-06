@@ -3,7 +3,7 @@ import time
 import os
 from typing import Optional
 
-from discord import Member
+from discord import Member, User
 
 from DiploGM.utils import SingletonMeta
 from DiploGM.adjudicator.adjudicator import make_adjudicator
@@ -266,7 +266,7 @@ class Manager(metaclass=SingletonMeta):
         logger.info(f"manager.draw_moves_map.{server_id}.{elapsed}s")
         return svg, file_name
 
-    def rollback(self, server_id: int) -> dict[str, str | bytes]:
+    def rollback(self, server_id: int) -> tuple[str, bytes, str]:
         logger.info(f"Rolling back in server {server_id}")
         board = self.get_board(server_id)
         # TODO: what happens if we're on the first phase?
@@ -291,7 +291,7 @@ class Manager(metaclass=SingletonMeta):
 
         message = f"Rolled back to {old_board.turn.get_indexed_name()}"
         file, file_name = mapper.draw_current_map()
-        return {"message": message, "file": file, "file_name": file_name}
+        return message, file, file_name
 
     def get_previous_board(self, server_id: int) -> Board | None:
         board = self.get_board(server_id)
@@ -306,7 +306,7 @@ class Manager(metaclass=SingletonMeta):
         )
         return old_board
 
-    def reload(self, server_id: int) -> dict[str, str | bytes]:
+    def reload(self, server_id: int) -> tuple[str, bytes, str]:
         logger.info(f"Reloading server {server_id}")
         board = self.get_board(server_id)
 
@@ -323,7 +323,7 @@ class Manager(metaclass=SingletonMeta):
 
         message = f"Reloaded board for phase {loaded_board.turn.get_indexed_name()}"
         file, file_name = mapper.draw_current_map()
-        return {"message": message, "file": file, "file_name": file_name}
+        return message, file, file_name
 
     def get_member_player_object(self, member: Member) -> Player | None:
             for role in member.roles:

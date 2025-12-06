@@ -15,6 +15,7 @@ manager = Manager()
 
 
 def get_player_by_context(ctx: commands.Context):
+    assert ctx.guild is not None
     # FIXME cleaner way of doing this
     board = manager.get_board(ctx.guild.id)
     # return if in order channel
@@ -40,6 +41,7 @@ def is_player_channel(player_role: str, channel: commands.Context.channel) -> bo
 
 
 def require_player_by_context(ctx: commands.Context, description: str):
+    assert ctx.guild is not None and ctx.message is not None
     # FIXME cleaner way of doing this
     board = manager.get_board(ctx.guild.id)
     # return if in order channel
@@ -134,6 +136,7 @@ def is_moderator(author: commands.Context.author) -> bool:
 def assert_gm_only(
     ctx: commands.Context, description: str = "run this command", non_gm_alt: str = ""
 ):
+    assert ctx.message is not None
     if not is_gm(ctx.message.author):
         raise CommandPermissionError(
             non_gm_alt or f"You cannot {description} because you are not a GM."

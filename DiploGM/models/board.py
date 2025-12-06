@@ -11,6 +11,7 @@ from DiploGM.config import player_channel_suffix, is_player_category
 from DiploGM.models.unit import Unit, UnitType
 
 if TYPE_CHECKING:
+    from discord.abc import Messageable
     from DiploGM.models.turn import Turn
     from DiploGM.models.player import Player
     from DiploGM.models.province import Province, ProvinceType
@@ -183,6 +184,10 @@ class Board:
         coast: str | None,
         retreat_options: set[tuple[Province, str | None]] | None,
     ) -> Unit:
+        if province.get_multiple_coasts() and coast not in province.get_multiple_coasts():
+            raise RuntimeError(f"Cannot create unit. Province '{province.name}' requires a valid coast.")
+        if not province.get_multiple_coasts():
+            coast = None
         unit = Unit(unit_type, player, province, coast, retreat_options)
         if retreat_options is not None:
             if province.dislodged_unit:
@@ -271,7 +276,7 @@ class Board:
 
     def get_player_by_channel(
             self,
-            channel: commands.Context.channel,
+            channel: Messageable,
             ignore_category=False,
     ) -> Player | None:
         from DiploGM.utils import simple_player_name

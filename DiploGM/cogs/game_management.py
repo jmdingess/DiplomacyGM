@@ -69,7 +69,7 @@ class GameManagementCog(commands.Cog):
     @perms.gm_only("archive the category")
     async def archive(self, ctx: commands.Context) -> None:
         assert ctx.guild is not None
-        categories = [channel.category for channel in ctx.message.channel_mentions]
+        categories = [channel.category for channel in ctx.message.channel_mentions if channel.category is not None]
         if not categories:
             await send_message_and_file(
                 channel=ctx.channel,
@@ -359,7 +359,7 @@ class GameManagementCog(commands.Cog):
             )
             return
         orders_log_channel = get_orders_log(ctx.guild)
-        if not orders_log_channel:
+        if not orders_log_channel or not isinstance(orders_log_channel, TextChannel):
             log_command(
                 logger,
                 ctx,
@@ -598,17 +598,17 @@ class GameManagementCog(commands.Cog):
     @perms.gm_only("rollback")
     async def rollback(self, ctx: commands.Context) -> None:
         assert ctx.guild is not None
-        message = manager.rollback(ctx.guild.id)
-        log_command(logger, ctx, message=message["message"])
-        await send_message_and_file(channel=ctx.channel, **message)
+        message, file, file_name = manager.rollback(ctx.guild.id)
+        log_command(logger, ctx, message=message)
+        await send_message_and_file(channel=ctx.channel, message=message, file=file, file_name=file_name)
 
     @commands.command(brief="Reloads the current board with what is in the DB")
     @perms.gm_only("reload")
     async def reload(self, ctx: commands.Context) -> None:
         assert ctx.guild is not None
-        message = manager.reload(ctx.guild.id)
-        log_command(logger, ctx, message=message["message"])
-        await send_message_and_file(channel=ctx.channel, **message)
+        message, file, file_name = manager.reload(ctx.guild.id)
+        log_command(logger, ctx, message=message)
+        await send_message_and_file(channel=ctx.channel, message=message, file=file, file_name=file_name)
 
     @commands.command(
         brief="Edits the game state and outputs the results map.",
@@ -646,9 +646,9 @@ class GameManagementCog(commands.Cog):
         edit_commands = ctx.message.content.removeprefix(
             f"{ctx.prefix}{ctx.invoked_with}"
         ).strip()
-        message = parse_edit_state(edit_commands, manager.get_board(ctx.guild.id))
-        log_command(logger, ctx, message=message["title"])
-        await send_message_and_file(channel=ctx.channel, **message)
+        title, message, file, file_name, embed_colour = parse_edit_state(edit_commands, manager.get_board(ctx.guild.id))
+        log_command(logger, ctx, message=title)
+        await send_message_and_file(channel=ctx.channel, title=title, message=message, file=file, file_name=file_name, embed_colour=embed_colour)
 
     @commands.command(
         brief="blitz",
@@ -742,6 +742,7 @@ class GameManagementCog(commands.Cog):
             )
 
         channel = ctx.channel
+        assert isinstance(channel, TextChannel)
         board = manager.get_board(ctx.guild.id)
 
         if not board.is_chaos():

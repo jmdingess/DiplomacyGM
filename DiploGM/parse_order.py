@@ -348,7 +348,7 @@ def parse_remove_order(message: str, player_restriction: Player | None, board: B
             removed = _parse_remove_order(command, player_restriction, board)
             if isinstance(removed, Unit):
                 updated_units.add(removed)
-            else:
+            elif removed is not None:
                 provinces_with_removed_builds.add(removed)
         except Exception as error:
             invalid.append((command, error))
@@ -380,6 +380,8 @@ def _parse_remove_order(command: str, player_restriction: Player | None, board: 
     command = command.lower().strip()
     province, coast = board.get_province_and_coast(command)
     if command.startswith("relationship"):
+        if player_restriction is None:
+            raise RuntimeError("Relationship orders can only be removed in a player's orders channel")
         command = command.split(" ", 1)[1]
         target_player = None
         for player in board.players:

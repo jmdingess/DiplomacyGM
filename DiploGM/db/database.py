@@ -18,6 +18,7 @@ from DiploGM.models.order import (
     ConvoyTransport,
     RetreatDisband,
     RetreatMove,
+    PlayerOrder,
     Build,
     Disband,
     Vassal,
@@ -68,7 +69,7 @@ class _DatabaseConnection:
 
         board_keys = [(row[0], row[1]) for row in board_data]
         logger.info(f"Loading {len(board_data)} boards from DB")
-        boards = dict()
+        boards: dict[int, Board] = {}
         for board_row in board_data:
             board_id, phase_string, data_file, fish, name = board_row
 
@@ -237,6 +238,8 @@ class _DatabaseConnection:
             for player_name, target_player_name, order_type in vassals_data:
                 player = get_player_by_name(player_name)
                 target_player = get_player_by_name(target_player_name)
+                assert isinstance(player, Player)
+                assert isinstance(target_player, Player)
                 order_class = next(
                     order_class
                     for order_class in order_classes
@@ -310,6 +313,9 @@ class _DatabaseConnection:
             ) = unit_info
             province, coast = board.get_province_and_coast(location)
             owner_player = board.get_player(owner)
+            if owner_player is None:
+                logger.warning(f"Couldn't find corresponding player for {owner} in DB")
+                continue
             if is_dislodged:
                 retreat_ops = cursor.execute(
                     "SELECT retreat_loc FROM retreat_options WHERE board_id=? and phase=? and origin=?",
@@ -364,7 +370,7 @@ class _DatabaseConnection:
                         for _class in order_classes
                         if _class.__name__ == order_type
                     )
-                    destination_province = None
+                    source_province, destination_province, destination_coast = None, None, None
                     if order_destination is not None:
                         destination_province, destination_coast = (
                             board.get_province_and_coast(order_destination)
@@ -388,8 +394,10 @@ class _DatabaseConnection:
 
                     province, coast = board.get_province_and_coast(location)
                     if is_dislodged:
+                        assert province.dislodged_unit is not None
                         province.dislodged_unit.order = order
                     else:
+                        assert province.unit is not None
                         province.unit.order = order
             except:
                 logger.warning("BAD UNIT INFO: replacing with hold")
@@ -465,12 +473,12 @@ class _DatabaseConnection:
                     board_id,
                     board.turn.get_indexed_name(),
                     player.name,
-                    build_order.name,
+                    build_order.province.get_name(build_order.coast),
                     isinstance(build_order, Build),
                     getattr(build_order, "unit_type", None) == UnitType.ARMY,
                 )
                 for player in board.players
-                for build_order in player.build_orders
+                for build_order in player.build_orders if isinstance(build_order, PlayerOrder)
             ],
         )
         # TODO - this is hacky
@@ -572,14 +580,14 @@ class _DatabaseConnection:
                     board.board_id,
                     board.turn.get_indexed_name(),
                     player.name,
-                    build_order.province.get_name(build_order.coast if isinstance(build_order, Build) else None),
+                    build_order.province.get_name(build_order.coast),
                     isinstance(build_order, Build),
                     getattr(build_order, "unit_type", None) == UnitType.ARMY,
                     isinstance(build_order, Build),
                     getattr(build_order, "unit_type", None) == UnitType.ARMY,
                 )
                 for player in players
-                for build_order in player.build_orders
+                for build_order in player.build_orders if isinstance(build_order, PlayerOrder)
             ],
         )
         cursor.executemany(

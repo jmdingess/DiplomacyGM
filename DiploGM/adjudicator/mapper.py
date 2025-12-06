@@ -494,6 +494,7 @@ class Mapper:
         if isinstance(order, Build):
             self._draw_build(player, order)
         elif isinstance(order, Disband):
+            assert order.province.unit is not None
             disbanding_unit: Unit = order.province.unit
             if disbanding_unit.coast:
                 coord_list = order.province.all_locs[disbanding_unit.coast]
@@ -506,6 +507,7 @@ class Mapper:
 
     def _draw_hold(self, coordinate: tuple[float, float], hasFailed: bool) -> None:
         element = self._moves_svg.getroot()
+        assert element is not None
         drawn_order = self.create_element(
             "circle",
             {
@@ -598,6 +600,7 @@ class Mapper:
         return order_path
 
     def _get_all_paths(self, unit: Unit) -> list[tuple[Province, Province]]:
+        assert unit.order is not None and unit.order.destination is not None
         paths = self._path_helper(unit.province, unit.order.destination, unit.province)
         if paths == []:
             return [(unit.province, unit.order.destination)]
@@ -731,6 +734,7 @@ class Mapper:
 
     def _draw_convoy(self, order: ConvoyTransport, coordinate: tuple[float, float], hasFailed: bool) -> None:
         element = self._moves_svg.getroot()
+        assert element is not None
         drawn_order = self.create_element(
             "circle",
             {
@@ -746,6 +750,7 @@ class Mapper:
 
     def _draw_build(self, player, order: Build) -> None:
         element = self._moves_svg.getroot()
+        assert element is not None
         build_location = order.province.get_primary_unit_coordinates(order.unit_type, order.coast)
         drawn_order = self.create_element(
             "circle",
@@ -807,6 +812,8 @@ class Mapper:
         island_ring_layer = get_svg_element(self.board_svg, self.board.data[SVG_CONFIG_KEY]["island_ring_layer"])
         sea_layer = get_svg_element(self.board_svg, self.board.data[SVG_CONFIG_KEY]["sea_borders"])
         island_layer = get_svg_element(self.board_svg, self.board.data[SVG_CONFIG_KEY]["island_borders"])
+        if sea_layer is None or island_layer is None or island_ring_layer is None:
+            raise ValueError("Missing a layer in SVG!")
 
         visited_provinces: set[str] = set()
 
@@ -966,6 +973,7 @@ class Mapper:
             elem.set("{http://www.inkscape.org/namespaces/inkscape}label", unit.province.name)
 
             group = self.cached_elements["unit_output"] if not use_moves_svg else self._moves_svg.getroot()
+            assert group is not None
             group.append(elem)
 
     def highlight_retreating_units(self, svg):
@@ -1001,7 +1009,9 @@ class Mapper:
         )
         self.scoreboard_power_locations: list[str] = []
         for power_element in all_power_banners_element or []:
-            self.scoreboard_power_locations.append(power_element.get("transform"))
+            transform = power_element.get("transform")
+            assert transform is not None
+            self.scoreboard_power_locations.append(transform)
 
         # each power is placed in the right spot based on the transform field which has value of "translate($x,$y)" where x,y
         # are floating point numbers; we parse these via regex and sort by y-value
@@ -1010,10 +1020,12 @@ class Mapper:
         )
 
     def add_arrow_definition_to_svg(self, svg: ElementTree) -> None:
-        defs: Element = svg.find("{http://www.w3.org/2000/svg}defs")
+        defs = svg.find("{http://www.w3.org/2000/svg}defs")
         if defs is None:
-            defs = create_element("defs", {})
-            svg.getroot().append(defs)
+            defs = self.create_element("defs", {})
+            root = svg.getroot()
+            assert root is not None
+            root.append(defs)
         # TODO: Check if 'arrow' id is already defined in defs
         arrow_marker: Element = self.create_element(
             "marker",
@@ -1124,6 +1136,7 @@ class Mapper:
             element.set(key, color)
         if element.get("style") is not None and key in (element.get("style") or ""):
             style = element.get("style")
+            assert style is not None
             style = re.sub(key + r":#[0-9a-fA-F]{6}", f"{key}:{color}", style)
             element.set("style", style)
 

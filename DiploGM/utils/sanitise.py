@@ -82,7 +82,7 @@ def parse_season(
             year = int(s)
 
         if s.lower() in ["spring", "s", "sm", "sr"]:
-            PhaseName.SPRING_MOVES
+            season = PhaseName.SPRING_MOVES
         elif s.lower() in ["fall", "f", "fm", "fr"]:
             season = PhaseName.FALL_MOVES
         elif s.lower() in ["winter", "w", "wa"]:
