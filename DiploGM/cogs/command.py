@@ -2,6 +2,7 @@ from black.trans import defaultdict
 import inspect
 import logging
 
+from discord import Member
 from discord.ext import commands
 
 from DiploGM.config import ERROR_COLOUR
@@ -140,6 +141,7 @@ class CommandCog(commands.Cog):
         aliases=["leaderboard"],
     )
     async def scoreboard(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         arguments = (
             ctx.message.content.removeprefix(f"{ctx.prefix}{ctx.invoked_with}")
             .strip()
@@ -195,6 +197,7 @@ class CommandCog(commands.Cog):
 
     @commands.command(brief="outputs information about the current game", aliases=["i"])
     async def info(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         try:
             board = manager.get_board(ctx.guild.id)
         except RuntimeError:
@@ -281,6 +284,7 @@ class CommandCog(commands.Cog):
         aliases=["province"],
     )
     async def province_info(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         board = manager.get_board(ctx.guild.id)
 
         if not board.orders_enabled:
@@ -436,6 +440,7 @@ class CommandCog(commands.Cog):
 
     @commands.command(brief="outputs all provinces per owner")
     async def all_province_data(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         board = manager.get_board(ctx.guild.id)
 
         if not board.orders_enabled:
@@ -494,7 +499,8 @@ class CommandCog(commands.Cog):
 
     @commands.command(brief="Changes your nickname")
     async def nick(self, ctx: commands.Context) -> None:
-        name: str = ctx.author.nick
+        assert isinstance(ctx.author, Member)
+        name = ctx.author.nick
         if name == None:
             name = ctx.author.name
         if "]" in name:

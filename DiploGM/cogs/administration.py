@@ -295,6 +295,7 @@ class AdminCog(commands.Cog):
     )
     @perms.superuser_only("Execute arbitrary python code")
     async def exec_py(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         class ContainedPrinter:
             def __init__(self):
                 self.text = ""

@@ -8,6 +8,7 @@ from discord import (
     Member,
     PermissionOverwrite,
     Role,
+    TextChannel,
     Thread,
     Guild,
 )
@@ -45,6 +46,7 @@ class GameManagementCog(commands.Cog):
     )
     @perms.gm_only("create a game")
     async def create_game(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         gametype = ctx.message.content.removeprefix(f"{ctx.prefix}{ctx.invoked_with}")
         if gametype == "":
             gametype = "impdip"
@@ -58,6 +60,7 @@ class GameManagementCog(commands.Cog):
     @commands.command(brief="permanently deletes a game, cannot be undone")
     @perms.gm_only("delete the game")
     async def delete_game(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         manager.total_delete(ctx.guild.id)
         log_command(logger, ctx, message="Deleted game")
         await send_message_and_file(channel=ctx.channel, title="Deleted game")
@@ -65,6 +68,7 @@ class GameManagementCog(commands.Cog):
     @commands.command(brief="")
     @perms.gm_only("archive the category")
     async def archive(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         categories = [channel.category for channel in ctx.message.channel_mentions]
         if not categories:
             await send_message_and_file(
@@ -145,6 +149,7 @@ class GameManagementCog(commands.Cog):
     @perms.gm_only("ping players")
     async def ping_players(self, ctx: commands.Context) -> None:
         guild = ctx.guild
+        assert guild is not None
         board = manager.get_board(guild.id)
 
         # extract deadline argument
@@ -275,6 +280,7 @@ class GameManagementCog(commands.Cog):
     )
     @perms.gm_only("lock orders")
     async def lock_orders(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         board = manager.get_board(ctx.guild.id)
         board.orders_enabled = False
         log_command(logger, ctx, message="Locked orders")
@@ -287,6 +293,7 @@ class GameManagementCog(commands.Cog):
     @commands.command(brief="re-enables orders", aliases=["unlock"])
     @perms.gm_only("unlock orders")
     async def unlock_orders(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         board = manager.get_board(ctx.guild.id)
         board.orders_enabled = True
         log_command(logger, ctx, message="Unlocked orders")
@@ -299,6 +306,7 @@ class GameManagementCog(commands.Cog):
     @commands.command(brief="Clears all players orders.")
     @perms.gm_only("remove all orders")
     async def remove_all(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         board = manager.get_board(ctx.guild.id)
         for unit in board.units:
             unit.order = None
@@ -315,8 +323,7 @@ class GameManagementCog(commands.Cog):
     @perms.gm_only("publish orders")
     async def publish_orders(self, ctx: commands.Context) -> None:
         guild = ctx.guild
-        if not guild:
-            return
+        assert guild is not None
 
         board = manager.get_previous_board(ctx.guild.id)
         curr_board = manager.get_board(guild.id)
@@ -366,6 +373,7 @@ class GameManagementCog(commands.Cog):
             )
             return
 
+        assert isinstance(order_text, list)
         log = await send_message_and_file(
             channel=orders_log_channel,
             title=f"{board.turn}",
@@ -435,8 +443,7 @@ class GameManagementCog(commands.Cog):
     @perms.gm_only("adjudicate")
     async def adjudicate(self, ctx: commands.Context) -> None:
         guild = ctx.guild
-        if not guild:
-            return
+        assert guild is not None
 
         board = manager.get_board(ctx.guild.id)
 
@@ -590,6 +597,7 @@ class GameManagementCog(commands.Cog):
     @commands.command(brief="Rolls back to the previous game state.")
     @perms.gm_only("rollback")
     async def rollback(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         message = manager.rollback(ctx.guild.id)
         log_command(logger, ctx, message=message["message"])
         await send_message_and_file(channel=ctx.channel, **message)
@@ -597,6 +605,7 @@ class GameManagementCog(commands.Cog):
     @commands.command(brief="Reloads the current board with what is in the DB")
     @perms.gm_only("reload")
     async def reload(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         message = manager.reload(ctx.guild.id)
         log_command(logger, ctx, message=message["message"])
         await send_message_and_file(channel=ctx.channel, **message)
@@ -633,6 +642,7 @@ class GameManagementCog(commands.Cog):
     )
     @perms.gm_only("edit")
     async def edit(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         edit_commands = ctx.message.content.removeprefix(
             f"{ctx.prefix}{ctx.invoked_with}"
         ).strip()
@@ -646,6 +656,7 @@ class GameManagementCog(commands.Cog):
     )
     @perms.gm_only("create blitz comms channels")
     async def blitz(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         board = manager.get_board(ctx.guild.id)
         cs = []
         pla = sorted(board.players, key=lambda p: p.name)
@@ -724,6 +735,7 @@ class GameManagementCog(commands.Cog):
 
     @commands.command(brief="publicize void for chaos")
     async def publicize(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
         if not is_gm(ctx.message.author):
             raise PermissionError(
                 "You cannot publicize a void because you are not a GM."
@@ -809,24 +821,26 @@ async def setup(bot):
     await bot.add_cog(cog)
 
 
-def get_maps_channel(guild: Guild) -> GuildChannel | None:
+def get_maps_channel(guild: Guild) -> TextChannel | None:
     for channel in guild.channels:
         if (
             channel.name.lower() == "maps"
             and channel.category is not None
             and channel.category.name.lower() == "gm channels"
+            and isinstance(channel, TextChannel)
         ):
             return channel
     return None
 
 
-def get_orders_log(guild: Guild) -> GuildChannel | None:
+def get_orders_log(guild: Guild) -> TextChannel | None:
     for channel in guild.channels:
         # FIXME move "orders" and "gm channels" to bot.config
         if (
             channel.name.lower() == "orders-log"
             and channel.category is not None
             and channel.category.name.lower() == "gm channels"
+            and isinstance(channel, TextChannel)
         ):
             return channel
     return None
