@@ -102,8 +102,8 @@ class TestParseEditState(unittest.TestCase):
     def test_delete_dislodged_unit(self):
         b = BoardBuilder()
         a_burgundy = b.move(b.germany, UnitType.ARMY, "Burgundy", "Paris")
-        a_gascony = b.supportMove(b.germany, UnitType.ARMY, "Gascony", a_burgundy, "Paris")
-        a_paris = b.hold(b.france, UnitType.ARMY, "Paris")
+        b.supportMove(b.germany, UnitType.ARMY, "Gascony", a_burgundy, "Paris")
+        b.hold(b.france, UnitType.ARMY, "Paris")
         p_paris = b.board.get_province("Paris")
         b.moves_adjudicate(self)
         b.board.turn = Turn(1901, "Spring Retreats")
@@ -122,7 +122,7 @@ class TestParseEditState(unittest.TestCase):
     def test_dislodge_unit(self):
         b = BoardBuilder()
         b.board.turn = Turn(1901, "Spring Retreats")
-        a_munich = b.army("Munich", b.germany)
+        b.army("Munich", b.germany)
         p_munich = b.board.get_province("Munich")
         
         _parse_command("dislodge_unit Munich", b.board)
@@ -133,8 +133,8 @@ class TestParseEditState(unittest.TestCase):
     
     def test_make_units_claim_provinces(self):
         b = BoardBuilder()
-        f_tunis = b.fleet("Tunis", b.italy)
-        a_north_africa = b.army("North Africa", b.italy)
+        b.fleet("Tunis", b.italy)
+        b.army("North Africa", b.italy)
         p_tunis = b.board.get_province("Tunis")
         p_north_africa = b.board.get_province("North Africa")
 
