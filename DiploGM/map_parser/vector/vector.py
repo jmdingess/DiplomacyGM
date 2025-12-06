@@ -24,6 +24,8 @@ NAMESPACE: dict[str, str] = {
     "sodipodi": "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd",
     "svg": "http://www.w3.org/2000/svg",
 }
+HIGH_PROVINCES_KEY = "high provinces"
+SVG_CONFIG_KEY = "svg config"
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +43,7 @@ class Parser:
 
         svg_root = etree.parse(self.data["file"])
 
-        self.layers = self.data["svg config"]
+        self.layers = self.data[SVG_CONFIG_KEY]
         self.layer_data: dict[str, Element] = {}
 
         for layer in ["land_layer", "island_borders", "island_fill_layer",
@@ -98,12 +100,12 @@ class Parser:
                     color = color["standard"]
                 self.color_to_player[color] = player
 
-            neutral_colors = self.data["svg config"]["neutral"]
+            neutral_colors = self.data[SVG_CONFIG_KEY]["neutral"]
             if isinstance(neutral_colors, dict):
                 self.color_to_player[neutral_colors["standard"]] = None
             else:
                 self.color_to_player[neutral_colors] = None
-            self.color_to_player[self.data["svg config"]["neutral_sc"]] = None
+            self.color_to_player[self.data[SVG_CONFIG_KEY]["neutral_sc"]] = None
 
         provinces = self._get_provinces()
 
@@ -191,8 +193,8 @@ class Parser:
     def json_cheats(self, provinces: set[Province]) -> set[Province]:
         if "overrides" not in self.data:
             return set()
-        if "high provinces" in self.data["overrides"]:
-            for name, data in self.data["overrides"]["high provinces"].items():
+        if HIGH_PROVINCES_KEY in self.data["overrides"]:
+            for name, data in self.data["overrides"][HIGH_PROVINCES_KEY].items():
                 high_provinces: list[Province] = []
                 for index in range(1, data["num"] + 1):
                     province = Province(
@@ -217,7 +219,7 @@ class Parser:
                         if provinceA.name != provinceB.name:
                             provinceA.adjacent.add(provinceB)
 
-            for name, data in self.data["overrides"]["high provinces"].items():
+            for name, data in self.data["overrides"][HIGH_PROVINCES_KEY].items():
                 adjacent = {self.name_to_province[n] for n in data["adjacencies"]}
                 for index in range(1, data["num"] + 1):
                     high_province = self.name_to_province[name + str(index)]
@@ -228,11 +230,11 @@ class Parser:
         x_offset = 0
         y_offset = 0
 
-        if "loc_x_offset" in self.data["svg config"]:
-            x_offset = self.data["svg config"]["loc_x_offset"]
+        if "loc_x_offset" in self.data[SVG_CONFIG_KEY]:
+            x_offset = self.data[SVG_CONFIG_KEY]["loc_x_offset"]
         
-        if "loc_y_offset" in self.data["svg config"]:
-            x_offset = self.data["svg config"]["loc_y_offset"]
+        if "loc_y_offset" in self.data[SVG_CONFIG_KEY]:
+            x_offset = self.data[SVG_CONFIG_KEY]["loc_y_offset"]
 
         offset = np.array([x_offset, y_offset])
 
@@ -478,7 +480,7 @@ class Parser:
     def _initialize_units_assisted(self) -> None:
         for unit_data in self.layer_data["starting_units"]:
             province_name = self._get_province_name(unit_data)
-            if self.data["svg config"]["unit_type_labeled"]:
+            if self.data[SVG_CONFIG_KEY]["unit_type_labeled"]:
                 province_name = province_name[1:]
             province, coast = self._get_province_and_coast(province_name)
             self._set_province_unit(province, unit_data, coast)
@@ -568,7 +570,7 @@ class Parser:
         color = get_element_color(element)
         #FIXME: only works if there's one person per province
         if self.autodetect_players:
-            neutral_color = self.data["svg config"]["neutral"]
+            neutral_color = self.data[SVG_CONFIG_KEY]["neutral"]
             if isinstance(neutral_color, dict):
                 neutral_color = neutral_color["standard"]
             if color is None or color == neutral_color:
@@ -583,7 +585,7 @@ class Parser:
             raise Exception(f"Unknown player color: {color} (in object {tostring(element)})")
 
     def _get_unit_type(self, unit_data: Element) -> UnitType:
-        if self.data["svg config"]["unit_type_labeled"]:
+        if self.data[SVG_CONFIG_KEY]["unit_type_labeled"]:
             name = self._get_province_name(unit_data)
             if name is None:
                 raise RuntimeError("Unit has no name, but unit_type_labeled = true")
@@ -594,7 +596,7 @@ class Parser:
             else:
                 raise RuntimeError(f"Unit types are labeled, but {name} doesn't start with F or A")
 
-        if "unit_type_from_names" in self.data["svg config"] and self.data["svg config"]["unit_type_from_names"]:
+        if "unit_type_from_names" in self.data[SVG_CONFIG_KEY] and self.data[SVG_CONFIG_KEY]["unit_type_from_names"]:
             # unit_data = unit_data.findall(".//svg:path", namespaces=NAMESPACE)[0]
             name = unit_data[1].get(f"{NAMESPACE.get('inkscape')}label")
             if name.lower().startswith("sail"):
