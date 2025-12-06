@@ -91,6 +91,48 @@ class GameManagementCog(commands.Cog):
         log_command(logger, ctx, message=f"Archived {len(categories)} Channels")
         await send_message_and_file(channel=ctx.channel, message=message)
 
+    def ping_player_builds(self, player: Player, users: set[discord.User], build_anywhere: bool) -> str:
+        response = ""
+        user_str = ''.join([u.mention for u in users])
+
+        count = len(player.centers) - len(player.units)
+        current = player.waived_orders
+        has_disbands = False
+        has_builds = player.waived_orders > 0
+        for order in player.build_orders:
+            if isinstance(order, Disband):
+                current -= 1
+                has_disbands = True
+            elif isinstance(order, Build):
+                current += 1
+                has_builds = True
+
+        difference = abs(current - count)
+        order_text = f"order{'s' if difference != 1 else ''}"
+
+        if has_builds and has_disbands:
+            response = f"Hey {user_str}, you have both build and disband orders. Please get this looked at."
+        elif count >= 0:
+            available_centers = [
+                center
+                for center in player.centers
+                if center.unit is None
+                and (center.core == player or build_anywhere)
+            ]
+            available = min(len(available_centers), count)
+
+            difference = abs(current - available)
+            if current > available:
+                response = f"Hey {user_str}, you have {difference} more build {order_text} than possible. Please get this looked at."
+            elif current < available:
+                response = f"Hey {user_str}, you have {difference} less build {order_text} than necessary. Make sure that you want to waive."
+        elif count < 0:
+            if current < count:
+                response = f"Hey {user_str}, you have {difference} more disband {order_text} than necessary. Please get this looked at."
+            elif current > count:
+                response = f"Hey {user_str}, you have {difference} less disband {order_text} than required. Please get this looked at."
+        return response
+
     @commands.command(
         brief="pings players who don't have the expected number of orders.",
         description="""Pings all players in their orders channel that satisfy the following constraints:
@@ -181,49 +223,7 @@ class GameManagementCog(commands.Cog):
                     users.add(role)
 
                 if board.turn.is_builds():
-                    count = len(player.centers) - len(player.units)
-
-                    current = player.waived_orders
-                    has_disbands = False
-                    has_builds = player.waived_orders > 0
-                    for order in player.build_orders:
-                        if isinstance(order, Disband):
-                            current -= 1
-                            has_disbands = True
-                        elif isinstance(order, Build):
-                            current += 1
-                            has_builds = True
-
-                    difference = abs(current - count)
-                    if difference != 1:
-                        order_text = "orders"
-                    else:
-                        order_text = "order"
-
-                    if has_builds and has_disbands:
-                        response = f"Hey {''.join([u.mention for u in users])}, you have both build and disband orders. Please get this looked at."
-                    elif count >= 0:
-                        available_centers = [
-                            center
-                            for center in player.centers
-                            if center.unit is None
-                            and (
-                                center.core == player
-                                or "build anywhere" in board.data.get("adju flags", [])
-                            )
-                        ]
-                        available = min(len(available_centers), count)
-
-                        difference = abs(current - available)
-                        if current > available:
-                            response = f"Hey {''.join([u.mention for u in users])}, you have {difference} more build {order_text} than possible. Please get this looked at."
-                        elif current < available:
-                            response = f"Hey {''.join([u.mention for u in users])}, you have {difference} less build {order_text} than necessary. Make sure that you want to waive."
-                    elif count < 0:
-                        if current < count:
-                            response = f"Hey {''.join([u.mention for u in users])}, you have {difference} more disband {order_text} than necessary. Please get this looked at."
-                        elif current > count:
-                            response = f"Hey {''.join([u.mention for u in users])}, you have {difference} less disband {order_text} than required. Please get this looked at."
+                    self.ping_player_builds(player, users, "build anywhere" in board.data.get("adju flags", []))
                 else:
                     if board.turn.is_retreats():
                         in_moves = lambda u: u == u.province.dislodged_unit

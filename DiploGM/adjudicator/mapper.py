@@ -119,6 +119,54 @@ class Mapper:
             return False
         return True
 
+    def draw_moves_and_retreats(self, arrow_layer: Element, current_turn: turn.Turn, movement_only: bool):
+        units = sorted(self.board.units, key=lambda unit: 0 if unit.order is None else unit.order.display_priority)
+        for unit in units:
+            if not self.is_moveable(unit):
+                continue
+
+            # Only show moves that succeed if requested
+            if movement_only and not (
+                isinstance(unit.order, (RetreatMove, Move)) and not unit.order.hasFailed):
+                continue
+
+            unit_locs = unit.province.all_rets if current_turn.is_retreats() else unit.province.all_locs
+            unit_locs = unit_locs[unit.coast] if unit.coast else unit_locs[unit.unit_type]
+
+            # TODO: Maybe there's a better way to handle convoys?
+            if isinstance(unit.order, (RetreatMove, Move, Support)):
+                new_locs = []
+                if unit.unit_type not in unit.order.destination.all_locs:
+                    e_list = next(iter(unit.order.destination.all_locs.values()))
+                elif unit.order.destination_coast:
+                    e_list = unit.order.destination.all_locs[unit.order.destination_coast]
+                else:
+                    e_list = unit.order.destination.all_locs[unit.unit_type]
+
+                # Unspecified coast, so default to army location
+                if isinstance(e_list, dict):
+                    e_list = unit.order.destination.all_locs[UnitType.ARMY]
+                for endpoint in e_list:
+                    new_locs += [self.normalize(self.get_closest_loc(unit_locs, endpoint))]
+                unit_locs = new_locs
+            try:
+                for loc in unit_locs:
+                    val = self._draw_order(unit, loc, current_turn)
+                    if val is None:
+                        continue
+                    # if something returns, that means it could potentially go across the edge
+                    # copy it 3 times (-1, 0, +1)
+                    lval = copy.deepcopy(val)
+                    rval = copy.deepcopy(val)
+                    lval.attrib["transform"] = f"translate({-self.board.data['svg config']['map_width']}, 0)"
+                    rval.attrib["transform"] = f"translate({self.board.data['svg config']['map_width']}, 0)"
+
+                    arrow_layer.append(lval)
+                    arrow_layer.append(rval)
+                    arrow_layer.append(val)
+            except Exception as err:
+                logger.error(f"Drawing move failed for {unit}", exc_info=err)
+
     def draw_moves_map(self, current_turn: turn.Turn, player_restriction: Player | None, movement_only: bool = False) -> tuple[bytes, str]:
         logger.info("mapper.draw_moves_map")
 
@@ -127,61 +175,13 @@ class Mapper:
         self.current_turn = current_turn
 
         t = self._moves_svg.getroot()
-        if t is None:
-            raise ValueError("SVG root is None")
+        assert t is not None
         arrow_layer = get_svg_element(self._moves_svg, self.board.data["svg config"]["arrow_output"])
         if arrow_layer is None:
             raise ValueError("Arrow layer not found in SVG")
         
         if not current_turn.is_builds():
-            units = sorted(self.board.units, key=lambda unit: 0 if unit.order is None else unit.order.display_priority)
-            for unit in units:
-                if not self.is_moveable(unit):
-                    continue
-                
-                # Only show moves that succeed if requested
-                if movement_only and not (
-                    isinstance(unit.order, (RetreatMove, Move)) and not unit.order.hasFailed):
-                    continue
-                    
-                if current_turn.is_retreats():
-                    unit_locs = unit.province.all_rets
-                else:
-                    unit_locs = unit.province.all_locs
-                unit_locs = unit_locs[unit.coast] if unit.coast else unit_locs[unit.unit_type]
-
-                # TODO: Maybe there's a better way to handle convoys?
-                if isinstance(unit.order, (RetreatMove, Move, Support)):
-                    new_locs = []
-                    if unit.unit_type not in unit.order.destination.all_locs:
-                        e_list = next(iter(unit.order.destination.all_locs.values()))
-                    elif unit.order.destination_coast:
-                        e_list = unit.order.destination.all_locs[unit.order.destination_coast]
-                    else:
-                        e_list = unit.order.destination.all_locs[unit.unit_type]
-                    
-                    # Unspecified coast, so default to army location
-                    if isinstance(e_list, dict):
-                        e_list = unit.order.destination.all_locs[UnitType.ARMY]
-                    for endpoint in e_list:
-                        new_locs += [self.normalize(self.get_closest_loc(unit_locs, endpoint))]
-                    unit_locs = new_locs
-                try:
-                    for loc in unit_locs:
-                        val = self._draw_order(unit, loc, current_turn)
-                        if val is not None:
-                            # if something returns, that means it could potentially go across the edge
-                            # copy it 3 times (-1, 0, +1)
-                            lval = copy.deepcopy(val)
-                            rval = copy.deepcopy(val)
-                            lval.attrib["transform"] = f"translate({-self.board.data['svg config']['map_width']}, 0)"
-                            rval.attrib["transform"] = f"translate({self.board.data['svg config']['map_width']}, 0)"
-
-                            arrow_layer.append(lval)
-                            arrow_layer.append(rval)
-                            arrow_layer.append(val)
-                except Exception as err:
-                    logger.error(f"Drawing move failed for {unit}", exc_info=err)
+            self.draw_moves_and_retreats(arrow_layer, current_turn, movement_only)
         else:
             players: set[Player]
             if player_restriction is None:
@@ -190,9 +190,8 @@ class Mapper:
                 players = {player_restriction}
             for player in players:
                 for build_order in player.build_orders:
-                    if isinstance(build_order, PlayerOrder):
-                        if build_order.province.name in self.adjacent_provinces:
-                            self._draw_player_order(player, build_order)
+                    if isinstance(build_order, PlayerOrder) and build_order.province.name in self.adjacent_provinces:
+                        self._draw_player_order(player, build_order)
 
         self.draw_side_panel(self._moves_svg)
 
