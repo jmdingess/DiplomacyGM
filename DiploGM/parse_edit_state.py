@@ -492,8 +492,7 @@ def _load_state(keywords: list[str], board: Board) -> None:
 
     other = manager._database.get_board(
         server,
-        turn.get_phase(),
-        turn.get_year_index(),
+        turn,
         board.fish,
         name=board.name,
         data_file=board.datafile,

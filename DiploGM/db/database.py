@@ -72,10 +72,10 @@ class _DatabaseConnection:
         for board_row in board_data:
             board_id, phase_string, data_file, fish, name = board_row
 
-            split_index = phase_string.index(" ")
-            year = int(phase_string[:split_index])
-            phase_name = phase_string[split_index:].strip()
-            current_turn = Turn(year, phase_name)
+            current_turn = Turn.turn_from_string(phase_string)
+            if current_turn is None:
+                logger.warning(f"Could not parse turn string '{phase_string}' for board {board_id}")
+                continue
             if (board_id, str(current_turn.get_next_turn())) in board_keys:
                 continue
 
@@ -83,7 +83,7 @@ class _DatabaseConnection:
                 fish = 0
 
             board = self._get_board(
-                board_id, phase_name, year, fish, name, data_file, cursor
+                board_id, current_turn, fish, name, data_file, cursor, year_offset=True
             )
 
             boards[board_id] = board
@@ -95,8 +95,7 @@ class _DatabaseConnection:
     def get_board(
         self,
         board_id: int,
-        board_phase: str,
-        year: int,
+        turn: Turn,
         fish: int,
         name: str | None,
         data_file: str,
@@ -106,13 +105,13 @@ class _DatabaseConnection:
 
         board_data = cursor.execute(
             "SELECT * FROM boards WHERE board_id=? and phase=?",
-            (board_id, f"{year} {board_phase}"),
+            (board_id, turn.get_indexed_name()),
         ).fetchone()
         if not board_data:
             cursor.close()
             return None
 
-        board = self._get_board(board_id, board_phase, year, fish, name, data_file, cursor, clear_status)
+        board = self._get_board(board_id, turn, fish, name, data_file, cursor, clear_status=clear_status)
         cursor.close()
         return board
 
@@ -147,19 +146,19 @@ class _DatabaseConnection:
     def _get_board(
         self,
         board_id: int,
-        board_phase: str,
-        year: int,
+        turn: Turn,
         fish: int,
         name: str | None,
         data_file: str,
         cursor,
         clear_status: bool = False,
+        year_offset: bool = False,
     ) -> Board:
         logger.info(f"Loading board with ID {board_id}")
         # TODO - we should eventually store things like coords, adjacencies, etc
         #  so we don't have to reparse the whole board each time
         board = get_parser(data_file).parse()
-        board.turn = Turn(board.year_offset + year, board_phase, board.year_offset)
+        board.turn = Turn(board.year_offset + turn.year, turn.phase, board.year_offset) if year_offset else turn
         board.fish = fish
         board.name = name
         board.board_id = board_id
@@ -182,9 +181,9 @@ class _DatabaseConnection:
             if liege is not None:
                 try:
                     player.liege = name_to_player[liege]
+                    player.liege.vassals.append(player)
                 except KeyError:
                     logger.warning(f"Invalid liege of player {player.name}: {liege}")
-                player.liege.vassals.append(player)
             player.points = points
             player.units = set()
             player.centers = set()

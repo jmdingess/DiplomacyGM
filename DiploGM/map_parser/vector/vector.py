@@ -11,7 +11,7 @@ from lxml import etree
 
 from DiploGM.map_parser.vector.transform import TransGL3
 from DiploGM.map_parser.vector.utils import get_element_color, get_unit_coordinates, get_svg_element, parse_path, initialize_province_resident_data
-from DiploGM.models.turn import Turn
+from DiploGM.models.turn import PhaseName, Turn
 from DiploGM.models.board import Board
 from DiploGM.models.player import Player
 from DiploGM.models.province import Province, ProvinceType
@@ -151,7 +151,7 @@ class Parser:
                     logger.warning(f"{self.datafile}: Province {province.name} has no army retreat coord. Setting to 0,0 ...")
                     province.set_unit_coordinate(None, False, UnitType.ARMY)
         
-        initial_turn = Turn(self.year_offset, "Spring Moves", self.year_offset)
+        initial_turn = Turn(self.year_offset, PhaseName.SPRING_MOVES, self.year_offset)
         if "adju flags" in self.data and "initial builds" in self.data["adju flags"]:
             initial_turn = initial_turn.get_previous_turn()
 

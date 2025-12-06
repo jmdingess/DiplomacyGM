@@ -93,18 +93,6 @@ class CommandCog(commands.Cog):
 
     def generate_scoreboard(self, board, ctx, alphabetical, show_builds) -> str:
         response = ""
-        old_board = board
-        if not show_builds:
-            old_board = manager._database.get_board(
-                board.board_id,
-                board.turn.get_phase(),
-                board.turn.year,
-                board.fish,
-                board.name,
-                board.datafile,
-            )
-            if old_board is None:
-                old_board = board
         player_list = (
             sorted(board.players, key=lambda p: p.name)
             if alphabetical
@@ -119,12 +107,7 @@ class CommandCog(commands.Cog):
                 player_name = player.name
 
 
-            if show_builds:
-                to_compare = len(player.units)
-            else:
-                old_player = old_board.get_player(player.name)
-                assert old_player is not None
-                to_compare = len(old_player.centers)
+            to_compare = len(player.units)
 
             response += (
                 f"\n**{player_name}**: "
