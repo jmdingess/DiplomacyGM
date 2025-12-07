@@ -163,7 +163,7 @@ class GameManagementCog(commands.Cog):
         # get abstract player information
         player_roles: set[Role] = set()
         for r in guild.roles:
-            if config.is_player_role(r.name):
+            if config.is_player_role(r):
                 player_roles.add(r)
 
         if len(player_roles) == 0:
@@ -177,7 +177,7 @@ class GameManagementCog(commands.Cog):
 
         player_categories: list[CategoryChannel] = []
         for c in guild.categories:
-            if config.is_player_category(c.name):
+            if config.is_player_category(c):
                 player_categories.append(c)
 
         if len(player_categories) == 0:
@@ -325,7 +325,7 @@ class GameManagementCog(commands.Cog):
         guild = ctx.guild
         assert guild is not None
 
-        board = manager.get_previous_board(ctx.guild.id)
+        board = manager.get_previous_board(guild.id)
         curr_board = manager.get_board(guild.id)
         if not board:
             await send_message_and_file(
@@ -358,7 +358,7 @@ class GameManagementCog(commands.Cog):
                 embed_colour=config.ERROR_COLOUR,
             )
             return
-        orders_log_channel = get_orders_log(ctx.guild)
+        orders_log_channel = get_orders_log(guild)
         if not orders_log_channel or not isinstance(orders_log_channel, TextChannel):
             log_command(
                 logger,
@@ -401,7 +401,7 @@ class GameManagementCog(commands.Cog):
 
         player_categories: list[CategoryChannel] = []
         for c in guild.categories:
-            if config.is_player_category(c.name):
+            if config.is_player_category(c):
                 player_categories.append(c)
 
         for c in player_categories:

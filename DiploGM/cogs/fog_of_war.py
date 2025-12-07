@@ -87,7 +87,7 @@ class FogOfWarCog(commands.Cog):
         )
 
         for category in guild.categories:
-            if config.is_player_category(category.name):
+            if config.is_player_category(category):
                 player_category = category
                 break
 
@@ -134,7 +134,7 @@ async def publish_map(
     board = manager.get_board(guild_id)
 
     for category in guild.categories:
-        if config.is_player_category(category.name):
+        if config.is_player_category(category):
             player_category = category
             break
 
@@ -149,6 +149,8 @@ async def publish_map(
     tasks = []
 
     for channel in player_category.channels:
+        if not isinstance(channel, TextChannel):
+            continue
         player = board.get_player_by_channel(channel)
 
         if not player or (filter_player and player != filter_player):
