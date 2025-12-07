@@ -292,7 +292,7 @@ class TestDATC_H(unittest.TestCase):
         b.assertDislodge(f_kiel, a_prussia)
         b.moves_adjudicate(self)
         p_berlin = b.board.get_province("Berlin")
-        self.assertIn((p_berlin, None), f_kiel.retreat_options or [], f"Berlin should be a retreat option.")
+        self.assertIn((p_berlin, None), f_kiel.retreat_options or [], "Berlin should be a retreat option.")
 
         b.retreat(f_kiel, "Berlin")
         b.assertNotForcedDisband(f_kiel)

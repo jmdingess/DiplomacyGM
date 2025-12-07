@@ -109,11 +109,7 @@ class Parser:
 
         provinces = self._get_provinces()
 
-        units = set()
-        for province in provinces:
-            unit = province.unit
-            if unit:
-                units.add(unit)
+        units = {province.unit for province in provinces if province.unit}
 
         elapsed = time.time() - start
         logger.info(f"map_parser.vector.parse: {elapsed}s")
@@ -191,38 +187,38 @@ class Parser:
         return provinces
 
     def add_high_provinces(self, provinces: set[Province]):
-            for name, data in self.data["overrides"][HIGH_PROVINCES_KEY].items():
-                high_provinces: list[Province] = []
-                for index in range(1, data["num"] + 1):
-                    province = Province(
-                        name + str(index),
-                        shapely.Polygon(),
-                        dict(),
-                        dict(),
-                        getattr(ProvinceType, data["type"]),
-                        False,
-                        set(),
-                        set(),
-                        None,
-                        None,
-                        None,
-                    )
-                    provinces = self.add_province_to_board(provinces, province)
-                    high_provinces.append(province)
+        for name, data in self.data["overrides"][HIGH_PROVINCES_KEY].items():
+            high_provinces: list[Province] = []
+            for index in range(1, data["num"] + 1):
+                province = Province(
+                    name + str(index),
+                    shapely.Polygon(),
+                    dict(),
+                    dict(),
+                    getattr(ProvinceType, data["type"]),
+                    False,
+                    set(),
+                    set(),
+                    None,
+                    None,
+                    None,
+                )
+                provinces = self.add_province_to_board(provinces, province)
+                high_provinces.append(province)
 
-                # Add connections between each high province
-                for provinceA in high_provinces:
-                    provinceA.adjacent.update(provinceB for provinceB in high_provinces
-                                            if provinceA.name != provinceB.name)
+            # Add connections between each high province
+            for provinceA in high_provinces:
+                provinceA.adjacent.update(provinceB for provinceB in high_provinces
+                                        if provinceA.name != provinceB.name)
 
-            for name, data in self.data["overrides"][HIGH_PROVINCES_KEY].items():
-                adjacent = {self.name_to_province[n] for n in data["adjacencies"]}
-                for index in range(1, data["num"] + 1):
-                    high_province = self.name_to_province[name + str(index)]
-                    high_province.adjacent.update(adjacent)
-                    for ad in adjacent:
-                        ad.adjacent.add(high_province)
-            return provinces
+        for name, data in self.data["overrides"][HIGH_PROVINCES_KEY].items():
+            adjacent = {self.name_to_province[n] for n in data["adjacencies"]}
+            for index in range(1, data["num"] + 1):
+                high_province = self.name_to_province[name + str(index)]
+                high_province.adjacent.update(adjacent)
+                for ad in adjacent:
+                    ad.adjacent.add(high_province)
+        return provinces
 
     def json_cheats(self, provinces: set[Province]) -> set[Province]:
         if "overrides" not in self.data:
@@ -492,6 +488,7 @@ class Parser:
             base_coordinates = tuple(
                 map(float, unit_data.findall(".//svg:path", namespaces=NAMESPACE)[0].get("d").split()[1].split(","))
             )
+            assert len(base_coordinates) == 2
             trans = TransGL3(unit_data)
             return trans.transform(base_coordinates)
 
@@ -529,7 +526,9 @@ class Parser:
 
     @staticmethod
     def _get_province_name(province_data: Element) -> str:
-        return province_data.get(f"{NAMESPACE.get('inkscape')}label")
+        province_name = province_data.get(f"{NAMESPACE.get('inkscape')}label")
+        assert province_name is not None
+        return province_name
 
     def _get_province(self, province_data: Element) -> Province:
         return self.name_to_province[self._get_province_name(province_data)]
@@ -597,6 +596,7 @@ class Parser:
         if "unit_type_from_names" in self.data[SVG_CONFIG_KEY] and self.data[SVG_CONFIG_KEY]["unit_type_from_names"]:
             # unit_data = unit_data.findall(".//svg:path", namespaces=NAMESPACE)[0]
             name = unit_data[1].get(f"{NAMESPACE.get('inkscape')}label")
+            assert name is not None
             if name.lower().startswith("sail"):
                 return UnitType.FLEET
             if name.lower().startswith("shield"):

@@ -213,13 +213,9 @@ class GameManagementCog(commands.Cog):
                         )
                     )
                 else:
-                    users = set()
-                    # Find users with access to this channel
-                    for overwritter, permission in channel.overwrites.items():
-                        if isinstance(overwritter, Member):
-                            if permission.view_channel:
-                                users.add(overwritter)
-                            pass
+                    users = {overwritter for overwritter, permission
+                             in channel.overwrites.items()
+                             if isinstance(overwritter, Member) and permission.view_channel}
 
                 if len(users) == 0:
                     failed_players.append(player)
@@ -231,26 +227,22 @@ class GameManagementCog(commands.Cog):
                     self.ping_player_builds(player, users, "build anywhere" in board.data.get("adju flags", []))
                 else:
                     if board.turn.is_retreats():
-                        in_moves = lambda u: u == u.province.dislodged_unit
-                    else:
-                        in_moves = lambda _: True
+                        in_moves = lambda u: u == u.province.dislodged_unit or board.turn.is_moves()
 
                     missing = [
                         unit
                         for unit in player.units
                         if unit.order is None and in_moves(unit)
                     ]
-                    if len(missing) != 1:
-                        unit_text = "units"
-                    else:
-                        unit_text = "unit"
+                    unit_text = f"unit{'s' if len(missing) != 1 else ''}"
+                    if not missing:
+                        continue
 
-                    if missing:
-                        response = f"Hey **{''.join([u.mention for u in users])}**, you are missing moves for the following {len(missing)} {unit_text}:"
-                        for unit in sorted(
-                            missing, key=lambda _unit: _unit.province.name
-                        ):
-                            response += f"\n{unit}"
+                    response = f"Hey **{''.join([u.mention for u in users])}**, you are missing moves for the following {len(missing)} {unit_text}:"
+                    for unit in sorted(
+                        missing, key=lambda _unit: _unit.province.name
+                    ):
+                        response += f"\n{unit}"
 
                 if response:
                     pinged_players += 1
@@ -496,15 +488,18 @@ class GameManagementCog(commands.Cog):
             file_name=file_name,
             convert_svg=return_svg,
         )
-        if full_adjudicate:
+        if full_adjudicate and (map_channel := get_maps_channel(guild)):
             map_message = await send_message_and_file(
-                channel=get_maps_channel(ctx.guild),
+                channel=map_channel,
                 title=f"{title} Orders Map",
                 file=file,
                 file_name=file_name,
                 convert_svg=True,
             )
-        #           await map_message.publish()
+            try:
+                await map_message.publish()
+            except:
+                pass
 
         if movement_adjudicate:
             file, file_name = manager.draw_map(
@@ -536,15 +531,20 @@ class GameManagementCog(commands.Cog):
             convert_svg=return_svg,
         )
 
-        if full_adjudicate:
+        if full_adjudicate and (map_channel := get_maps_channel(ctx.guild)):
             map_message = await send_message_and_file(
-                channel=get_maps_channel(ctx.guild),
+                channel=map_channel,
                 title=f"{title} Results Map",
                 file=file,
                 file_name=file_name,
                 convert_svg=True,
-            )
-            #            await map_message.publish()
+            )      
+            try:
+                await map_message.publish()
+            except:
+                pass
+        
+        if full_adjudicate:
             await self.publish_orders(ctx)
             await self.unlock_orders(ctx)
 
@@ -558,27 +558,12 @@ class GameManagementCog(commands.Cog):
             sevb_player = discord.utils.find(lambda r: r.name == "Player", sevb.roles)
             bperms = sevb_player.permissions
 
-            if "Spring" in new_board.turn.get_phase():
-                await send_message_and_file(channel=ctx.channel, message="Game A is permitted to play.")
-                aperms.update(send_messages=True)
-                bperms.update(send_messages=False)
-
-            if "Fall" in new_board.turn.get_phase():
-                await send_message_and_file(channel=ctx.channel, message="Game B is permitted to play.")
-                aperms.update(send_messages=False)
-                bperms.update(send_messages=True)
-            if "Winter" in new_board.turn.get_phase():
-                if random.choice([0,1]) == 0:
-                    await send_message_and_file(channel=ctx.channel, message="Game A is permitted to play.")
-                    aperms.update(send_messages=True)
-                    bperms.update(send_messages=False)
-                else:
-                    await send_message_and_file(channel=ctx.channel, message="Game B is permitted to play.")
-                    aperms.update(send_messages=False)
-                    bperms.update(send_messages=True)
-
-            await seva_player.edit(permissions=aperms)
-            await sevb_player.edit(permissions=bperms)
+            a_allowed = ("Spring" in new_board.turn.get_phase()
+                        or ("Winter" in new_board.turn.get_phase()
+                            and random.choice([0, 1]) == 0))
+            await send_message_and_file(channel=ctx.channel, message=f"Game {'A' if a_allowed else 'B'} is permitted to play.")
+            aperms.update(send_messages=a_allowed)
+            bperms.update(send_messages=(not a_allowed))
 
         # AUTOMATIC SCOREBOARD OUTPUT FOR DATA SPREADSHEET
         if new_board.turn.is_builds() and (guild.id != config.BOT_DEV_SERVER_ID and guild.name.startswith("Imperial Diplomacy")) and not test_adjudicate:
@@ -666,13 +651,10 @@ class GameManagementCog(commands.Cog):
                     c = f"{p1.name}-{p2.name}"
                     cs.append((c, p1, p2))
 
-        cos: list[CategoryChannel] = []
+        cos: list[CategoryChannel] = [category for category in ctx.guild.categories
+                                      if category.name.lower().startswith("comms")]
 
         guild = ctx.guild
-
-        for category in guild.categories:
-            if category.name.lower().startswith("comms"):
-                cos.append(category)
 
         available = 0
         for cat in cos:
@@ -761,10 +743,9 @@ class GameManagementCog(commands.Cog):
         user_permissions: list[tuple[Member, PermissionOverwrite]] = []
         # Find users with access to this channel
         for overwritter, user_permission in channel.overwrites.items():
-            if isinstance(overwritter, Member):
-                if user_permission.view_channel:
-                    users.append(overwritter)
-                    user_permissions.append((overwritter, user_permission))
+            if isinstance(overwritter, Member) and user_permission.view_channel:
+                users.append(overwritter)
+                user_permissions.append((overwritter, user_permission))
 
         # TODO don't hardcode
         staff_role = None

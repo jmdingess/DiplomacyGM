@@ -82,6 +82,7 @@ class TestDATC_D(unittest.TestCase):
             The Russian move from Prussia to Berlin fails.
         """
         b = BoardBuilder()
+        b.army("Berlin", b.germany)
         f_kiel = b.fleet("Kiel", b.germany)
         a_berlin = b.supportHold(b.germany, UnitType.ARMY, "Berlin", f_kiel)
         f_kiel = b.supportHold(b.germany, UnitType.ARMY, "Kiel", a_berlin)

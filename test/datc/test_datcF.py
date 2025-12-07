@@ -120,6 +120,7 @@ class TestDATC_F(unittest.TestCase):
         b = BoardBuilder()
         a_london = b.move(b.england, UnitType.ARMY, "London", "Holland")
         f_north_sea = b.convoy(b.england, "North Sea", a_london, "Holland")
+        b.army("Holland", b.germany)
         a_belgium = b.army("Belgium", b.germany)
         a_holland = b.supportHold(b.germany, UnitType.ARMY, "Holland", a_belgium)
         a_belgium = b.supportHold(b.germany, UnitType.ARMY, "Belgium", a_holland)
