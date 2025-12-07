@@ -11,6 +11,7 @@ from DiploGM.config import player_channel_suffix, is_player_category
 from DiploGM.models.unit import Unit, UnitType
 
 if TYPE_CHECKING:
+    from discord import TextChannel
     from discord.abc import Messageable
     from DiploGM.models.turn import Turn
     from DiploGM.models.player import Player
@@ -282,10 +283,12 @@ class Board:
         from DiploGM.utils import simple_player_name
         # thread -> main channel
         if isinstance(channel, Thread):
+            assert isinstance(channel.parent, TextChannel)
             channel = channel.parent
+        assert isinstance(channel, TextChannel)
 
         name = channel.name
-        if (not ignore_category) and not is_player_category(channel.category.name):
+        if (not ignore_category) and not is_player_category(channel.category):
             return None
 
         if self.is_chaos() and name.endswith("-void"):

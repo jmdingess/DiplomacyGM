@@ -348,7 +348,7 @@ def parse_remove_order(message: str, player_restriction: Player | None, board: B
             removed = _parse_remove_order(command, player_restriction, board)
             if isinstance(removed, Unit):
                 updated_units.add(removed)
-            elif removed is not None:
+            elif isinstance(removed, str):
                 provinces_with_removed_builds.add(removed)
         except Exception as error:
             invalid.append((command, error))
@@ -376,7 +376,7 @@ def parse_remove_order(message: str, player_restriction: Player | None, board: B
         return {"message": "Orders removed successfully."}
 
 
-def _parse_remove_order(command: str, player_restriction: Player | None, board: Board) -> Unit | str:
+def _parse_remove_order(command: str, player_restriction: Player | None, board: Board) -> Player | Unit | str:
     command = command.lower().strip()
     province, coast = board.get_province_and_coast(command)
     if command.startswith("relationship"):
@@ -392,6 +392,7 @@ def _parse_remove_order(command: str, player_restriction: Player | None, board: 
         if not target_player in player_restriction.vassal_orders:
             raise RuntimeError(f"No relationship order with {target_player}")
         remove_relationship_order(board, player_restriction.vassal_orders[target_player], player_restriction)
+        return target_player
 
 
     elif board.turn.is_builds():

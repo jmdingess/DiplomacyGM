@@ -523,6 +523,7 @@ class Mapper:
 
     def _draw_core(self, coordinate: tuple[float, float], hasFailed: bool) -> None:
         element = self._moves_svg.getroot()
+        assert element is not None
         drawn_order = self.create_element(
             "rect",
             {

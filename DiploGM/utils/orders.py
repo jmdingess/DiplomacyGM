@@ -7,6 +7,7 @@ from DiploGM.models.board import Board
 from DiploGM.models.player import Player
 
 def get_build_orders(player: Player, player_restriction: Player | None, ctx: Context, subset: str | None, blind: bool) -> tuple[str | None, str | None]:
+    assert ctx.guild is not None
     if (not player_restriction and
         (len(player.centers) + len(player.units) == 0)):
         return None, None
@@ -43,6 +44,7 @@ def get_build_orders(player: Player, player_restriction: Player | None, ctx: Con
     return title, body
 
 def get_move_orders(player: Player, player_restriction: Player | None, ctx: Context, subset: str | None, blind: bool, is_retreats: bool) -> tuple[str | None, str | None]:
+    assert ctx.guild is not None
     if (not player_restriction
         and len(player.centers) + len(player.units) == 0):
         return None, None

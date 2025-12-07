@@ -95,7 +95,7 @@ class GameManagementCog(commands.Cog):
         log_command(logger, ctx, message=f"Archived {len(categories)} Channels")
         await send_message_and_file(channel=ctx.channel, message=message)
 
-    def ping_player_builds(self, player: Player, users: set[discord.User], build_anywhere: bool) -> str:
+    def ping_player_builds(self, player: Player, users: set[discord.Member | discord.Role], build_anywhere: bool) -> str:
         response = ""
         user_str = ''.join([u.mention for u in users])
 
@@ -207,7 +207,7 @@ class GameManagementCog(commands.Cog):
 
                 if not board.is_chaos():
                     # Find users which have a player role to not ping spectators
-                    users = set(
+                    users: set[Member | Role] = set(
                         filter(
                             lambda m: len(set(m.roles) & player_roles) > 0, role.members
                         )
@@ -226,8 +226,7 @@ class GameManagementCog(commands.Cog):
                 if board.turn.is_builds():
                     self.ping_player_builds(player, users, "build anywhere" in board.data.get("adju flags", []))
                 else:
-                    if board.turn.is_retreats():
-                        in_moves = lambda u: u == u.province.dislodged_unit or board.turn.is_moves()
+                    in_moves = lambda u: u == u.province.dislodged_unit or board.turn.is_moves()
 
                     missing = [
                         unit
@@ -418,7 +417,7 @@ class GameManagementCog(commands.Cog):
 
         if MAP_ARCHIVE_SAS_TOKEN:
             file, _ = manager.draw_map_for_board(board, draw_moves=True)
-            await upload_map_to_archive(ctx, ctx.guild.id, board, file)
+            await upload_map_to_archive(ctx, guild.id, board, file)
 
     @commands.command(
         brief="Adjudicates the game and outputs the moves and results maps.",
@@ -437,7 +436,7 @@ class GameManagementCog(commands.Cog):
         guild = ctx.guild
         assert guild is not None
 
-        board = manager.get_board(ctx.guild.id)
+        board = manager.get_board(guild.id)
 
         arguments = (
             ctx.message.content.removeprefix(f"{ctx.prefix}{ctx.invoked_with}")
@@ -464,7 +463,7 @@ class GameManagementCog(commands.Cog):
             await self.lock_orders(ctx)
 
         old_turn = board.turn
-        new_board = manager.adjudicate(ctx.guild.id, test=test_adjudicate)
+        new_board = manager.adjudicate(guild.id, test=test_adjudicate)
 
         log_command(
             logger,
@@ -472,7 +471,7 @@ class GameManagementCog(commands.Cog):
             message=f"Adjudication Successful for {board.turn}",
         )
         file, file_name = manager.draw_map(
-            ctx.guild.id,
+            guild.id,
             draw_moves=True,
             player_restriction=None,
             color_mode=color_mode,
@@ -503,7 +502,7 @@ class GameManagementCog(commands.Cog):
 
         if movement_adjudicate:
             file, file_name = manager.draw_map(
-                ctx.guild.id,
+                guild.id,
                 draw_moves=True,
                 player_restriction=None,
                 color_mode=color_mode,
@@ -531,7 +530,7 @@ class GameManagementCog(commands.Cog):
             convert_svg=return_svg,
         )
 
-        if full_adjudicate and (map_channel := get_maps_channel(ctx.guild)):
+        if full_adjudicate and (map_channel := get_maps_channel(guild)):
             map_message = await send_message_and_file(
                 channel=map_channel,
                 title=f"{title} Results Map",

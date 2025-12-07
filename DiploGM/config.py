@@ -157,8 +157,8 @@ _player_categories: set[str] = {
 }
 
 
-def is_player_category(category: CategoryChannel) -> bool:
-    return _is_member(category.name, _player_categories)
+def is_player_category(category: CategoryChannel | None) -> bool:
+    return category is not None and _is_member(category.name, _player_categories)
 
 
 # Channel suffix for player orders channels.

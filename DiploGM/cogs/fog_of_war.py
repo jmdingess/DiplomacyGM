@@ -123,7 +123,7 @@ async def publish_map(
     ctx: commands.Context,
     manager: Manager,
     name: str,
-    map_caller: Callable[[Manager, int, Player], tuple[str, str]],
+    map_caller: Callable[[Manager, int, Player], tuple[bytes, str]],
     filter_player=None,
 ):
     assert ctx.guild is not None

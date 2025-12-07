@@ -40,7 +40,8 @@ def get_element_color(element: Element, prefix="fill:") -> str | None:
 def get_unit_coordinates(
     unit_data: Element,
 ) -> tuple[float, float]:
-    path: Element = unit_data.find("{http://www.w3.org/2000/svg}path")
+    path = unit_data.find("{http://www.w3.org/2000/svg}path")
+    assert path is not None
 
     x = path.get("{http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd}cx")
     y = path.get("{http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd}cy")

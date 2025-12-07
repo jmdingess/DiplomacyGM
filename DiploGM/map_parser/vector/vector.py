@@ -366,10 +366,10 @@ class Parser:
 
             province_coordinates = shapely.MultiPolygon()
 
-            name = None
+            name = ""
             if self.layers["province_labels"]:
                 name = self._get_province_name(province_data)
-                if name == None:
+                if name == "":
                     raise RuntimeError(f"Province name not found in province with data {province_data}")
 
             province = Province(
@@ -527,8 +527,7 @@ class Parser:
     @staticmethod
     def _get_province_name(province_data: Element) -> str:
         province_name = province_data.get(f"{NAMESPACE.get('inkscape')}label")
-        assert province_name is not None
-        return province_name
+        return province_name or ""
 
     def _get_province(self, province_data: Element) -> Province:
         return self.name_to_province[self._get_province_name(province_data)]
