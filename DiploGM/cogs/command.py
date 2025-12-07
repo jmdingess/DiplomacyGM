@@ -14,6 +14,8 @@ from DiploGM.utils import (
 from DiploGM.manager import Manager
 from DiploGM.models.player import Player
 from DiploGM.models.province import ProvinceType
+from DiploGM.models.turn import PhaseName
+from DiploGM.utils.sanitise import parse_season
 
 
 logger = logging.getLogger(__name__)
@@ -93,6 +95,17 @@ class CommandCog(commands.Cog):
 
     def generate_scoreboard(self, board, ctx, alphabetical, show_builds) -> str:
         response = ""
+        old_board = board
+        if not show_builds:
+            old_board = manager._database.get_board(
+                board.board_id,
+                parse_season([str(PhaseName.FALL_MOVES)], board.turn.get_previous_turn()),
+                board.fish,
+                board.name,
+                board.datafile,
+            )
+            if old_board is None:
+                old_board = board
         player_list = (
             sorted(board.players, key=lambda p: p.name)
             if alphabetical
@@ -106,8 +119,12 @@ class CommandCog(commands.Cog):
             else:
                 player_name = player.name
 
-
-            to_compare = len(player.units)
+            if show_builds:
+                to_compare = len(player.units)
+            else:
+                old_player = old_board.get_player(player.name)
+                assert old_player is not None
+                to_compare = len(old_player.centers)
 
             response += (
                 f"\n**{player_name}**: "
@@ -121,7 +138,7 @@ class CommandCog(commands.Cog):
         description="""Outputs the scoreboard.
         In Chaos, is shortened and sorted by points, unless "standard" is an argument
         * Use `csv` to obtain a raw list of sc counts (in alphabetical order)""",
-        aliases=["leaderboard"],
+        aliases=["leaderboard", "sb"],
     )
     async def scoreboard(self, ctx: commands.Context) -> None:
         assert ctx.guild is not None
@@ -133,6 +150,7 @@ class CommandCog(commands.Cog):
         )
         csv = "csv" in arguments
         alphabetical = {"a", "alpha", "alphabetical"} & set(arguments)
+        show_builds = {"b", "build", "builds"} & set(arguments)
 
         board = manager.get_board(ctx.guild.id)
 
@@ -146,30 +164,10 @@ class CommandCog(commands.Cog):
             await ctx.send(counts)
             return
 
-        the_player = perms.get_player_by_context(ctx)
-
         if board.is_chaos() and "standard" not in ctx.message.content:
             response = self.generate_chaos_scoreboard(board, ctx)
         else:
-            response = ""
-            player_list = (
-                sorted(board.players, key=lambda p: p.name)
-                if alphabetical
-                else board.get_players_sorted_by_score()
-            )
-            for player in player_list:
-                if (
-                    player_role := player.find_discord_role(ctx.guild.roles)
-                ) is not None:
-                    player_name = player_role.mention
-                else:
-                    player_name = player.name
-
-                response += (
-                    f"\n**{player_name}**: "
-                    f"{len(player.centers)} ({'+' if len(player.centers) - len(player.units) >= 0 else ''}"
-                    f"{len(player.centers) - len(player.units)}) [{round(player.score() * 100, 1)}%]"
-                )
+            response = self.generate_scoreboard(board, ctx, alphabetical, show_builds)
 
         log_command(logger, ctx, message="Generated scoreboard")
         await send_message_and_file(
