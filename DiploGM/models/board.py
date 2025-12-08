@@ -4,14 +4,13 @@ import logging
 import time
 from typing import Dict, Optional, TYPE_CHECKING
 
-from discord import Thread
+from discord import Thread, TextChannel
 from discord.ext import commands
 
 from DiploGM.config import player_channel_suffix, is_player_category
 from DiploGM.models.unit import Unit, UnitType
 
 if TYPE_CHECKING:
-    from discord import TextChannel
     from discord.abc import Messageable
     from DiploGM.models.turn import Turn
     from DiploGM.models.player import Player

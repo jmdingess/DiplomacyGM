@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from discord import TextChannel
 import logging
 import tomllib
 import sys
 from typing import List, Tuple, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from discord import CategoryChannel, Role, TextChannel
+    from discord import CategoryChannel, Role
     from discord.abc import Messageable
 
 with open("config_defaults.toml", "rb") as toml_file:

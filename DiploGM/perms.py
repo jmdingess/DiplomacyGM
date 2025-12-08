@@ -1,4 +1,5 @@
 from __future__ import annotations
+from functools import wraps
 from typing import Any, Awaitable, Callable, TYPE_CHECKING
 
 import discord
@@ -12,7 +13,6 @@ from DiploGM.manager import Manager
 from DiploGM.models.player import Player
 
 if TYPE_CHECKING:
-    from discord import CategoryChannel, Role, TextChannel
     from discord.abc import Messageable
 
 manager = Manager()
@@ -37,7 +37,7 @@ def get_player_by_context(ctx: commands.Context):
 
 
 def is_player_channel(player_role: str, channel: Messageable) -> bool:
-    if not isinstance(channel, TextChannel) or channel.category is None:
+    if not isinstance(channel, discord.TextChannel) or channel.category is None:
         return False
     player_channel = player_role + config.player_channel_suffix
     return simple_player_name(player_channel) == simple_player_name(
@@ -159,7 +159,7 @@ def gm_only(description: str = "run this command"):
     return commands.check(lambda ctx: assert_gm_only(ctx, description))
 
 def is_gm_channel(channel: Messageable) -> bool:
-    return (isinstance(channel, TextChannel)
+    return (isinstance(channel, discord.TextChannel)
             and config.is_gm_channel(channel)
             and config.is_gm_category(channel.category))
 

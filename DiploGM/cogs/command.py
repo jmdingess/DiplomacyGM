@@ -1,6 +1,8 @@
+from __future__ import annotations
 from black.trans import defaultdict
 import inspect
 import logging
+from typing import TYPE_CHECKING
 
 from discord import Member
 from discord.ext import commands
@@ -16,6 +18,9 @@ from DiploGM.models.player import Player
 from DiploGM.models.province import ProvinceType
 from DiploGM.models.turn import PhaseName
 from DiploGM.utils.sanitise import parse_season
+
+if TYPE_CHECKING:
+    from DiploGM.models.board import Board
 
 
 logger = logging.getLogger(__name__)
@@ -93,19 +98,16 @@ class CommandCog(commands.Cog):
             )
         return response
 
-    def generate_scoreboard(self, board, ctx, alphabetical, show_builds) -> str:
+    def generate_scoreboard(self, board: Board, ctx: commands.Context, alphabetical: bool) -> str:
+        assert ctx.guild is not None
         response = ""
-        old_board = board
-        if not show_builds:
-            old_board = manager._database.get_board(
-                board.board_id,
-                parse_season([str(PhaseName.FALL_MOVES)], board.turn.get_previous_turn()),
-                board.fish,
-                board.name,
-                board.datafile,
-            )
-            if old_board is None:
-                old_board = board
+        old_board = manager._database.get_board(
+            board.board_id,
+            parse_season(["Fall"], board.turn.get_previous_turn()),
+            board.fish,
+            board.name,
+            board.datafile,
+        )
         player_list = (
             sorted(board.players, key=lambda p: p.name)
             if alphabetical
@@ -119,18 +121,20 @@ class CommandCog(commands.Cog):
             else:
                 player_name = player.name
 
-            if show_builds:
-                to_compare = len(player.units)
-            else:
-                old_player = old_board.get_player(player.name)
-                assert old_player is not None
-                to_compare = len(old_player.centers)
-
             response += (
                 f"\n**{player_name}**: "
-                f"{len(player.centers)} ({'+' if len(player.centers) - to_compare >= 0 else ''}"
-                f"{len(player.centers) - to_compare}) [{round(player.score() * 100, 1)}%]"
-            )
+                f"{len(player.centers)} ({'+' if len(player.centers) - len(player.units) >= 0 else ''}"
+                f"{len(player.centers) - len(player.units)}) ")
+
+            if old_board is not None:
+                old_player = old_board.get_player(player.name)
+                assert old_player is not None
+                sc_diff = len(player.centers) - len(old_player.centers)
+                response += (
+                    f"({'+' if sc_diff >= 0 else ''}"
+                    f"{sc_diff} SC{'s' if abs(sc_diff) != 1 else ''}) ")
+            
+            response += f"[{round(player.score() * 100, 1)}%]"
         return response
 
     @commands.command(
@@ -150,7 +154,6 @@ class CommandCog(commands.Cog):
         )
         csv = "csv" in arguments
         alphabetical = {"a", "alpha", "alphabetical"} & set(arguments)
-        show_builds = {"b", "build", "builds"} & set(arguments)
 
         board = manager.get_board(ctx.guild.id)
 
@@ -167,7 +170,7 @@ class CommandCog(commands.Cog):
         if board.is_chaos() and "standard" not in ctx.message.content:
             response = self.generate_chaos_scoreboard(board, ctx)
         else:
-            response = self.generate_scoreboard(board, ctx, alphabetical, show_builds)
+            response = self.generate_scoreboard(board, ctx, alphabetical)
 
         log_command(logger, ctx, message="Generated scoreboard")
         await send_message_and_file(
