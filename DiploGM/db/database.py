@@ -580,7 +580,7 @@ class _DatabaseConnection:
                     board.board_id,
                     board.turn.get_indexed_name(),
                     player.name,
-                    build_order.province.get_name(build_order.coast),
+                    build_order.province.get_name(build_order.coast if isinstance(build_order, Build) else None),
                     isinstance(build_order, Build),
                     getattr(build_order, "unit_type", None) == UnitType.ARMY,
                     isinstance(build_order, Build),
