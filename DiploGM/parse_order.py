@@ -75,7 +75,9 @@ class TreeToOrder(Transformer):
             raise ValueError(f"{s[2]} isn't a valid unit type")
 
         if not province.has_supply_center:
-                raise ValueError(f"{province} does not have a supply center.")  
+                raise ValueError(f"{province} does not have a supply center.")
+        if unit_type == UnitType.FLEET and province.get_multiple_coasts() and coast not in province.get_multiple_coasts():
+            raise ValueError(f"You did not specify a coast for {province}")
         elif self.player_restriction:
             if province.owner != self.player_restriction:
                 raise ValueError(f"You do not own {province}.")
