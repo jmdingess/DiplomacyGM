@@ -29,7 +29,7 @@ class Turn:
         self.start_year: int = start_year
     
     def __str__(self):
-        if self.year <= 0:
+        if self.year < 0:
             year_str =  f"{str(1-self.year)} BCE"
         else:
             year_str = str(self.year)
