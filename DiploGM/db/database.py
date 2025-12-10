@@ -164,6 +164,13 @@ class _DatabaseConnection:
         board.name = name
         board.board_id = board_id
 
+        board_params = cursor.execute(
+            "SELECT parameter_key, parameter_value FROM board_parameters WHERE board_id=?",
+            (board_id,),
+        ).fetchall()
+        additional_data = dict(board_params)
+        board.data.update(additional_data)
+
         player_data = cursor.execute(
             "SELECT player_name, color, liege, points FROM players WHERE board_id=?",
             (board_id,),
