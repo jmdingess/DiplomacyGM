@@ -4,7 +4,7 @@ import json
 import logging
 
 from discord.ext import commands, tasks
-from discord import Message, User
+from discord import Message, TextChannel, User
 
 from DiploGM.bot import DiploGM
 from DiploGM import perms
@@ -176,6 +176,7 @@ class ScheduleCog(commands.Cog):
     )
     @perms.gm_only("unschedule a command")
     async def unschedule(self, ctx: commands.Context, task_id: str):
+        assert ctx.guild is not None
         task_id = task_id.strip()
 
         if task_id == "all":
@@ -257,7 +258,7 @@ class ScheduleCog(commands.Cog):
 
         for task_id, task in due.items():
             channel = self.bot.get_channel(task["channel_id"])
-            if not channel:
+            if not channel or not isinstance(channel, TextChannel):
                 del self.scheduled_tasks[task_id]
                 await self.save_scheduled_tasks()
                 continue

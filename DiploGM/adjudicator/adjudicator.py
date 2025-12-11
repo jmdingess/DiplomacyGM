@@ -213,7 +213,7 @@ def order_is_valid(province: Province, order: Order, strict_convoys_supports=Fal
         is_support_hold = order.source == order.destination
         source_to_destination_valid = (
             is_support_hold
-            or order_is_valid(order.source, Move(order.destination), strict_convoys_supports)[0]
+            or order_is_valid(order.source, Move(order.destination), strict_convoys_supports, strict_coast_movement=False)[0]
             or order_is_valid(order.source, ConvoyMove(order.destination), strict_convoys_supports)[0]
         )
 
@@ -304,10 +304,9 @@ class BuildsAdjudicator(Adjudicator):
                     if player in new_vassals[liege]:
                         new_vassals[liege].remove(player)
             for order in player.vassal_orders:
-                if isinstance(order, Defect):
-                    if player in new_vassals[order.player]:
-                        new_vassals[order.player].remove(player)
-                        new_liege = None
+                if isinstance(order, Defect) and player in new_vassals[order.player]:
+                    new_vassals[order.player].remove(player)
+                    new_liege = None
             new_lieges[player] = new_liege
             
         for player in self._board.players:
@@ -379,9 +378,6 @@ class BuildsAdjudicator(Adjudicator):
 
         if "vassal system" in self._board.data.get("adju flags", []):
             self.vassal_adju()
-
-
-
 
         for player in self._board.players:
             player.build_orders = set()
