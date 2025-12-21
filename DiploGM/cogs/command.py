@@ -64,7 +64,7 @@ class CommandCog(commands.Cog):
             ),
         )
 
-    def generate_chaos_scoreboard(self, board, ctx) -> str:
+    def generate_chaos_scoreboard(self, board: Board, ctx) -> str:
         response = ""
         the_player = perms.get_player_by_context(ctx)
         scoreboard_rows = []
@@ -91,8 +91,10 @@ class CommandCog(commands.Cog):
         points_length = len(str(scoreboard_rows[0][1]))
 
         for index, player in scoreboard_rows:
+            if board.data["players"][player.name].get("hidden", "false") == "true":
+                continue
             response += (
-                f"\n\\#{index: >{index_length}} | {player.points: <{points_length}} | **{player.name}**: "
+                f"\n\\#{index: >{index_length}} | {player.points: <{points_length}} | **{player.get_name()}**: "
                 f"{len(player.centers)} ({'+' if len(player.centers) - len(player.units) >= 0 else ''}"
                 f"{len(player.centers) - len(player.units)})"
             )
@@ -109,7 +111,7 @@ class CommandCog(commands.Cog):
             board.datafile,
         )
         player_list = (
-            sorted(board.players, key=lambda p: p.name)
+            sorted(board.players, key=lambda p: p.get_name())
             if alphabetical
             else board.get_players_sorted_by_score()
         )
@@ -119,8 +121,10 @@ class CommandCog(commands.Cog):
             ) is not None:
                 player_name = player_role.mention
             else:
-                player_name = player.name
+                player_name = player.get_name()
 
+            if board.data["players"][player.name].get("hidden", "false") == "true":
+                continue
             response += (
                 f"\n**{player_name}**: "
                 f"{len(player.centers)} ({'+' if len(player.centers) - len(player.units) >= 0 else ''}"
@@ -134,7 +138,7 @@ class CommandCog(commands.Cog):
                     f"({'+' if sc_diff >= 0 else ''}"
                     f"{sc_diff} SC{'s' if abs(sc_diff) != 1 else ''}) ")
             
-            response += f"[{round(player.score() * 100, 1)}%]"
+            response += f"[{round(board.get_score(player) * 100, 1)}%]"
         return response
 
     @commands.command(
@@ -153,7 +157,7 @@ class CommandCog(commands.Cog):
             .split()
         )
         csv = "csv" in arguments
-        alphabetical = {"a", "alpha", "alphabetical"} & set(arguments)
+        alphabetical = len({"a", "alpha", "alphabetical"} & set(arguments)) > 0
 
         board = manager.get_board(ctx.guild.id)
 
@@ -161,7 +165,7 @@ class CommandCog(commands.Cog):
             perms.assert_gm_only(ctx, "get scoreboard")
 
         if csv and not board.is_chaos():
-            players = sorted(board.players, key=lambda p: p.name)
+            players = sorted(board.players, key=lambda p: p.get_name())
             counts = map(lambda p: str(len(p.centers)), players)
             counts = "\n".join(counts)
             await ctx.send(counts)
@@ -318,17 +322,18 @@ class CommandCog(commands.Cog):
         coasts = province.get_multiple_coasts()
         coast_info = ""
         adjacent_coasts = ""
-        adjacent_list = []
         if coasts:
             coast_info = f"Coasts: {len(coasts)}\n"
             for c in coasts:
                 adjacent_coasts += f"Adjacent Coastal Provinces ({c}):\n- "
+                adjacent_list = []
                 for adj in province.get_coastal_adjacent(c):
                     adjacent_list.append(f"{adj[0].get_name(adj[1])}")
                 adjacent_coasts += "\n- ".join(sorted(adjacent_list))
                 adjacent_coasts += "\n"
         elif province.type == ProvinceType.LAND and province.get_coastal_adjacent():
             adjacent_coasts = "Adjacent Coastal Provinces:\n- "
+            adjacent_list = []
             for adj in province.get_coastal_adjacent():
                 adjacent_list.append(f"{adj[0].get_name(adj[1])}")
             adjacent_coasts += "\n- ".join(sorted(adjacent_list))
@@ -340,7 +345,7 @@ class CommandCog(commands.Cog):
         out = f"Type: {province.type.name}\n" + \
             f"{coast_info}" + \
             f"Owner: {province.owner.name if province.owner else 'None'}\n" + \
-            f"Unit: {(province.unit.player.name + ' ' + province.unit.unit_type.name) if province.unit else 'None'}\n" + \
+            f"Unit: {(province.unit.player.get_name() + ' ' + province.unit.unit_type.name) if province.unit else 'None'}\n" + \
             f"Center: {province.has_supply_center}\n" + \
             f"Core: {province.core.name if province.core else 'None'}\n" + \
             f"Half-Core: {province.half_core.name if province.half_core else 'None'}\n" + \
@@ -416,11 +421,11 @@ class CommandCog(commands.Cog):
             )
             return
 
-        out = player.info(variant)
+        out = player.info(board)
         log_command(logger, ctx, message=f"Got info for player {player}")
 
         # FIXME title should probably include what coast it is.
-        await send_message_and_file(channel=ctx.channel, title=player.name, message=out)
+        await send_message_and_file(channel=ctx.channel, title=player.get_name(), message=out)
 
     @commands.command(brief="outputs all provinces per owner")
     async def all_province_data(self, ctx: commands.Context) -> None:

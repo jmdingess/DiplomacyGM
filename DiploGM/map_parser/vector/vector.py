@@ -80,21 +80,14 @@ class Parser:
         logger.debug("map_parser.vector.parse.start")
         start = time.time()
 
-        self.players = set()
+        self.players: set[Player] = set()
 
         self.autodetect_players = self.data["players"] == "chaos"
 
         if not self.autodetect_players:
             for name, data in self.data["players"].items():
                 color = data["color"]
-                win_type = self.data["victory_conditions"]
-                if win_type == "classic":
-                    sc_goal = self.data["victory_count"]
-                    starting_scs = data["starting_scs"]
-                else:
-                    sc_goal = data["vscc"]
-                    starting_scs = data["iscc"]
-                player = Player(name, color, win_type, sc_goal, starting_scs, set(), set())
+                player = Player(name, color, set(), set())
                 self.players.add(player)
                 if isinstance(color, dict):
                     color = color["standard"]
@@ -148,8 +141,17 @@ class Parser:
                     province.set_unit_coordinate(None, False, UnitType.ARMY)
         
         initial_turn = Turn(self.year_offset, PhaseName.SPRING_MOVES, self.year_offset)
-        if "adju flags" in self.data and "initial builds" in self.data["adju flags"]:
+        if self.data.get("first_season") == "winter":
             initial_turn = initial_turn.get_previous_turn()
+
+        if "victory_count" not in self.data:
+            self.data["victory_count"] = int((len([1 for p in provinces if p.has_supply_center]) + 1) / 2)
+        
+        for player in self.players:
+            if "iscc" not in self.data["players"][player.name]:
+                self.data["players"][player.name]["iscc"] = len([1 for p in provinces if p.has_supply_center and p.owner == player])
+            if "vscc" not in self.data["players"][player.name]:
+                self.data["players"][player.name]["vscc"] = self.data["victory_count"]
 
         return Board(self.players, provinces, units, initial_turn, self.data, self.datafile, self.fow, self.year_offset)
 

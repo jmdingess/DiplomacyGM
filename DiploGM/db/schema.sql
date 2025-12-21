@@ -84,8 +84,8 @@ CREATE TABLE IF NOT EXISTS spec_requests (
 );
 
 CREATE TABLE IF NOT EXISTS board_parameters (
-    parameter_id INTEGER PRIMARY KEY AUTOINCREMENT
-    board_id INTEGER NOT NULL
-    parameter_key TEXT NOT NULL
-    parameter_value TEXT NOT NULL
+    board_id INTEGER NOT NULL,
+    parameter_key TEXT NOT NULL,
+    parameter_value TEXT NOT NULL,
+    PRIMARY KEY (board_id, parameter_key)
 )

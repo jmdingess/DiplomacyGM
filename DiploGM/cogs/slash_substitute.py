@@ -170,7 +170,7 @@ class SlashSubstituteCog(commands.Cog):
             f"Phase: {board.turn}\n"
             f"Power: {power_role.name}\n"
             f"SC Count: {len(player.centers)}\n"
-            f"VSCC: {round(player.score() * 100, 2)}%\n"
+            f"VSCC: {round(board.get_score(player) * 100, 2)}%\n"
             "\n"
             f"Message: {message}\n"
             "\n"

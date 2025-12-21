@@ -168,8 +168,18 @@ class _DatabaseConnection:
             "SELECT parameter_key, parameter_value FROM board_parameters WHERE board_id=?",
             (board_id,),
         ).fetchall()
-        additional_data = dict(board_params)
-        board.data.update(additional_data)
+
+        # Turning a key deliniated with slashes into a nested dict
+        for key, value in board_params:
+            cur_dict = board.data
+            split_key = key.split("/", 1)
+            while len(split_key) > 1:
+                if split_key[0] not in cur_dict:
+                    cur_dict[split_key[0]] = {}
+                cur_dict = cur_dict[split_key[0]]
+                split_key = split_key[1].split("/", 1)
+            cur_dict[split_key[0]] = value
+        board.update_players()
 
         player_data = cursor.execute(
             "SELECT player_name, color, liege, points FROM players WHERE board_id=?",
