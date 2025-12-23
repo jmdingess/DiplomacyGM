@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class TreeToOrder(Transformer):
     def set_state(self, board: Board, player_restriction: Player | None):
         self.board = board
-        self.flags = board.data.get("adju flags", [])
+        self.build_options =  board.data.get("build_options", "classic")
         self.player_restriction = player_restriction
         
     def province(self, s) -> tuple[Province, str | None]:
@@ -58,7 +58,7 @@ class TreeToOrder(Transformer):
         return s[0], order.Hold()
 
     def core_order(self, s) -> tuple[Province, order.Core]:
-        if "no coring" in self.flags:
+        if self.build_options != "cores":
             raise Exception("Coring is disabled in this gamemode")
         return s[0], order.Core()
     
@@ -81,7 +81,7 @@ class TreeToOrder(Transformer):
         elif self.player_restriction:
             if province.owner != self.player_restriction:
                 raise ValueError(f"You do not own {province}.")
-            if province.core != self.player_restriction and not "build anywhere" in self.board.data.get("adju flags", []):
+            if province.core != self.player_restriction and self.build_options != "anywhere":
                 raise ValueError(f"You haven't cored {province}.")
 
         return province, province.owner, order.Build(province, unit_type, coast)
@@ -387,7 +387,7 @@ def _parse_remove_order(command: str, player_restriction: Player | None, board: 
         command = command.split(" ", 1)[1]
         target_player = None
         for player in board.players:
-            if player.name.lower() == command.lower().strip():
+            if player.name.lower() == command.lower().strip() or player.get_name().lower() == command.lower().strip():
                 target_player = player
         if target_player == None:
             raise RuntimeError(f"No such player: {command}")

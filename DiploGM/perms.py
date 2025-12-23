@@ -36,13 +36,14 @@ def get_player_by_context(ctx: commands.Context):
     return player
 
 
-def is_player_channel(player_role: str, channel: Messageable) -> bool:
+def is_player_channel(player_role: Player, channel: Messageable) -> bool:
     if not isinstance(channel, discord.TextChannel) or channel.category is None:
         return False
-    player_channel = player_role + config.player_channel_suffix
-    return simple_player_name(player_channel) == simple_player_name(
-        channel.name
-    ) and config.is_player_category(channel.category)
+    player_channel = player_role.name + config.player_channel_suffix
+    nickname_channel = player_role.get_name() + config.player_channel_suffix
+    return ((simple_player_name(player_channel) == simple_player_name(channel.name) 
+             or simple_player_name(nickname_channel) == simple_player_name(channel.name))
+            and config.is_player_category(channel.category))
 
 
 
@@ -62,7 +63,7 @@ def require_player_by_context(ctx: commands.Context, description: str):
         player = manager.get_member_player_object(ctx.message.author)
 
     if player:
-        if not is_player_channel(player.name, ctx.channel):
+        if not is_player_channel(player, ctx.channel):
             raise CommandPermissionError(
                 f"You cannot {description} as a player outside of your orders channel."
             )
