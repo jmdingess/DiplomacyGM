@@ -810,6 +810,7 @@ class GameManagementCog(commands.Cog):
         * vscc [player] [victory scs] (only used with vscc victory conditions)
         * player_name [original name] [new name]
         * hide_player [player] ['true', 'false']
+        * add_player [player] [color] (Once added, a player cannot be removed)
         """,
     )
     @perms.gm_only("edit game")

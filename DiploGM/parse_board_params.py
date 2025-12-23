@@ -1,8 +1,10 @@
 from DiploGM.config import ERROR_COLOUR, PARTIAL_ERROR_COLOUR
+from DiploGM.models.player import Player
 from DiploGM.utils import get_unit_type, get_keywords, parse_season
 from DiploGM.adjudicator.mapper import Mapper
 from DiploGM.models.board import Board
 from DiploGM.db.database import get_connection
+from DiploGM.utils.sanitise import sanitise_name, simple_player_name
 
 def parse_board_params(message: str, board: Board) -> tuple[str, str, bytes | None, str | None, str | None]:
     invalid: list[tuple[str, Exception]] = []
@@ -105,6 +107,23 @@ def _hide_player(keywords: list[str], board: Board) -> tuple[str | None, str | N
     board.data["players"][player.name]["hidden"] = is_hidden
     return key_name, is_hidden
 
+def _add_player(keywords: list[str], board: Board) -> tuple[str | None, str | None]:
+    player_name, player_color = (' '.join(keywords[:-1]).title(), keywords[-1])
+    if player_name in board.name_to_player:
+        raise ValueError(f"{player_name} is already a player")
+    key_name = f"players/{player_name}/color"
+    board.data["players"][player_name] = {
+        "color": player_color,
+        "iscc" : 1,
+        "vscc" : board.data["victory_count"]
+    }
+    board.add_new_player(player_name, player_color)
+    get_connection().execute_arbitrary_sql(
+        "INSERT INTO players (board_id, player_name, color, liege, points) VALUES (?, ?, ?, ?, ?)",
+        (board.board_id, player_name, player_color, None, 0)
+    )
+    return key_name, player_color
+
 function_list = {
     "building": _set_build_options,
     "victory conditions": _set_victory_conditions,
@@ -112,7 +131,8 @@ function_list = {
     "iscc": _set_iscc,
     "vscc": _set_vscc,
     "player name": _set_player_name,
-    "hide player": _hide_player
+    "hide player": _hide_player,
+    "add player": _add_player
 }
 
 def _parse_command(command: str, board: Board) -> None:

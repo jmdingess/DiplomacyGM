@@ -153,7 +153,7 @@ class Parser:
             if "vscc" not in self.data["players"][player.name]:
                 self.data["players"][player.name]["vscc"] = self.data["victory_count"]
 
-        return Board(self.players, provinces, units, initial_turn, self.data, self.datafile, self.fow, self.year_offset)
+        return Board(self.players, provinces, units, initial_turn, copy.deepcopy(self.data), self.datafile, self.fow, self.year_offset)
 
     def read_map(self) -> tuple[set[Province], set[tuple[str, str]]]:
         if self.cache_provinces is None:

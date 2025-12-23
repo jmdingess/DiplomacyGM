@@ -59,7 +59,27 @@ class Board:
         for player in self.players:
             player.board = self
 
+    def add_new_player(self, name: str, color: str):
+        from DiploGM.models.player import Player
+        from DiploGM.utils.sanitise import sanitise_name
+        from DiploGM.utils import simple_player_name
+        new_player = Player(name, color, set(), set())
+        new_player.board = self
+        self.players.add(new_player)
+        self.name_to_player[name.lower()] = new_player
+        self.cleaned_name_to_player[sanitise_name(name.lower())] = new_player
+        self.simple_player_name_to_player[simple_player_name(name)] = new_player
+        if name not in self.data["players"]:
+            self.data["players"][name] = {"color": color}
+        if "iscc" not in self.data["players"][name]:
+            self.data["players"][name]["iscc"] = 1
+        if "vscc" not in self.data["players"][name]:
+            self.data["players"][name]["vscc"] = self.data["victory_count"]
+
     def update_players(self):
+        for player_name, player_data in self.data["players"].items():
+            if player_name.lower() not in self.name_to_player:
+                self.add_new_player(player_name, player_data["color"])
         for player in self.players:
             if (nickname := self.data["players"][player.name].get("nickname")):
                 self.add_nickname(player, nickname)
@@ -120,7 +140,10 @@ class Board:
 
     # TODO: break ties in a fixed manner
     def get_players_sorted_by_score(self) -> list[Player]:
-        return sorted(self.players, key=lambda sort_player: (-self.get_score(sort_player), sort_player.get_name().lower()))
+        return sorted(self.players, 
+            key=lambda sort_player: (self.data["players"][sort_player.name].get("hidden", "false"),
+                                    -self.get_score(sort_player),
+                                    sort_player.get_name().lower()))
 
     def get_players_sorted_by_points(self) -> list[Player]:
         return sorted(self.players, key=lambda sort_player: (-sort_player.points, -len(sort_player.centers), sort_player.get_name().lower()))

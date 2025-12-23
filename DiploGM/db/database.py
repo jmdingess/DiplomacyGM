@@ -685,6 +685,7 @@ class _DatabaseConnection:
     def total_delete(self, board: Board):
         cursor = self._connection.cursor()
         cursor.execute("DELETE FROM boards WHERE board_id=?", (board.board_id,))
+        cursor.execute("DELETE FROM board_parameters WHERE board_id=?", (board.board_id,))
         cursor.execute("DELETE FROM provinces WHERE board_id=?", (board.board_id,))
         cursor.execute("DELETE FROM units WHERE board_id=?", (board.board_id,))
         cursor.execute("DELETE FROM builds WHERE board_id=?", (board.board_id,))
