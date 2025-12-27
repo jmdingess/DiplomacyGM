@@ -1,3 +1,19 @@
+1.4.1
+=====
+Contributors
+- hdwhite
+
+# New Features
+- Added in an .edit_game command which can modify parameters of a game:
+  - build_options: Allows for building in home SCs only, building anywhere, or enables coring mechanic
+  - victory_conditions: Classic-style (all powers must reach X SCs), or VSCC with different SC goals for each country
+  - victory_count: For classic-style victory conditions, the number of SCs required to win
+  - iscc: For VSCC victory conditions, the number of SCs required to win for a given power
+  - vscc: For VSCC victory conditions, the initial SC count for a given power
+  - player_name: Edits the name of a power
+  - hide_player: Causes a power to not show up in scoreboards
+  - add_player: Adds a new power to the game. This cannot be undone
+
 1.4.0
 =====
 Contributors
