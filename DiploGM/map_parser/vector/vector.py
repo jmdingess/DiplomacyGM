@@ -146,14 +146,19 @@ class Parser:
 
         if "victory_count" not in self.data:
             self.data["victory_count"] = int((len([1 for p in provinces if p.has_supply_center]) + 1) / 2)
-        
-        for player in self.players:
-            if "iscc" not in self.data["players"][player.name]:
-                self.data["players"][player.name]["iscc"] = len([1 for p in provinces if p.has_supply_center and p.owner == player])
-            if "vscc" not in self.data["players"][player.name]:
-                self.data["players"][player.name]["vscc"] = self.data["victory_count"]
 
-        return Board(self.players, provinces, units, initial_turn, copy.deepcopy(self.data), self.datafile, self.fow, self.year_offset)
+        game_data = copy.deepcopy(self.data)
+        if (is_chaos := (self.data["players"] == "chaos")):
+            game_data["players"] = {}
+        for player in self.players:
+            if is_chaos:
+                game_data["players"][player.name] = {}
+            if "iscc" not in game_data["players"][player.name]:
+                game_data["players"][player.name]["iscc"] = len([1 for p in provinces if p.has_supply_center and p.owner == player])
+            if "vscc" not in game_data["players"][player.name]:
+                game_data["players"][player.name]["vscc"] = game_data["victory_count"]
+
+        return Board(self.players, provinces, units, initial_turn, game_data, self.datafile, self.fow, self.year_offset)
 
     def read_map(self) -> tuple[set[Province], set[tuple[str, str]]]:
         if self.cache_provinces is None:
@@ -576,7 +581,7 @@ class Parser:
                 neutral_color = neutral_color["standard"]
             if color is None or color == neutral_color:
                 return None
-            player = Player(province_name, color, "chaos", 101, 1, set(), set())
+            player = Player(province_name, color, set(), set())
             self.players.add(player)
             self.color_to_player[color] = player
             return player

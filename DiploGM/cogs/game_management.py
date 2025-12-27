@@ -225,7 +225,7 @@ class GameManagementCog(commands.Cog):
                     users.add(role)
 
                 if board.turn.is_builds():
-                    self.ping_player_builds(player, users, board.data.get("build_options") == "anywhere")
+                    response = self.ping_player_builds(player, users, board.data.get("build_options") == "anywhere")
                 else:
                     in_moves = lambda u: u == u.province.dislodged_unit or board.turn.is_moves()
 

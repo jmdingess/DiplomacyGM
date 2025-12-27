@@ -418,6 +418,7 @@ class Mapper:
             players = self.board.get_players_sorted_by_score()
         players = sorted(players, key=lambda hidden_player: self.board.data["players"][hidden_player.name].get("hidden", "false") == "true")
 
+        # TODO: Add support for chaos "points" and perhaps simplify this whole thing
         name_index = self.board.data[SVG_CONFIG_KEY].get("power_name_index", 1)
         sc_index = self.board.data[SVG_CONFIG_KEY].get("power_sc_index", 5)
         iscc_index = self.board.data[SVG_CONFIG_KEY].get("power_iscc_index", 6)
