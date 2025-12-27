@@ -416,28 +416,55 @@ class Mapper:
             players = sorted(self.board.players, key=lambda sort_player: sort_player.name)
         else:
             players = self.board.get_players_sorted_by_score()
+        players = sorted(players, key=lambda hidden_player: self.board.data["players"][hidden_player.name].get("hidden", "false") == "true")
 
-        sc_index = self.board.data[SVG_CONFIG_KEY]["power_sc_index"] if "power_sc_index" in self.board.data[SVG_CONFIG_KEY] else 5
+        name_index = self.board.data[SVG_CONFIG_KEY].get("power_name_index", 1)
+        sc_index = self.board.data[SVG_CONFIG_KEY].get("power_sc_index", 5)
+        iscc_index = self.board.data[SVG_CONFIG_KEY].get("power_iscc_index", 6)
+        vscc_index = self.board.data[SVG_CONFIG_KEY].get("power_vscc_index", 7)
 
-        if "vassal system" not in self.board.data.get("adju flags", []):
+        if self.board.data.get("vassals") != "enabled" and len(self.board.players) <= len(self.scoreboard_power_locations):
             for power_element in all_power_banners_element:
                 for i, player in enumerate(players):
                     if i >= len(self.scoreboard_power_locations):
                         break
 
                     # match the correct svg element based on the color of the rectangle
-                    if get_element_color(power_element[0]) != player.default_color:
+                    if not len(power_element) or get_element_color(power_element[0]) != player.default_color:
                         continue
+                    player_data = self.board.data["players"][player.name]
+                    if player_data.get("hidden") == "true":
+                        power_element.clear()
+                        break
+
                     self.color_element(power_element[0], self.player_colors[player.name])
                     power_element.set("transform", self.scoreboard_power_locations[i])
+
+                    if (nickname := player_data.get("nickname")):
+                        power_element[name_index][0].text = nickname
+                        # Fix for Poland-Lithuanian Commonwealth
+                        if len(power_element[name_index]) > 1:
+                            power_element[name_index][1].text = ""
+                            power_element[name_index].set("y", "237.67107")
+                            power_element[name_index][0].set("y", "237.67107")
+                            style = power_element[name_index].get("style")
+                            assert style is not None
+                            style = re.sub(r"font-size:[0-9.]+px", "font-size:42.6667px", style)
+                            power_element[name_index].set("style", style)
                     if player == self.restriction or self.restriction == None:
                         power_element[sc_index][0].text = str(len(player.centers))
                     else:
                         power_element[sc_index][0].text = "???"
+                    if iscc_index > -1:
+                        power_element[iscc_index][0].text = str(player_data["iscc"])
+                    if self.board.data["victory_conditions"] == "classic" and vscc_index > -1:
+                        power_element[vscc_index][0].text = str(self.board.data["victory_count"])
+                    elif vscc_index > -1:
+                        power_element[vscc_index][0].text = str(player_data["vscc"])
                     break
         else:
-            #FIXME only sorts by points right now
-            for i, player in enumerate(self.board.get_players_sorted_by_points()):
+            #FIXME only sorts by score right now
+            for i, player in enumerate(self.board.get_players_sorted_by_score()):
                 if i >= len(self.scoreboard_power_locations):
                     break
                 for power_element in all_power_banners_element:
@@ -445,11 +472,32 @@ class Mapper:
                     if power_element.get("transform") != self.scoreboard_power_locations[i]:
                         continue
                     self.color_element(power_element[0], player.render_color)
-                    power_element[1][0].text = player.name
                     power_element.set("transform", self.scoreboard_power_locations[i])
-                    power_element[4][0].text = str(len(player.centers))
-                    power_element[5][0].text = str(player.points)
-                    break       
+                    player_data = self.board.data["players"][player.name]
+                    if player_data.get("hidden") == "true":
+                        power_element.clear()
+                        break
+                    power_element[name_index][0].text = player.get_name()
+                    # Fix for Poland-Lithuanian Commonwealth
+                    if len(power_element[name_index]) > 1:
+                        power_element[name_index][1].text = ""
+                        power_element[name_index].set("y", "237.67107")
+                        power_element[name_index][0].set("y", "237.67107")
+                        style = power_element[name_index].get("style")
+                        assert style is not None
+                        style = re.sub(r"font-size:[0-9.]+px", "font-size:42.6667px", style)
+                        power_element[name_index].set("style", style)
+                    if player == self.restriction or self.restriction == None:
+                        power_element[sc_index][0].text = str(len(player.centers))
+                    else:
+                        power_element[sc_index][0].text = "???"
+                    if iscc_index > -1:
+                        power_element[iscc_index][0].text = str(player_data["iscc"])
+                    if self.board.data["victory_conditions"] == "classic" and vscc_index > -1:
+                        power_element[vscc_index][0].text = str(self.board.data["victory_count"])
+                    elif vscc_index > -1:
+                        power_element[vscc_index][0].text = str(player_data["vscc"])
+                    break
 
     def _draw_side_panel_date(self, svg: ElementTree) -> None:
         date = get_svg_element(svg, self.board.data[SVG_CONFIG_KEY]["season"])
@@ -706,6 +754,8 @@ class Mapper:
                 isinstance(destorder, Support)
                 and destorder.source == destorder.destination == unit.province
                 and order.source == order.destination
+                and (self.player_restriction is None
+                     or order.destination.unit.player == self.player_restriction)
             ):
                 # This check is so we only do it once, so it doesn't overlay
                 # it doesn't matter which one is the origin & which is the dest
@@ -1107,7 +1157,7 @@ class Mapper:
         red_ball_marker.append(red_ball_def)
         defs.append(red_ball_marker)
 
-        if "no coring" not in self.board.data.get("adju flags", []):
+        if self.board.data.get("build_options") == "cores":
             created_defs = set()
 
             for province in self.board.provinces:

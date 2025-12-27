@@ -88,7 +88,7 @@ def parse_season(
         elif s.lower() in ["winter", "w", "wa"]:
             season = PhaseName.WINTER_BUILDS
 
-        retreat = retreat != s.lower() in ["retreat", "retreats", "r", "sr", "fr"]
+        retreat = retreat or s.lower() in ["retreat", "retreats", "r", "sr", "fr"]
 
     if year is None:
         if season is None:

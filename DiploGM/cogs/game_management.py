@@ -18,6 +18,7 @@ from discord.ext import commands
 from DiploGM import config
 from DiploGM.config import MAP_ARCHIVE_SAS_TOKEN
 from DiploGM.parse_edit_state import parse_edit_state
+from DiploGM.parse_board_params import parse_board_params
 from DiploGM import perms
 from DiploGM.utils import (
     get_orders,
@@ -202,7 +203,7 @@ class GameManagementCog(commands.Cog):
 
                 role = player.find_discord_role(guild.roles)
                 if role is None:
-                    await ctx.send(f"No Role for {player.name}")
+                    await ctx.send(f"No Role for {player.get_name()}")
                     continue
 
                 if not board.is_chaos():
@@ -224,7 +225,7 @@ class GameManagementCog(commands.Cog):
                     users.add(role)
 
                 if board.turn.is_builds():
-                    self.ping_player_builds(player, users, "build anywhere" in board.data.get("adju flags", []))
+                    self.ping_player_builds(player, users, board.data.get("build_options") == "anywhere")
                 else:
                     in_moves = lambda u: u == u.province.dislodged_unit or board.turn.is_moves()
 
@@ -256,7 +257,7 @@ class GameManagementCog(commands.Cog):
         )
 
         if len(failed_players) > 0:
-            failed_players_str = "\n- ".join([player.name for player in failed_players])
+            failed_players_str = "\n- ".join([player.get_name() for player in failed_players])
             await send_message_and_file(
                 channel=ctx.channel,
                 title="Failed to find a player for the following:",
@@ -381,11 +382,11 @@ class GameManagementCog(commands.Cog):
         roles = {}
         sc_changes = {}
         for player in curr_board.players:
-            roles[player.name] = player.find_discord_role(guild.roles)
-            sc_changes[player.name] = len(player.centers)
+            roles[player.get_name()] = player.find_discord_role(guild.roles)
+            sc_changes[player.get_name()] = len(player.centers)
 
         for player in board.players:
-            sc_changes[player.name] -= len(player.centers)
+            sc_changes[player.get_name()] -= len(player.centers)
 
         sc_changes = [f"  **{role.mention if (role := roles[k]) else k}**: ({'+' if v > 0 else ''}{sc_changes[k]})" for k, v in sorted(sc_changes.items()) if v != 0]
         sc_changes = '\n'.join(sc_changes)
@@ -402,7 +403,7 @@ class GameManagementCog(commands.Cog):
                     continue
 
                 role = player.find_discord_role(guild.roles)
-                out = f"Hey **{role.mention if role else player.name}**, the Game has adjudicated!\n"
+                out = f"Hey **{role.mention if role else player.get_name()}**, the Game has adjudicated!\n"
                 await ch.send(out, silent=True)
                 await send_message_and_file(
                     channel=ch,
@@ -572,7 +573,7 @@ class GameManagementCog(commands.Cog):
                 return
             title = f"### {guild.name} Centre Counts (alphabetical order) | {new_board.turn}"
 
-            players = sorted(new_board.players, key=lambda p: p.name)
+            players = sorted(new_board.players, key=lambda p: p.get_name())
             counts = "\n".join(map(lambda p: str(len(p.centers)), players))
 
             await channel.send(title)
@@ -643,7 +644,7 @@ class GameManagementCog(commands.Cog):
         assert ctx.guild is not None
         board = manager.get_board(ctx.guild.id)
         cs = []
-        pla = sorted(board.players, key=lambda p: p.name)
+        pla = sorted(board.players, key=lambda p: p.get_name())
         for p1 in pla:
             for p2 in pla:
                 if p1.name < p2.name:
@@ -666,7 +667,7 @@ class GameManagementCog(commands.Cog):
         name_to_player: dict[str, Player] = dict()
         player_to_role: dict[Player | None, Role] = dict()
         for player in board.players:
-            name_to_player[player.name.lower()] = player
+            name_to_player[player.get_name().lower()] = player
 
         spectator_role = None
 
@@ -688,7 +689,7 @@ class GameManagementCog(commands.Cog):
             if not player_to_role.get(player):
                 await send_message_and_file(
                     channel=ctx.channel,
-                    message=f"Missing player role for {player.name}",
+                    message=f"Missing player role for {player.get_name()}",
                 )
                 return
 
@@ -768,8 +769,8 @@ class GameManagementCog(commands.Cog):
 
         # Create Thread
         thread: Thread = await channel.create_thread(
-            name=f"{player.name.capitalize()} Orders",
-            reason=f"Creating Orders for {player.name}",
+            name=f"{player.get_name().capitalize()} Orders",
+            reason=f"Creating Orders for {player.get_name()}",
             invitable=False,
         )
         await thread.send(
@@ -796,6 +797,31 @@ class GameManagementCog(commands.Cog):
             channel=channel, message="Finished publicizing void."
         )
 
+    @commands.command(
+        brief="edit_game",
+        description="""Modifies a game parameter to a certain value.
+        There must be one and only one command per line.
+        Note: you cannot edit immalleable map state (eg. province adjacency, players).
+        The following are the supported parameters and possible values:
+        * building ['classic', 'cores', 'anywhere']
+        * victory_conditions ['classic', 'vscc']
+        * victory_count [number] (only used with classic victory conditions)
+        * iscc [player] [starting scs]
+        * vscc [player] [victory scs] (only used with vscc victory conditions)
+        * player_name [original name] [new name]
+        * hide_player [player] ['true', 'false']
+        * add_player [player] [color] (Once added, a player cannot be removed)
+        """,
+    )
+    @perms.gm_only("edit game")
+    async def edit_game(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
+        param_commands = ctx.message.content.removeprefix(
+            f"{ctx.prefix}{ctx.invoked_with}"
+        ).strip()
+        title, message, file, file_name, embed_colour = parse_board_params(param_commands, manager.get_board(ctx.guild.id))
+        log_command(logger, ctx, message=title)
+        await send_message_and_file(channel=ctx.channel, title=title, message=message, file=file, file_name=file_name, embed_colour=embed_colour)
 
 async def setup(bot):
     cog = GameManagementCog(bot)

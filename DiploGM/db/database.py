@@ -164,6 +164,23 @@ class _DatabaseConnection:
         board.name = name
         board.board_id = board_id
 
+        board_params = cursor.execute(
+            "SELECT parameter_key, parameter_value FROM board_parameters WHERE board_id=?",
+            (board_id,),
+        ).fetchall()
+
+        # Turning a key deliniated with slashes into a nested dict
+        for key, value in board_params:
+            cur_dict = board.data
+            split_key = key.split("/", 1)
+            while len(split_key) > 1:
+                if split_key[0] not in cur_dict:
+                    cur_dict[split_key[0]] = {}
+                cur_dict = cur_dict[split_key[0]]
+                split_key = split_key[1].split("/", 1)
+            cur_dict[split_key[0]] = value
+        board.update_players()
+
         player_data = cursor.execute(
             "SELECT player_name, color, liege, points FROM players WHERE board_id=?",
             (board_id,),
@@ -668,6 +685,7 @@ class _DatabaseConnection:
     def total_delete(self, board: Board):
         cursor = self._connection.cursor()
         cursor.execute("DELETE FROM boards WHERE board_id=?", (board.board_id,))
+        cursor.execute("DELETE FROM board_parameters WHERE board_id=?", (board.board_id,))
         cursor.execute("DELETE FROM provinces WHERE board_id=?", (board.board_id,))
         cursor.execute("DELETE FROM units WHERE board_id=?", (board.board_id,))
         cursor.execute("DELETE FROM builds WHERE board_id=?", (board.board_id,))
