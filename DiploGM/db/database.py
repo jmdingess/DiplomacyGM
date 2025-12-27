@@ -179,7 +179,8 @@ class _DatabaseConnection:
                 cur_dict = cur_dict[split_key[0]]
                 split_key = split_key[1].split("/", 1)
             cur_dict[split_key[0]] = value
-        board.update_players()
+        if board.data["players"] != "chaos":
+            board.update_players()
 
         player_data = cursor.execute(
             "SELECT player_name, color, liege, points FROM players WHERE board_id=?",
