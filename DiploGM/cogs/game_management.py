@@ -65,6 +65,14 @@ class GameManagementCog(commands.Cog):
         log_command(logger, ctx, message="Deleted game")
         await send_message_and_file(channel=ctx.channel, title="Deleted game")
 
+    @commands.command(brief="test command. Yell at bumble if this made it into prod")
+    @perms.gm_only("test command")
+    async def create_raster_game(self, ctx: commands.Context) -> None:
+        assert ctx.guild is not None
+        message = manager.create_png_game(ctx.guild.id)
+        log_command(logger, ctx, message=message)
+        await send_message_and_file(channel=ctx.channel, message=message)
+
     @commands.command(brief="")
     @perms.gm_only("archive the category")
     async def archive(self, ctx: commands.Context) -> None:

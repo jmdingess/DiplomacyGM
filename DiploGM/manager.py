@@ -5,6 +5,7 @@ from typing import Optional
 
 from discord import Member, User
 
+from DiploGM.map_parser.raster import raster_parser
 from DiploGM.utils import SingletonMeta
 from DiploGM.adjudicator.adjudicator import make_adjudicator
 from DiploGM.adjudicator.mapper import Mapper
@@ -48,6 +49,13 @@ class Manager(metaclass=SingletonMeta):
         self._database.save_board(server_id, self._boards[server_id])
 
         return f"{self._boards[server_id].data['name']} game created"
+
+    def create_png_game(self, server_id: int):
+        board = raster_parser.parse_variant("peloponnesian")
+        if board is not None:
+            self._boards[server_id] = board
+            return "Game created"
+        return "raster parser returned None instead of a board object, but you probably knew that..."
 
     def get_spec_request(self, server_id: int, user_id: int) -> SpecRequest | None:
         if server_id not in self._spec_requests:

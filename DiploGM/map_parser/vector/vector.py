@@ -34,8 +34,6 @@ class Parser:
     def __init__(self, data: str):
         self.datafile = data
 
-
-
         with open(f"variants/{data}/config.json", "r") as f:
             self.data = json.load(f)
 

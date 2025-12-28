@@ -25,7 +25,7 @@ class Province():
     def __init__(
         self,
         name: str,
-        coordinates: Polygon | MultiPolygon,
+        coordinates: Polygon | MultiPolygon | None,
         primary_unit_coordinates: dict[UnitType | str, tuple[float, float]],
         retreat_unit_coordinates: dict[UnitType | str, tuple[float, float]],
         province_type: ProvinceType,
